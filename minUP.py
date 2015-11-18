@@ -6,7 +6,7 @@
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
 # Creation Date: 2014 - 2015
-# Last Modified: Tue Nov 17 12:16:31 2015
+# Last Modified: Tue Nov 17 14:09:42 2015
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -40,6 +40,8 @@ from telem import *
 
 if __name__ == '__main__':
 
+    mtime = '17.11.2015'  # os.path.getmtime('minup.v0.6W.py') # MS
+
     multiprocessing.freeze_support()  # MS
 
     manager = multiprocessing.Manager()
@@ -47,7 +49,6 @@ if __name__ == '__main__':
     global minup_version
     minup_version = '0.62'
     __version__ = minup_version
-    mtime = '05.11.2015'  # os.path.getmtime('minup.v0.6W.py') # MS
 
     global oper
 

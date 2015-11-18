@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from distutils.core import setup
+#import TKinter
 import py2exe
 import sys
 
@@ -33,12 +34,12 @@ setup(console=['gui.py', 'mincontrol.py', 'minup.v' + ver + '.py'],
 		['MSVCP90.dll'
 		, 'libgobject-2.0-0.dll'
                 , 'libglib-2.0-0.dll'
-		, 'libgthread-2.0-0.dll'],
-        'excludes': 
-		['scipy.*'
-		, 'IPython'
-		#, 'Tkinter'
-		#, 'tcl']
+		, 'libgthread-2.0-0.dll']
+        , 'excludes': 
+		[ 'IPython.*'
+		, 'tcl.*'
+		, 'Tkinter.*'
+		, 'scipy.*'
 		]
 	}})  
 
