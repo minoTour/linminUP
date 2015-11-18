@@ -93,22 +93,23 @@ class MyHandler(FileSystemEventHandler):
                                                 # model_file = "model.txt"
                                                 # model_kmer_means=process_model_file(model_file)
 
-            model_file_template = 'template_a68_2_final_model_501.model'
-            model_file_complement = \
-                'complement_a70_final_model_101.model'
-            model_kmer_means_template = \
-                process_model_file(model_file_template)
-            model_kmer_means_complement = \
-                process_model_file(model_file_complement)
+            if args.preproc is True:
+                model_file_template = 'template_a68_2_final_model_501.model'
+                model_file_complement = \
+                    'complement_a70_final_model_101.model'
+                model_kmer_means_template = \
+                    process_model_file(model_file_template)
+                model_kmer_means_complement = \
+                    process_model_file(model_file_complement)
 
-                                                # model_kmer_means = retrieve_model()
-                                                # global kmerhash
-                                                # kmerhash = process_ref_fasta_raw(fasta_file,model_kmer_means)
+                                                    # model_kmer_means = retrieve_model()
+                                                    # global kmerhash
+                                                    # kmerhash = process_ref_fasta_raw(fasta_file,model_kmer_means)
 
-            self.kmerhashT = process_ref_fasta_raw(fasta_file,
-                    model_kmer_means_template)
-            self.kmerhashC = process_ref_fasta_raw(fasta_file,
-                    model_kmer_means_complement)
+                self.kmerhashT = process_ref_fasta_raw(fasta_file,
+                        model_kmer_means_template)
+                self.kmerhashC = process_ref_fasta_raw(fasta_file,
+                        model_kmer_means_complement)
 
     def mycallback(self, actions):
 	args = self.args
