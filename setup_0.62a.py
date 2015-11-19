@@ -20,8 +20,9 @@ ver = '0.62a'
 
 setup(console=['gui.py', 'mincontrol.py', 'minup.v' + ver + '.py'],
     options = {'py2exe': 
-	{ 'bundle_files': 1
-	, 'compressed': True
+	{ 
+	#'bundle_files': 1
+	'compressed': True
 	,'includes': 
     		[ 'h5py.*'
 		, "psutil.*"

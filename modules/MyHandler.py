@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed Nov 18 08:38:24 2015
+# Last Modified: Thu Nov 19 14:28:05 2015
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -95,13 +95,13 @@ class MyHandler(FileSystemEventHandler):
 
 	    if args.preproc is True:
             	model_file_template = \
-			'template_a68_2_final_model_501.model'
+			'template.model'
             	model_file_complement = \
-               	 	'complement_a70_final_model_101.model'
+               	 	'complement.model'
            	model_kmer_means_template = \
-                	process_model_file(model_file_template)
+                	process_model_file(args, model_file_template)
             	model_kmer_means_complement = \
-                	process_model_file(model_file_complement)
+                	process_model_file(args, model_file_complement)
 
                 # model_kmer_means = retrieve_model()
                 # global kmerhash
@@ -326,7 +326,7 @@ def get_seq_len(ref_fasta):
     return seqlens
 
 #---------------------------------------------------------------------------
-
+'''
 def process_model_file(model_file):
     model_kmers = dict()
     with open(model_file, 'rb') as csv_file:
@@ -340,5 +340,29 @@ def process_model_file(model_file):
 
             model_kmers[kmer] = mean
     return model_kmers
+'''
+def process_model_file(args, model_file):
+    model_kmers = dict()
+    with open(model_file, 'rb') as csv_file:
+        reader = csv.reader(csv_file, delimiter="\t")
+        d = list(reader)
+        for r in range(0, len(d)):
+            #print r
+            kmer = d[r][0]
+            #print kmer
+            mean = d[r][1] # args.model_index]
+            #print type(mean)
+            try:
+                if (float(mean) <= 5):
+                    print "Looks like you have a poorly formatted model file. These aren't the means you are looking for.\n"
+                    print "The value supplied for "+kmer+" was "+str(mean)
+                    exit()
+            except Exception,err:
+                print "Problem with means - but it isn't terminal - we assume this is the header line!"
+            if (args.verbose is True):
+                print kmer, mean
+            model_kmers[kmer]=mean
+    return     model_kmers
+
 
 #---------------------------------------------------------------------------
