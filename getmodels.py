@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import h5py
 import configargparse
 
@@ -49,4 +50,4 @@ if __name__ == "__main__":
     file.close()
 
     hdf.close()
-    exit()
+    sys.exit()

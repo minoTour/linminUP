@@ -18,7 +18,7 @@ sys.path.append('modules')
 ver = '0.62a'
 
 
-setup(console=['gui.py', 'mincontrol.py', 'minup.v' + ver + '.py'],
+setup(console=['getmodels.py', 'gui.py', 'mincontrol.py', 'minup.v' + ver + '.py'],
     options = {'py2exe': 
 	{ 
 	#'bundle_files': 1
