@@ -42,6 +42,7 @@ if __name__ == "__main__":
         file.write(writestring)
         #print thing[0],thing[1],thing[2]
     file.close()
+
     file = open("complement.model", "w")
     for thing in hdf[comp1][comp2][comp3][comp4]:
         writestring = str(thing[0])+"\t"+str(thing[1])+"\t"+str(thing[2])+"\n"

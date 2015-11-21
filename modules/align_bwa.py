@@ -4,7 +4,7 @@
 # File Name: align_bwa.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Mon Nov 16 16:31:02 2015
+# Last Modified: Fri Nov 20 20:44:05 2015
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:

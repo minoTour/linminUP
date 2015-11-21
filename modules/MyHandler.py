@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Thu Nov 19 14:28:05 2015
+# Last Modified: Fri Nov 20 17:56:11 2015
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -26,7 +26,7 @@ from watchdog.events import FileSystemEventHandler
 
 from checkRead import check_read, check_read_type, \
 			terminateSubProcesses, terminateProc
-from align_dtw import mp_worker # *
+from align_dtw import mp_worker
 from folderDict import file_dict_of_folder
 from processRefFasta import process_ref_fasta_raw
 from processFast5 import process_fast5
@@ -72,23 +72,23 @@ class MyHandler(FileSystemEventHandler):
 
                                                 # print type(seqlen)
 
-            print seqlen
+            if args.verbose is True: print seqlen
             shortestSeq = np.min(seqlen.values())
-            print shortestSeq
-            print args.largerRef
+            if args.verbose is True: print shortestSeq
+            if args.verbose is True: print args.largerRef
 
             if not args.largerRef and shortestSeq > 10 ** 7:
-                print "Length of references is >10^6: processing may be *EXTREMELY* slow. To overide rerun using the '-largerRef' option"  # MS
+                if args.verbose is True: print "Length of references is >10^6: processing may be *EXTREMELY* slow. To overide rerun using the '-largerRef' option"  # MS
                 exitGracefully(args, dbcheckhash, self.minup_version)
                 sys.exit(1)
             elif not args.largerRef and shortestSeq > 10 ** 6:
 
-                print "Length of references is >10^7: processing may be *VERY* slow. To overide rerun using the '-largerRef' option"  # MS
+                if args.verbose is True: print "Length of references is >10^7: processing may be *VERY* slow. To overide rerun using the '-largerRef' option"  # MS
                 exitGracefully(args, dbcheckhash, self.minup_version)
                 sys.exit(1)
             else:
 
-                print 'Length of references is <10^6: processing should be ok .... continuing .... '  # MS
+                if args.verbose is True: print 'Length of references is <10^6: processing should be ok .... continuing .... '  # MS
 
                                                 # model_file = "model.txt"
                                                 # model_kmer_means=process_model_file(model_file)
@@ -138,7 +138,7 @@ class MyHandler(FileSystemEventHandler):
                                 # print "**** Cursor is",cursor
                                 # print "****#------- Raw basename ID =", rawbasename_id
 
-        print 'Apply Async Called'
+        #print 'Apply Async Called'
 
                                 # print filename
                                 # print time.time()
@@ -155,8 +155,8 @@ class MyHandler(FileSystemEventHandler):
 
                                 # x.get()
 
-        print x
-        print 'Call complete'
+        if args.verbose is True: print x
+        #print 'Call complete'
 
     def processfiles(self):
 	args = self.args
@@ -241,8 +241,8 @@ class MyHandler(FileSystemEventHandler):
                                     cursor,
                                     )
                           else:
-                            print "Not Basecalled"
-                            print fast5file
+                            #print "Not Basecalled"
+                            #print fast5file
                             self.db_name = check_read(
                                     db,
                                     args,
@@ -273,7 +273,7 @@ class MyHandler(FileSystemEventHandler):
                             x = \
                                     self.apply_async_with_callback(fast5file,
                                         rawbasename_id, self.db_name)
-                            print x  # x.get()
+                            if args.verbose is True: print x  # x.get()
                         except Exception, err:
 
                                                                                                                                 # print "This is a pre basecalled file"
