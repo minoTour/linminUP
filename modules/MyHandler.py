@@ -44,7 +44,7 @@ class MyHandler(FileSystemEventHandler):
 
         self.rawcount = dict()
         self.rawprocessed = dict()
-        self.p = multiprocessing.Pool(args.procs)
+        self.p = multiprocessing.Pool(args.procs,maxtasksperchild=1)
         self.kmerhashT = dict()
         self.kmerhashC = dict()
 	self.args = args
@@ -142,11 +142,18 @@ class MyHandler(FileSystemEventHandler):
 
                                 # print filename
                                 # print time.time()
+#        x = self.p.apply_async(mp_worker, args=((
+#            filename,
+#            self.kmerhashT,
+#            self.kmerhashC,
+#            time.time(),
+#            rawbasename_id,
+#            dbname,
+#            args,
+#            ), ), callback=self.mycallback)
 
-        x = self.p.apply_async(mp_worker, args=((
+        self.p.apply_async(mp_worker, args=((
             filename,
-            self.kmerhashT,
-            self.kmerhashC,
             time.time(),
             rawbasename_id,
             dbname,
@@ -155,7 +162,7 @@ class MyHandler(FileSystemEventHandler):
 
                                 # x.get()
 
-        if args.verbose is True: print x
+        #if args.verbose is True: print x
         #print 'Call complete'
 
     def processfiles(self):
@@ -270,10 +277,9 @@ class MyHandler(FileSystemEventHandler):
 
                                                                                                                                                 # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
 
-                            x = \
-                                    self.apply_async_with_callback(fast5file,
+                            self.apply_async_with_callback(fast5file,
                                         rawbasename_id, self.db_name)
-                            if args.verbose is True: print x  # x.get()
+                            #if args.verbose is True: print x  # x.get()
                         except Exception, err:
 
                                                                                                                                 # print "This is a pre basecalled file"

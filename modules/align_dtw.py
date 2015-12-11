@@ -67,7 +67,9 @@ def rnd(x): return int(round(x*1000,0))
 def toInt(xs): return map(rnd, xs)
 '''
 
-def squiggle_search2(squiggle, hashthang):
+def squiggle_search2(squiggle, ReferenceType):
+    if ReferenceType == "T" : hashthang = MyHandler.kmerhashT
+    if ReferenceType == "C" : hashthang = MyHandler.kmerhashC
     result = []
     #print 'Squiggle search called'
 
@@ -139,7 +141,10 @@ def squiggle_search2(squiggle, hashthang):
 
 # ---------------------------------------------------------------------------
 
-def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
+#def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
+def mp_worker((filename,time,rawbasename_id,db_name, args)):
+#	kmerhashT,kmerhashC = MyHandler.kmerhashT,MyHandler.kmerhashC
+	kmerhashT,kmerhashC = "T","C"
 	#print "mp_worker called"
 	dbpre = MySQLdb.connect(host=args.dbhost, user=args.dbusername, passwd=args.dbpass, port=args.dbport)
 	cursorpre = dbpre.cursor()

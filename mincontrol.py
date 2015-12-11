@@ -12,6 +12,11 @@ import MySQLdb
 import configargparse
 import urllib2
 import json
+from ws4py.client.threadedclient import WebSocketClient
+from thrift import Thrift
+from thrift.transport import TTransport
+from thrift.protocol import TCompactProtocol
+
 
 # import memcache
 
@@ -99,7 +104,7 @@ parser.add(
 
 args = parser.parse_args()
 
-version = '0.1'  # 9th June 2015
+version = '0.2'  # 9th June 2015
 
 ### test which version of python we're using
 
@@ -140,12 +145,12 @@ def _urlopen(url, *args):
 
     addr = socket.gethostbyname(host)
 
-    if addr.startswith('127.'):
+    #if addr.startswith('127.'):
 
-        return _no_proxy_opener.open(url, *args)
-    else:
+    #    return _no_proxy_opener.open(url, *args)
+    #else:
 
-        return urllib2.urlopen(url, *args)
+    return urllib2.urlopen(url, *args)
 
 
 def execute_command_as_string(data, host=None, port=None):
@@ -174,6 +179,75 @@ def execute_command_as_string(data, host=None, port=None):
 
     return json_respond
 
+class DummyClient(WebSocketClient):
+    infodict = {}
+
+    def opened(self):
+        print "Connection Success"
+        print "Trying \"engine_states\":\"1\",\"channel_states\":\"1\",\"multiplex_states\":\"1\""
+        #self.send(json.dumps({'engine_states':'1','channel_states':'1','multiplex_states':'1'}))
+        #self.send(json.dumps({'engine_states':'1','channel_states':'1'}))
+        self.send(json.dumps({'engine_states':'1'}))
+        #self.send(transport.getvalue(), binary=True)
+    #    def data_provider():
+    #        for i in range(1, 200, 25):
+    #            yield "#" * i
+
+    #    self.send(data_provider())
+
+    #    for i in range(0, 200, 25):
+    #       print i
+    #       self.send("*" * i)
+
+    def closed(self, code, reason=None):
+        print "Closed down", code, reason
+
+    def received_message(self, m):
+        if not m.is_binary:
+            #print "Non binary message"
+            #print type(m)
+            json_object = json.loads(str(m))
+            for element in json_object:
+                #print element
+                if json_object[element] == "error":
+                    continue
+
+                if json_object[element] != "null" and json_object[element] != "error":
+                    for bit in json_object[element]:
+                        try:
+                            if bit in self.infodict:
+                                #print "Value Exists"
+                                if self.infodict[bit] != json_object[element][bit]:
+                                    #queryupdate = "INSERT into messages (message,target,param1,complete) VALUES ('%s', 'details','%s','1')" % (bit,json_object[element][bit])
+                                    queryupdate = "UPDATE messages set param1 = '%s' where message = '%s'" %(json_object[element][bit],bit)
+                                    #print "Update Value"
+                                    print queryupdate
+                                    self.infodict[bit] = json_object[element][bit]
+                                    cursor2.execute(queryupdate)
+                                    db2.commit()
+                                #else:
+                                #    print "Value Unchanged",
+                            else:
+                                #print element, bit, json_object[element][bit]
+                                self.infodict[bit]=json_object[element][bit]
+                                queryupdate = "INSERT into messages (message,target,param1,complete) VALUES ('%s', 'details','%s','1')" % (bit,json_object[element][bit])
+                                cursor2.execute(queryupdate)
+                                db2.commit()
+                        except:
+                            pass
+                            #print "d'oh"
+                #else:
+                #   print "null"
+            #print json_object
+            #self.close()
+            return
+        transport = TTransport.TMemoryBuffer(m.data)
+        protocol = TCompactProtocol.TCompactProtocol(transport)
+        print "Binary Message"
+        #self.close()
+        #msg = es.ServerMessage()
+        #msg.read(protocol)
+        #self.received_server_message(msg)
 
 def update_run_scripts():
     get_scripts = \
@@ -700,12 +774,19 @@ if __name__ == '__main__':
 
     # A few extra bits here to automatically reconnect if the server goes down
     # and is brought back up again.
+    ws = DummyClient('ws://127.0.0.1:9000/')
+    ws.connect()
+
 
     try:
         db = MySQLdb.connect(host=args.dbhost, user=args.dbusername,
                              passwd=args.dbpass, port=args.dbport,
                              db=args.dbname)
+        db2 = MySQLdb.connect(host=args.dbhost, user=args.dbusername,
+                             passwd=args.dbpass, port=args.dbport,
+                             db=args.dbname)
         cursor = db.cursor()
+        cursor2 = db2.cursor()
     except Exception, err:
         print >> sys.stderr, "Can't connect to MySQL: %s" % err
         sys.exit()
@@ -713,13 +794,14 @@ if __name__ == '__main__':
         while 1:
             try:
                 run_analysis()
+                ws.run_forever()
             except socket_error, serr:
                 if serr.errno != errno.ECONNREFUSED:
                     raise serr
                 print 'Hanging around, waiting for the server...'
                 time.sleep(5)  # Wait a bit and try again
     except (KeyboardInterrupt, SystemExit):
-
+        ws.close()
         print 'stopped mincontrol.'
         time.sleep(1)
         sys.exit()
