@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Fri Nov 20 17:56:11 2015
+# Last Modified: Tue Jan 12 08:50:09 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -31,6 +31,7 @@ from folderDict import file_dict_of_folder
 from processRefFasta import process_ref_fasta_raw
 from processFast5 import process_fast5
 from processFast5Raw import process_fast5_raw
+from exitGracefully import exitGracefully
 
 # ---------------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ class MyHandler(FileSystemEventHandler):
 
         self.rawcount = dict()
         self.rawprocessed = dict()
-        self.p = multiprocessing.Pool(args.procs,maxtasksperchild=1)
+        self.p = multiprocessing.Pool(args.procs)
         self.kmerhashT = dict()
         self.kmerhashC = dict()
 	self.args = args
@@ -142,18 +143,11 @@ class MyHandler(FileSystemEventHandler):
 
                                 # print filename
                                 # print time.time()
-#        x = self.p.apply_async(mp_worker, args=((
-#            filename,
-#            self.kmerhashT,
-#            self.kmerhashC,
-#            time.time(),
-#            rawbasename_id,
-#            dbname,
-#            args,
-#            ), ), callback=self.mycallback)
 
-        self.p.apply_async(mp_worker, args=((
+        x = self.p.apply_async(mp_worker, args=((
             filename,
+            self.kmerhashT,
+            self.kmerhashC,
             time.time(),
             rawbasename_id,
             dbname,
@@ -162,7 +156,7 @@ class MyHandler(FileSystemEventHandler):
 
                                 # x.get()
 
-        #if args.verbose is True: print x
+        if args.verbose is True: print x
         #print 'Call complete'
 
     def processfiles(self):
@@ -277,9 +271,10 @@ class MyHandler(FileSystemEventHandler):
 
                                                                                                                                                 # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
 
-                            self.apply_async_with_callback(fast5file,
+                            x = \
+                                    self.apply_async_with_callback(fast5file,
                                         rawbasename_id, self.db_name)
-                            #if args.verbose is True: print x  # x.get()
+                            if args.verbose is True: print x  # x.get()
                         except Exception, err:
 
                                                                                                                                 # print "This is a pre basecalled file"

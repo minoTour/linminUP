@@ -4,7 +4,7 @@
 # File Name: align_dtw.py
 # Purpose:
 # Creation Date: 2015
-# Last Modified: Fri Nov 20 21:57:22 2015
+# Last Modified: Thu Nov 26 08:17:38 2015
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -12,6 +12,7 @@
 
 import numpy as np
 import sys
+#from visual.graph import gcurve, color
 
 # import sklearn.preprocessing
 
@@ -49,7 +50,7 @@ def mysql_load_from_hashes2(
     values = ','.join(vals)
     sql = 'INSERT INTO %s (%s) VALUES (%s) ' % (tablename, cols, values)
 
-        # print sql
+        #print sql
 
     cursorpre.execute(sql)
     dbpre.commit()
@@ -58,25 +59,25 @@ def mysql_load_from_hashes2(
 
 
 # ---------------------------------------------------------------------------
+my_dtw_subsequence = dtw_subsequence 
+
 '''
 def my_dtw_subsequence(xs,ys):
-	return dtw_subsequence(xs, ys) # toInt(xs), toInt(ys))
+	return dtw_subsequence(toInt(xs), toInt(ys))
 
 def rnd(x): return int(round(x*1000,0))
 
 def toInt(xs): return map(rnd, xs)
 '''
 
-def squiggle_search2(squiggle, ReferenceType):
-    if ReferenceType == "T" : hashthang = MyHandler.kmerhashT
-    if ReferenceType == "C" : hashthang = MyHandler.kmerhashC
+def squiggle_search2(squiggle, hashthang):
     result = []
-    #print 'Squiggle search called'
+    print 'Squiggle search called'
 
     # print "hashthang"+ hashthang
 
     for ref in hashthang:
-
+	'''
         # print "We're in the kmerhash loop"
         # print ref
         # print len(kmerhash2[id][ref]['F'])
@@ -85,35 +86,56 @@ def squiggle_search2(squiggle, ReferenceType):
         # -------- with the sklearn preprocessing algorithm
         # -------- to see what happens.
         # queryarray = sklearn.preprocessing.scale(np.array(squiggle),axis=0,with_mean=True,with_std=False,copy=True)
+	'''
 
-        queryarray = scale(np.array(squiggle))  # ,axis=0,with_mean=True,with_std=False,copy=True)
+	# --------------------------------------------------------
+	# Forwards  ....
 
-        # print queryarray
-        # print "woohooo"
+	refarray = hashthang[ref]['Fprime']
 
+        queryarray = scale(np.array(squiggle))  
+			# ,axis=0,with_mean=True,with_std=False,copy=True)
+	mx = np.max(refarray)
+	#iqr = np.subtract(*np.percentile(refarray, [75, 25]))
+
+	scalingFactor = mx # iqr # 3 # 1.2 # MS
+	print "Scaling Factor: ", scalingFactor
+	queryarray *= scalingFactor
+
+	'''
         # queryarray = np.array(squiggle)
+    	#f1 = gcurve(color=color.cyan)
+	#_ref = hashthang[ref]['Fprime']
+	#f1.plot(pos=zip(xrange(_ref), _ref), color=color.red)
+	#_refR = hashthang[ref]['Rprime']
+	#f1.plot(pos=zip(xrange(_refR), _refR), color = color.red)
+	'''
 
-        (dist, cost, path) = dtw_subsequence(queryarray,
-                hashthang[ref]['Fprime'])
+        (dist, cost, path) = my_dtw_subsequence(queryarray, refarray)
         result.append((
-            dist,
-            ref,
-            'F',
-            path[1][0],
-            path[1][-1],
-            path[0][0],
-            path[0][-1],
+            dist, 	# distance
+            ref, 	# seqmatchname
+            'F', 	# for/rev
+            path[1][0], # refstart
+            path[1][-1],# refend
+            path[0][0], # querystart
+            path[0][-1],# queryend
             ))
-        (dist, cost, path) = dtw_subsequence(queryarray,
-                hashthang[ref]['Rprime'])
+	# --------------------------------------------------------
+	# And the other way round ....
 
-        # -------- We could correct for the reverse read here,
-        # -------- so provide forward co-ordinates?
-        # print "Ref len", len(kmerhash[ref]['Rprime'])
-        # print "Reverse match coords", path[1][0],path[1][-1]
-        # print "Corrected coords", (len(kmerhash[ref]['Rprime'])-path[1][-1]),(len(kmerhash[ref]['Rprime'])-path[1][0])
-        # result.append((dist,ref,"R",path[1][0],path[1][-1],path[0][0],path[0][-1]))
+	refarray = hashthang[ref]['Rprime']
 
+        queryarray = scale(np.array(squiggle))  
+			# ,axis=0,with_mean=True,with_std=False,copy=True)
+	mx = np.max(refarray)
+	#iqr = np.subtract(*np.percentile(refarray, [75, 25]))
+
+	scalingFactor = mx # iqr # 3 # 1.2 # MS
+	print "Scaling Factor: ", scalingFactor
+	queryarray *= scalingFactor
+
+        (dist, cost, path) = my_dtw_subsequence(queryarray, refarray)
         result.append((
             dist,
             ref,
@@ -124,11 +146,25 @@ def squiggle_search2(squiggle, ReferenceType):
             path[0][-1],
             ))
 
+	# --------------------------------------------------------
+
+	'''
+        # -------- We could correct for the reverse read here,
+        # -------- so provide forward co-ordinates?
+        # print "Ref len", len(kmerhash[ref]['Rprime'])
+        # print "Reverse match coords", path[1][0],path[1][-1]
+        # print "Corrected coords", (len(kmerhash[ref]['Rprime'])-path[1][-1]),(len(kmerhash[ref]['Rprime'])-path[1][0])
+        # result.append((dist,ref,"R",path[1][0],path[1][-1],path[0][0],path[0][-1]))
+
     # -------- ('gi|10141003|gb|AF086833.2|', 368.20863807089216, 'R', 1658, 2038, 0, 1058)
     # -------- returning seqmatchname,distance,for/rev,refstart,refend,querystart,queryend
+	'''
 
     #print 'Squiggle Search finished'
-    return (
+    srt =  sorted(result, key=lambda result: result[0] )[0]
+    return srt[1], srt[0], srt[2], srt[3], srt[4], srt[5], srt[6]
+
+'''
         sorted(result, key=lambda result: result[0] )[0][1],
         sorted(result, key=lambda result: result[0] )[0][0],
         sorted(result, key=lambda result: result[0] )[0][2],
@@ -136,15 +172,12 @@ def squiggle_search2(squiggle, ReferenceType):
         sorted(result, key=lambda result: result[0] )[0][4],
         sorted(result, key=lambda result: result[0] )[0][5],
         sorted(result, key=lambda result: result[0] )[0][6],
-        )
+'''
 
 
 # ---------------------------------------------------------------------------
 
-#def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
-def mp_worker((filename,time,rawbasename_id,db_name, args)):
-#	kmerhashT,kmerhashC = MyHandler.kmerhashT,MyHandler.kmerhashC
-	kmerhashT,kmerhashC = "T","C"
+def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 	#print "mp_worker called"
 	dbpre = MySQLdb.connect(host=args.dbhost, user=args.dbusername, passwd=args.dbpass, port=args.dbport)
 	cursorpre = dbpre.cursor()
