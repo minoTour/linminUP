@@ -4,7 +4,7 @@
 # File Name: gui.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed Nov 18 10:56:25 2015
+# Last Modified: Wed Feb  3 10:34:24 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -269,6 +269,12 @@ def main():
 
     cmd = '.\\minUP.exe ' + params  # + ' 2>&1'
     print cmd
+
+    '''
+    fl = open("cmd.sh", 'w')
+    fl.write(cmd)
+    fl.close()
+    '''
     run(cmd)
 
 # ------------------------------------------------------------------------------

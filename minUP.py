@@ -6,7 +6,7 @@
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
 # Creation Date: 2014 - 2015
-# Last Modified: Wed Nov 18 15:42:31 2015
+# Last Modified: Tue Feb  2 15:03:09 2016
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -316,10 +316,19 @@ if __name__ == '__main__':
         '-pre',
         '--insert-pre-true',
         action='store_true',
-        help='Process and align raw reads prior to basecalling by metrichor.'
+        help='Process raw reads prior to basecalling by metrichor.'
             ,
         default=False,
         dest='preproc',
+        )
+    parser.add(
+        '-prealign',
+        '--align-pre-true',
+        action='store_true',
+        help='Align raw reads prior to basecalling by metrichor.'
+            ,
+        default=False,
+        dest='prealign',
         )
     parser.add(
         '-d',
@@ -366,6 +375,25 @@ if __name__ == '__main__':
         help='Force processng on large reference genomes.',
         default=False,
         dest='largerRef',
+        )
+
+
+    parser.add(
+        '-customup',
+        '--custom-upload',
+        action='store_true',
+        help='Stop minUP when cached has remained zero for more than 30 seconds.',
+        default=False,
+        dest='customup',
+        )
+
+    parser.add( # MS ...
+        '-qScale',
+        '--scale-query',
+        action='store_true',
+        help='Scale query by max value in ref.',
+        default=False,
+        dest='qScale',
         )
 
                 # parser.add('-ver', '--version', action='store_true', help="Report the current version of minUP.", default=False, dest='version') # ML
@@ -441,7 +469,7 @@ if __name__ == '__main__':
 		comments, ref_fasta_hash, dbcheckhash, \
 		logfolder, cursor
         observer = Observer()
-        event_handler = MyHandler(oper, db, args, xml_file_dict, check_read_args, minup_version)
+        event_handler = MyHandler(dbcheckhash, oper, db, args, xml_file_dict, check_read_args, minup_version)
         observer.schedule(event_handler, path=args.watchdir, recursive=True)
         observer.start()
         while True:

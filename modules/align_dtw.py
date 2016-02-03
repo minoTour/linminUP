@@ -4,7 +4,7 @@
 # File Name: align_dtw.py
 # Purpose:
 # Creation Date: 2015
-# Last Modified: Thu Nov 26 08:17:38 2015
+# Last Modified: Tue Feb  2 15:17:01 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -111,7 +111,7 @@ def squiggle_search2(squiggle, hashthang):
 	#f1.plot(pos=zip(xrange(_refR), _refR), color = color.red)
 	'''
 
-        (dist, cost, path) = my_dtw_subsequence(queryarray, refarray)
+        (dist, cost, path) = my_dtw_subsequence(queryarray[:256], refarray)
         result.append((
             dist, 	# distance
             ref, 	# seqmatchname
@@ -126,16 +126,23 @@ def squiggle_search2(squiggle, hashthang):
 
 	refarray = hashthang[ref]['Rprime']
 
-        queryarray = scale(np.array(squiggle))  
+        queryarray = scale(np.array(squiggle))
 			# ,axis=0,with_mean=True,with_std=False,copy=True)
-	mx = np.max(refarray)
-	#iqr = np.subtract(*np.percentile(refarray, [75, 25]))
 
-	scalingFactor = mx # iqr # 3 # 1.2 # MS
-	print "Scaling Factor: ", scalingFactor
-	queryarray *= scalingFactor
+	'''
+	# Scale qry by max(ref)
+	if args.qScale == True: # TODO NB need to pass in args ...
+		mx = np.max(refarray)
+		#iqr = np.subtract(*np.percentile(refarray, [75, 25]))
 
-        (dist, cost, path) = my_dtw_subsequence(queryarray, refarray)
+		scalingFactor = mx # iqr # 3 # 1.2 # MS
+		print "Scaling Factor: ", scalingFactor
+		queryarray *= scalingFactor
+	else:
+		queryarray *= 1.2 # scalingFactor
+	'''
+
+        (dist, cost, path) = my_dtw_subsequence(queryarray[-256:], refarray)
         result.append((
             dist,
             ref,

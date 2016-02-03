@@ -4,7 +4,7 @@
 # File Name: checkRead.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Tue Nov 17 13:27:25 2015
+# Last Modified: Wed Feb  3 16:35:09 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -23,11 +23,14 @@ from sql import *
 from hdf5HashUtils import *
 from exitGracefully import exitGracefully
 
+# Unbuffered IO
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+
 
 def terminateProc(proc):  # MS
-    print >> sys.stderr, '... Terminating in 1 seconds'
+    print  >> sys.stderr, '... Terminating in 1 seconds'
 
-                # for i in xrange(1): print >>sys.stderr, "."
+                # for i in xrange(1): print '>>sys.stderr, "."
 
     proc.kill()
     time.sleep(1)
@@ -63,6 +66,9 @@ def check_read(
     cursor,
     oper,
     ):
+
+    global runindex
+
     filename = os.path.basename(filepath)
     if args.verbose is True:
         print time.strftime('%Y-%m-%d %H:%M:%S'), 'processing:', \
@@ -86,11 +92,9 @@ def check_read(
 
 
 
+
     # print "dbname is ",dbname
     # print "Parts were " ,parts
-    # ---------------------------------------------------------------------------
-
-    global runindex
 
     # ---------------------------------------------------------------------------
 
@@ -103,7 +107,14 @@ def check_read(
 
             # ---------------------------------------------------------------------------
 
-            runindex = dbcheckhash['runindex'][dbname]
+            try: runindex = dbcheckhash['runindex'][dbname] # MS .. 
+            except:  
+                print "checkRead(): line 112, dbcheckhash, key error: " \
+				+ dbname
+                #sys.exit()
+		return ()
+
+
             comment_string = 'minUp switched runname'
             start_time = time.strftime('%Y-%m-%d %H:%M:%S')
             sql = \
@@ -128,6 +139,7 @@ def check_read(
             for e in dbcheckhash['dbname'].keys():
                 dbcheckhash['dbname'][e] = False
             dbcheckhash['dbname'][dbname] = True
+
 
     # ---------------------------------------------------------------------------
 
@@ -196,7 +208,8 @@ def check_read(
             ip = socket.gethostbyname(socket.gethostname())
         except Exception, err:
             err_string = 'Error obtaining upload IP adress'
-            print >> sys.stderr, err_string
+            #print >> sys.stderr, err_string
+            print err_string
 
         # ---------------------------------------------------------------------------
         # -------- This bit adds columns to Gru.minIONruns --------
@@ -442,7 +455,8 @@ def check_read(
         file_type = check_read_type(filepath,hdf)
         #print "FILETYPE is", file_type
 
-        if file_type == 2:
+	try: 
+         if file_type == 2:
             basecalltype="Basecall_1D" #ML
             basecalltype2="Basecall_2D"
             basecalldir=''
@@ -471,7 +485,11 @@ def check_read(
                 basecalldir='/Analyses/%s_00%s/' % (basecalltype2,basecallindexpos)
                 #basecalldirconfig=string2 #ML
                 #break
-        if file_type in [1,0]:
+	except: 
+		print "BOMB!"
+		sys.exit()
+        try: 
+          if file_type in [1,0]:
             basecalltype = 'Basecall_1D_CDNA'
             basecalltype2 = 'Basecall_2D'
             basecalldir = ''
@@ -496,6 +514,9 @@ def check_read(
 
         # print "basecalldirconfig", basecalldirconfig
         # # get some data out of tacking_id and general
+	except: 
+		print "BOMBb!"
+		sys.exit()
         print basecalldirconfig
         print basecalldir
         if len(basecalldirconfig) > 0:
@@ -576,24 +597,29 @@ def check_read(
             ip,
             )
 
-        # print sql
+        #print sql
+
+	print 'OK'
 
         db.escape_string(sql)
         cursor.execute(sql)
-        db.commit()
+        db.commit() 
         runindex = cursor.lastrowid
-        dbcheckhash['runindex'][dbname] = runindex
+        dbcheckhash['runindex'][dbname] = runindex 
 
-        # print "Runindex:",runindex
+        #print "Runindex:",runindex
 
-        # # add user names to Gru.userrun
+        # # add us">> ", view_users
 
         if args.verbose is True:
             print "adding users."
+
         view_users=[username]
+	
         if args.view_users:
             extra_names = args.view_users.split(',')
-            view_users = args.view_users + extra_names
+            # view_users = args.view_users + extra_names # MS
+            view_users = view_users + extra_names # MS
 
         for user_name in view_users:
             sql = \

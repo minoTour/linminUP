@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed Feb  3 14:56:39 2016
+# Last Modified: Wed Feb  3 11:15:32 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -202,29 +202,34 @@ class MyHandler(FileSystemEventHandler):
                     sys.exit(1)
 
 
-            for (fast5file, createtime) in sorted(self.creates.items(), 
-						key=lambda x: x[1]):
 
-                # tn=time.time()
 
-                if int(createtime) + 20 < time.time():  
-		# file created 20 sec ago, so should be complete ....
+
+
+
+            for (fast5file, createtime) in sorted(self.creates.items(),
+                    key=lambda x: x[1]):
+
+                                                                # tn=time.time()
+
+                if int(createtime) + 20 < time.time():  # file created 20 sec ago, so should be complete
                     if fast5file not in self.processed.keys():
                         self.creates.pop(fast5file, None)
                         self.processed[fast5file] = time.time()
-                        try:
+                        #try:
 
-                         # starttime = time.time()
+                                                                                                                # starttime = time.time()
 
-			  self.hdf = h5py.File(fast5file, 'r')
+                        self.hdf = h5py.File(fast5file, 'r')
 
-# ##             We want to check if this is a raw read or a basecalled read
+                                                                                                                # ##             We want to check if this is a raw read or a basecalled read
 
-                          self.file_type = check_read_type(fast5file,
+                        self.file_type = check_read_type(fast5file,
                                     self.hdf)
-		   	  #print str(("file_type: ", self.file_type) )
 
-                          if self.file_type > 0:
+                                                                                                                # print self.file_type
+
+                        if self.file_type > 0:
                             #print "Basecalled Read"
                             #print fast5file
                             self.db_name = check_read(
@@ -243,7 +248,7 @@ class MyHandler(FileSystemEventHandler):
                                     oper,
                                     )
                             process_fast5(
-				    oper,
+                                    oper,
                                     db,
                                     connection_pool,
                                     args,
@@ -254,7 +259,7 @@ class MyHandler(FileSystemEventHandler):
                                     self.db_name,
                                     cursor,
                                     )
-                          else:
+                        else:
                             #print "Not Basecalled"
                             #print fast5file
                             self.db_name = check_read(
@@ -284,20 +289,19 @@ class MyHandler(FileSystemEventHandler):
 
                                                                                                                                                 # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
 
-			    if args.prealign is True:
+			if args.prealign is True:
                             	x = \
                                     self.apply_async_with_callback(fast5file,
                                         rawbasename_id, self.db_name)
                             	if args.verbose is True: print x  # x.get()
-                        except Exception, err:
+                        #except Exception, err:
 
                                                                                                                                 # print "This is a pre basecalled file"
 
-                            err_string = \
-                                'Error with fast5 file: %s : %s' \
-                                % (fast5file, err)
-                            #print >> sys.stderr, err_string
-                            print err_string
+                        #    err_string = \
+                        #        'Error with fast5 file: %s : %s' \
+                        #        % (fast5file, err)
+                        #    print >> sys.stderr, err_string
 
                                                                                                 #               if dbname is not None:
                                                                                                 #                               if dbname in dbcheckhash["dbname"]:

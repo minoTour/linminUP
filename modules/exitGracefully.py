@@ -1,6 +1,7 @@
 import MySQLdb
 import time
 import os
+import sys
 
 
 def exitGracefully(args, dbcheckhash, minup_version):
@@ -20,7 +21,11 @@ def exitGracefully(args, dbcheckhash, minup_version):
         cur.execute(sql)
         dba.commit()
 
-        runindex = dbcheckhash['runindex'][name]
+        try: runindex = dbcheckhash['runindex'][name] # MS .. 
+	except: 
+		"exitGracefully(): line 26, dbcheckhash, key error: " + name
+		sys.exit(-1)
+
         finish_time = time.strftime('%Y-%m-%d %H:%M:%S')
         comment_string = 'minUp version %s finished' % minup_version
         sql = \
