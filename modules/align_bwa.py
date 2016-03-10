@@ -4,7 +4,7 @@
 # File Name: align_bwa.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Fri Nov 20 20:44:05 2015
+# Last Modified: Wed Feb 24 12:23:46 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -87,7 +87,6 @@ def init_bwa_threads(
         d += 1
     for background in backgrounds:
         background.join()
-	#sys.exit(1) # MS to run for just one read
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +150,6 @@ def do_bwa_align(
     if args.verbose is True:
     	for s in samdata: print s
     	print "="*80
-    	#sys.exit(1) # MS
 
 
     sqls = [] # MS

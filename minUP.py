@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # --------------------------------------------------
-# File Name: minup.v0.62.py
+# File Name: minup.v0.63.py
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
-# Creation Date: 2014 - 2015
-# Last Modified: Tue Feb  2 15:03:09 2016
+# Creation Date: 2014 - 2016
+# Last Modified: Tue Mar  8 21:56:39 2016
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -20,42 +20,42 @@ from watchdog.observers.polling import PollingObserver as Observer
 import MySQLdb
 import configargparse
 import multiprocessing
-#import psutil  # MS
 import platform  # MS
 
 # Unbuffered IO
-# sys.stdin = os.fdopen(sys.stdin.fileno(), 'w', 0) # MS
+# NB 1 is essential to catch ctrl-c ... 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)  # MS
 sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)  # MS
 
 
 sys.path.append('modules')
-from exitGracefully import exitGracefully
+from exitGracefully import terminateSubProcesses
 from processRefFasta import process_ref_fasta
-from MyHandler import MyHandler
 from telem import *
+
+
+def okSQLname(s): # MS
+        return "." not in s and "-" not in s
 
 # ---------------------------------------------------------------------------
 # main
 
 if __name__ == '__main__':
 
-    mtime = '17.11.2015'  # os.path.getmtime('minup.v0.6W.py') # MS
+    mtime = '16.02.2016'  # os.path.getmtime('minup.v0.6W.py') # MS
+
 
     multiprocessing.freeze_support()  # MS
 
     manager = multiprocessing.Manager()
 
     global minup_version
-    minup_version = '0.62'
+    minup_version = '0.63'
     __version__ = minup_version
 
     global oper
 
-                # oper="linux"
-                # oper="windows"
-
-    oper = platform.system()  # if oper is "Windows":  .... # MS
+    oper = platform.system()  
     if oper is 'Windows':  # MS
         oper = 'windows'
     else:
@@ -396,6 +396,15 @@ if __name__ == '__main__':
         dest='qScale',
         )
 
+    parser.add( # MS ...
+        '-qryStartEnd',
+        '--prealign-query-start-end-only',
+        action='store_true',
+        help='Pre-align using only a window at start and end of the query squiggle? False: pre-align using the whole query squiggle.',
+        default=False,
+        dest='qryStartEnd',
+        )
+
                 # parser.add('-ver', '--version', action='store_true', help="Report the current version of minUP.", default=False, dest='version') # ML
 
     parser.add_argument('-ver', '--version', action='version',
@@ -405,6 +414,14 @@ if __name__ == '__main__':
                                                                # MS
 
     args = parser.parse_args()
+
+    # Check inputs are OK...
+    if not okSQLname(args.custom_name): # MS
+        print 'Error: Invalid SQL name characters in custom_name : %s\nExiting ...' % (args.custom_name)
+        sys.exit(1)
+
+
+
 
     global dbcheckhash
     dbcheckhash = dict()
@@ -442,6 +459,9 @@ if __name__ == '__main__':
                 #                print "minUP version is "+minup_version # ML
                 #                sys.exit() # ML
 
+
+
+
     if args.ref_fasta is not False and args.batch_fasta is not False:
         print 'Both --align-ref-fasta (-f) and --align-batch-fasta (-b) were set. Select only one and try again.'
         sys.exit(1)
@@ -463,6 +483,10 @@ if __name__ == '__main__':
             raw_input('Type comment then press Enter to continue : ')
         comments['default'] = comment
 
+
+    # MS -- Then, only import this if all is OK ....
+    from MyHandler import MyHandler
+
     print 'monitor started.'
     try:
 	check_read_args = connection_pool, minup_version, \
@@ -476,14 +500,13 @@ if __name__ == '__main__':
             time.sleep(1)
 
     except (KeyboardInterrupt, SystemExit):
-
-        print 'stopping monitor.'
+        print 'stopping monitor....'
         observer.stop()
-        exitGracefully(args, dbcheckhash, minup_version)
+        terminateSubProcesses(args, dbcheckhash, oper, minup_version)
+	
 	print "finished."
-        #sys.exit(1)
         observer.join()
-        sys.exit(1)
+	sys.exit(1)
 
-# ---------------------------------------------------------------------------
+
 

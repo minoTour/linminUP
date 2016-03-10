@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed Feb  3 14:56:39 2016
+# Last Modified: Tue Mar  8 22:08:44 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -24,22 +24,40 @@ import h5py
 from hdf5HashUtils import *
 from watchdog.events import FileSystemEventHandler
 
-from checkRead import check_read, check_read_type, \
-			terminateSubProcesses, terminateProc
+from checkRead import check_read, check_read_type
+
 from align_dtw import mp_worker
 from folderDict import file_dict_of_folder
 from processRefFasta import process_ref_fasta_raw
 from processFast5 import process_fast5
 from processFast5Raw import process_fast5_raw
-from exitGracefully import exitGracefully
+from exitGracefully import terminateSubProcesses, exitGracefully
 
 # ---------------------------------------------------------------------------
+def moveFile(fast5file):
+	cmd = ' '.join(["mv",fast5file,fast5file+"bugged"])
+	os.system(cmd)
+
+
+def readFast5File(fast5file):
+	try: 
+		content = h5py.File(fast5file, 'r')
+		return content
+	except:
+                err_string = "readfast5File(): error ", fast5file
+                print >> sys.stderr, err_string
+		moveFile(fast5file)
+		return ()
+
 
 class MyHandler(FileSystemEventHandler):
 
     def __init__(self, dbcheckhash, oper, db, args, xml_file_dict, check_read_args, minup_version):
-        (self.creates, xml_file_dict) = file_dict_of_folder(args,
-                xml_file_dict, args.watchdir)
+
+        self.creates, xml_file_dict = \
+		file_dict_of_folder(args, xml_file_dict, args.watchdir)
+
+
         self.processed = dict()
         self.running = True
 
@@ -57,39 +75,44 @@ class MyHandler(FileSystemEventHandler):
 
         t = threading.Thread(target=self.processfiles)
         t.daemon = True
+        
         try:
             t.start()
         except (KeyboardInterrupt, SystemExit):
-            t.stop()
-            print 'Ctrl-C entered -- exiting'  # MS
-            self.p.close()  # MS
-            self.p.terminate()  # MS
-            terminateSubProcesses(args, dbcheckhash)  # MS
-            sys.exit(1)
+	    # MS -- Order here is critical ...
+            print 'Ctrl-C entered -- exiting'  
+
+	    t.clear() 
+            t.stop() 
+
+            self.p.close()  
+            self.p.terminate()  
+            terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
+            exitGracefully(args, dbcheckhash, self.minup_version)
+	    sys.exit(1) 
+
 
         if args.ref_fasta is not False:
             fasta_file = args.ref_fasta
             seqlen = get_seq_len(fasta_file)
 
-                                                # print type(seqlen)
+            # print type(seqlen)
 
             if args.verbose is True: print seqlen
             shortestSeq = np.min(seqlen.values())
             if args.verbose is True: print shortestSeq
             if args.verbose is True: print args.largerRef
 
-            if not args.largerRef and shortestSeq > 10 ** 7:
-                if args.verbose is True: print "Length of references is >10^6: processing may be *EXTREMELY* slow. To overide rerun using the '-largerRef' option"  # MS
-                exitGracefully(args, dbcheckhash, self.minup_version)
-                sys.exit(1)
-            elif not args.largerRef and shortestSeq > 10 ** 6:
+            if not args.largerRef and shortestSeq > 10 ** 8:
+                if args.verbose is True: print "Length of references is >10^8: processing may be *EXTREMELY* slow. To overide rerun using the '-largerRef' option"  # MS
+                terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
+            elif not args.largerRef and shortestSeq > 10 ** 7:
 
                 if args.verbose is True: print "Length of references is >10^7: processing may be *VERY* slow. To overide rerun using the '-largerRef' option"  # MS
-                exitGracefully(args, dbcheckhash, self.minup_version)
-                sys.exit(1)
+                terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
             else:
 
-                if args.verbose is True: print 'Length of references is <10^6: processing should be ok .... continuing .... '  # MS
+                if args.verbose is True: print 'Length of references is <10^7: processing should be ok .... continuing .... '  # MS
 
                                                 # model_file = "model.txt"
                                                 # model_kmer_means=process_model_file(model_file)
@@ -100,9 +123,9 @@ class MyHandler(FileSystemEventHandler):
             	model_file_complement = \
                	 	'complement.model'
            	model_kmer_means_template = \
-                	process_model_file(args, model_file_template)
+                	process_model_file(args, oper, model_file_template)
             	model_kmer_means_complement = \
-                	process_model_file(args, model_file_complement)
+                	process_model_file(args, oper, model_file_complement)
 
                 # model_kmer_means = retrieve_model()
                 # global kmerhash
@@ -192,15 +215,13 @@ class MyHandler(FileSystemEventHandler):
                     len(self.processed)
 
             if args.customup is True:
-                print "In customup"
+                #print "In customup"
                 if len(self.creates) > 0:
                     customtimeout=0
                 else:
                     customtimeout+=1
                 if customtimeout > 6:
-                    exitGracefully(args, dbcheckhash, self.minup_version)
-                    sys.exit(1)
-
+		    terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
 
             for (fast5file, createtime) in sorted(self.creates.items(), 
 						key=lambda x: x[1]):
@@ -210,13 +231,13 @@ class MyHandler(FileSystemEventHandler):
                 if int(createtime) + 20 < time.time():  
 		# file created 20 sec ago, so should be complete ....
                     if fast5file not in self.processed.keys():
-                        self.creates.pop(fast5file, None)
-                        self.processed[fast5file] = time.time()
+
                         try:
+			  self.hdf = readFast5File(fast5file)
+                          self.creates.pop(fast5file, None)
+                          self.processed[fast5file] = time.time()
+                          # starttime = time.time()
 
-                         # starttime = time.time()
-
-			  self.hdf = h5py.File(fast5file, 'r')
 
 # ##             We want to check if this is a raw read or a basecalled read
 
@@ -224,9 +245,9 @@ class MyHandler(FileSystemEventHandler):
                                     self.hdf)
 		   	  #print str(("file_type: ", self.file_type) )
 
-                          if self.file_type > 0:
                             #print "Basecalled Read"
                             #print fast5file
+                          if self.file_type > 0 :
                             self.db_name = check_read(
                                     db,
                                     args,
@@ -282,28 +303,38 @@ class MyHandler(FileSystemEventHandler):
                                     cursor,
                                     )
 
-                                                                                                                                                # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
+                            # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
 
 			    if args.prealign is True:
+                        	print "prealigning", fast5file
                             	x = \
                                     self.apply_async_with_callback(fast5file,
                                         rawbasename_id, self.db_name)
                             	if args.verbose is True: print x  # x.get()
-                        except Exception, err:
+                        	print "prealign finished ", fast5file
+			except Exception, err:
+			    if self.hdf: # CI
+                                self.hdf.close() # CI
 
-                                                                                                                                # print "This is a pre basecalled file"
 
+                            # print "This is a pre basecalled file"
+
+                            print "MyHandler(): except -- "+ fast5file 
                             err_string = \
                                 'Error with fast5 file: %s : %s' \
                                 % (fast5file, err)
                             #print >> sys.stderr, err_string
                             print err_string
+			
+			    return ()
 
+			'''
                                                                                                 #               if dbname is not None:
                                                                                                 #                               if dbname in dbcheckhash["dbname"]:
                                                                                                 #                                               with open(dbcheckhash["logfile"][dbname],"a") as logfilehandle:
                                                                                                 #                                                               logfilehandle.write(err_string+os.linesep)
                                                                                                 # s                                                              logfilehandle.close()
+			'''
 
                         everyten += 1
                         if everyten == 10:
@@ -320,16 +351,6 @@ class MyHandler(FileSystemEventHandler):
     len(self.processed)
                             everyten = 0
 
-	'''
-    	if args.customup is True:
-                                if len(self.creates == 0):
-                                    customtimeout+=1
-                                if len(self.creates > 0):
-                                    customtimeout=0
-                                if (customtimeout > 6):
-                                    exitGracefully(args, dbcheckhash, self.minup_version)
-                                    sys.exit(1)
-	'''
 
 
     def on_created(self, event):
@@ -357,7 +378,6 @@ def get_seq_len(ref_fasta):
 '''
 def process_model_file(model_file):
     model_kmers = dict()
-    with open(model_file, 'rb') as csv_file:
         reader = csv.reader(csv_file, delimiter='\t')
         d = list(reader)
         for r in range(1, len(d)):
@@ -369,7 +389,8 @@ def process_model_file(model_file):
             model_kmers[kmer] = mean
     return model_kmers
 '''
-def process_model_file(args, model_file):
+
+def process_model_file(args, oper, model_file):
     model_kmers = dict()
     with open(model_file, 'rb') as csv_file:
         reader = csv.reader(csv_file, delimiter="\t")
@@ -384,11 +405,10 @@ def process_model_file(args, model_file):
                 if (float(mean) <= 5):
                     print "Looks like you have a poorly formatted model file. These aren't the means you are looking for.\n"
                     print "The value supplied for "+kmer+" was "+str(mean)
-                    exit()
+		    terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
             except Exception,err:
                 print "Problem with means - but it isn't terminal - we assume this is the header line!"
-            if (args.verbose is True):
-                print kmer, mean
+            #if (args.verbose is True): print kmer, mean
             model_kmers[kmer]=mean
     return     model_kmers
 

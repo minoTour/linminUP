@@ -4,7 +4,7 @@
 # File Name: folderDict.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed, Nov 04, 2015  8:49:35 PM
+# Last Modified: Wed Mar  9 11:38:05 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -13,6 +13,23 @@
 import os
 import sys
 import xmltodict
+import h5py
+
+def getHDFtime((f, mtime)):
+    try:
+	hdf = h5py.File(f)
+        expStartTime = hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time']
+        reads = 'Analyses/EventDetection_000/Reads/'
+        for read in hdf[reads]:
+                startTime = hdf[ reads + read ].attrs['start_time'] 
+	st =  int(expStartTime) + int(startTime)
+    except:
+	st = mtime
+    return f, st 
+
+
+def assignHDFtimes(d):
+	return dict(map(getHDFtime, d.items()) )
 
 
 # ---------------------------------------------------------------------------
@@ -222,6 +239,9 @@ def file_dict_of_folder(args, xml_file_dict, path):
     # with open(dbcheckhash["logfile"][dbname],"a") as logfilehandle:
     # ....logfilehandle.write(found_fast5_note+os.linesep)
     # ....logfilehandle.close()
+
+ 
+    # 0.63 ... # file_list_dict = assignHDFtimes(file_list_dict)
 
     return (file_list_dict, xml_file_dict)
 

@@ -101,6 +101,14 @@ parser.add(
     default=None,
     help='The IP address of the minKNOW machine.',
     )
+parser.add(
+    '-v',
+    '--verbose',
+    action='store_true',
+    help='Display debugging information.',
+    default=False,
+    dest='verbose',
+    )
 
 args = parser.parse_args()
 
@@ -184,10 +192,10 @@ class DummyClient(WebSocketClient):
 
     def opened(self):
         print "Connection Success"
-        print "Trying \"engine_states\":\"1\",\"channel_states\":\"1\",\"multiplex_states\":\"1\""
+        #print "Trying \"engine_states\":\"1\",\"channel_states\":\"1\",\"multiplex_states\":\"1\""
         #self.send(json.dumps({'engine_states':'1','channel_states':'1','multiplex_states':'1'}))
-        #self.send(json.dumps({'engine_states':'1','channel_states':'1'}))
-        self.send(json.dumps({'engine_states':'1'}))
+        self.send(json.dumps({'engine_states':'1','channel_states':'1'}))
+        #self.send(json.dumps({'engine_states':'1'}))
         #self.send(transport.getvalue(), binary=True)
     #    def data_provider():
     #        for i in range(1, 200, 25):
@@ -221,7 +229,8 @@ class DummyClient(WebSocketClient):
                                     #queryupdate = "INSERT into messages (message,target,param1,complete) VALUES ('%s', 'details','%s','1')" % (bit,json_object[element][bit])
                                     queryupdate = "UPDATE messages set param1 = '%s' where message = '%s'" %(json_object[element][bit],bit)
                                     #print "Update Value"
-                                    print queryupdate
+                                    if args.verbose is True:
+                                        print queryupdate
                                     self.infodict[bit] = json_object[element][bit]
                                     cursor2.execute(queryupdate)
                                     db2.commit()
@@ -274,7 +283,8 @@ def update_run_scripts():
     sqlinsert = \
         'insert into messages (message,target,param1,complete) VALUES %s' \
         % recipelist
-    print sqlinsert
+    if args.verbose is True:
+        print sqlinsert
     cursor.execute(sqlinsert)
     db.commit()
 
@@ -774,7 +784,10 @@ if __name__ == '__main__':
 
     # A few extra bits here to automatically reconnect if the server goes down
     # and is brought back up again.
-    ws = DummyClient('ws://127.0.0.1:9000/')
+    wsip = "ws://"+ args.ip + ":9000/"
+    #ws = DummyClient('ws://127.0.0.1:9000/')
+    #sys.exit()
+    ws = DummyClient(wsip)
     ws.connect()
 
 

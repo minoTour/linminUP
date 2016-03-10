@@ -1,0 +1,16 @@
+minup started at:	2016-02-12 18:01:31
+minup version:	0.62
+options:
+minotour db host:	localhost
+minotour db user:	minion
+minotour username:	minion
+minotour viewer usernames:	['minion']
+flowcell owner:	minionowner
+run number:	0
+watch directory:	/Applications/MinKNOW_Data/reads/downloads/
+upload telemetry:	False
+Reference Sequences:
+Fasta:	J02459.fasta	length:	48502
+comment:	No Comment
+Errors:
+minup finished at:	2016-02-12 18:31:37:	set to inactive gracefully

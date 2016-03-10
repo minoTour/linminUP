@@ -4,7 +4,7 @@
 # File Name: processFast5.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Mon Nov 16 16:01:17 2015
+# Last Modified: Wed Mar  2 12:01:17 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -58,7 +58,11 @@ def process_fast5(
     cursor,
     ):
 
-    checksum = hashlib.md5(open(filepath, 'rb').read()).hexdigest()
+    try: checksum = hashlib.md5(open(filepath, 'rb').read()).hexdigest()
+    except: 
+                err_string = "process_fast5(): error checksum ", filepath
+                print >> sys.stderr, err_string
+		sys.exit()
 
     # print checksum, type(checksum)
     # ## find the right basecall_2D location, get configuaration genral data, and define the basename.

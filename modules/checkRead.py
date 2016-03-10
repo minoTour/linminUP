@@ -4,7 +4,7 @@
 # File Name: checkRead.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed Feb  3 16:35:09 2016
+# Last Modified: Tue Mar  8 22:07:35 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -21,34 +21,23 @@ import datetime
 
 from sql import *
 from hdf5HashUtils import *
-from exitGracefully import exitGracefully
+from exitGracefully import terminateSubProcesses 
 
 # Unbuffered IO
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
 
+'''
 
-def terminateProc(proc):  # MS
-    print  >> sys.stderr, '... Terminating in 1 seconds'
+def okSQLname(s): # MS
+	return "." not in s and "-" not in s
 
-                # for i in xrange(1): print '>>sys.stderr, "."
-
-    proc.kill()
-    time.sleep(1)
-
-
-
-def terminateSubProcesses(args, dbcheckhash, minup_version):
-    for proc in psutil.process_iter():
-        cmdLine = ' '.join(proc.cmdline())
-        if 'minUP.exe' in cmdLine or 'minup.v0.62W.py' in cmdLine:
-
-                                                # or ('mincontrol' in cmdLine) \
-                                                # or ('mincontrol' in cmdLine) \
-
-            terminateProc(proc)  # MS
-            exitGracefully(args, dbcheckhash, minup_version)  # MS
-    print 'finished.'
-
+	if okSQLname(args.custom_name): # MS
+	else: 
+           print >> sys.stderr, \
+           'Error: Invalid SQL name characters in custom_name -- exiting ...'
+           terminateSubProcesses(args, dbcheckhash, minup_version)
+	   sys.exit(1)
+'''
 
 
 def check_read(
@@ -81,7 +70,7 @@ def check_read(
     dbname = str.join(parts[0:len(parts) - 5])
     dbname = re.sub('[.!,; ]', '', dbname)
     if len(args.custom_name) > 0:
-        dbname = args.minotourusername + '_' + args.custom_name + '_' \
+           dbname = args.minotourusername + '_' + args.custom_name + '_' \
             + dbname
     else:
         dbname = args.minotourusername + '_' + dbname
@@ -180,7 +169,7 @@ def check_read(
 
                     print >> sys.stderr, \
                         'not in batch mode so exiting ...'
-                    terminateSubProcesses(args, dbcheckhash, minup_version)
+                    terminateSubProcesses(args, dbcheckhash, oper, minup_version)
 
         if args.drop_db is True:
             print 'deleting exisiting run from Gru now.'
@@ -227,12 +216,14 @@ def check_read(
         cursor.execute(sql)
         sql = 'USE %s' % dbname
         cursor.execute(sql)
-        create_general_table('config_general', cursor)  # make a table
-        create_trackingid_table('tracking_id', cursor)  # make another table
-        create_basecall_summary_info('basecall_summary', cursor)  # make another table!
-        create_events_model_fastq_table('basecalled_template', cursor)  # make another table
-        create_events_model_fastq_table('basecalled_complement', cursor)  # make another table
-        create_basecalled2d_fastq_table('basecalled_2d', cursor)  # make another table
+
+	# Create Tables ....
+        create_general_table('config_general', cursor)  
+        create_trackingid_table('tracking_id', cursor)  
+        create_basecall_summary_info('basecall_summary', cursor)
+        create_events_model_fastq_table('basecalled_template', cursor) 
+        create_events_model_fastq_table('basecalled_complement', cursor) 
+        create_basecalled2d_fastq_table('basecalled_2d', cursor) 
 
         # ---------------------------------------------------------------------------
 
@@ -336,8 +327,8 @@ def check_read(
                             refid, cursor)
 
         # ---------------------------------------------------------------------------
-        # -------- See if theres any ENA XML stuff to add. i
-        # -------- Need to do this now as it changes the "comment" i
+        # -------- See if theres any ENA XML stuff to add. 
+        # -------- Need to do this now as it changes the "comment" 
         # -------- in Gru.minionRuns entry
         # print "C", comment
 
@@ -353,23 +344,19 @@ def check_read(
                 create_xml_table('XML', cursor)
 
                 # ---------------------------------------------------------------------------
+		downloadsPath = xml_file_dict[xml_to_downloads_path]
 
                 for study_id in \
-                    xml_file_dict[xml_to_downloads_path]['study'
-                        ].keys():
+                    downloadsPath['study'].keys():
                     ena_flowcell_owner = study_id
                     study_xml = \
-                        xml_file_dict[xml_to_downloads_path]['study'
-                            ][study_id]['xml']
+                        downloadsPath['study'][study_id]['xml']
                     study_file = \
-                        xml_file_dict[xml_to_downloads_path]['study'
-                            ][study_id]['file']
+                        downloadsPath['study'][study_id]['file']
                     study_title = \
-                        xml_file_dict[xml_to_downloads_path]['study'
-                            ][study_id]['title']
+                        downloadsPath['study'][study_id]['title']
                     study_abstract = \
-                        xml_file_dict[xml_to_downloads_path]['study'
-                            ][study_id]['abstract']
+                        downloadsPath['study'][study_id]['abstract']
                     exp_c = 'NA'
                     samp_c = 'NA'
                     run_c = 'NA'
@@ -380,21 +367,16 @@ def check_read(
                         'xml': study_xml,
                         })
                     for exp_id in \
-                        xml_file_dict[xml_to_downloads_path]['experiment'
-                            ].keys():
+                        downloadsPath['experiment'].keys():
                         if study_id \
-                            == xml_file_dict[xml_to_downloads_path]['experiment'
-                                ][exp_id]['study_id']:
+                            == downloadsPath['experiment'][exp_id]['study_id']:
                             exp_c = exp_id
                             exp_xml = \
-                                xml_file_dict[xml_to_downloads_path]['experiment'
-                                    ][exp_id]['xml']
+                                downloadsPath['experiment'][exp_id]['xml']
                             exp_file = \
-                                xml_file_dict[xml_to_downloads_path]['experiment'
-                                    ][exp_id]['file']
+                                downloadsPath['experiment'][exp_id]['file']
                             sample_id = \
-                                xml_file_dict[xml_to_downloads_path]['experiment'
-                                    ][exp_id]['sample_id']
+                                downloadsPath['experiment'][exp_id]['sample_id']
                             mysql_load_from_hashes(db, cursor, 'XML', {
                                 'type': 'experiment',
                                 'primary_id': exp_id,
@@ -403,15 +385,13 @@ def check_read(
                                 })
 
                             if sample_id \
-                                in xml_file_dict[xml_to_downloads_path]['sample'
+                                in downloadsPath['sample'
                                     ]:
                                 samp_c = sample_id
                                 sample_xml = \
-                                    xml_file_dict[xml_to_downloads_path]['sample'
-                                        ][sample_id]['xml']
+                                    downloadsPath['sample'][sample_id]['xml']
                                 sample_file = \
-                                    xml_file_dict[xml_to_downloads_path]['sample'
-                                        ][sample_id]['file']
+                                    downloadsPath['sample'][sample_id]['file']
                                 mysql_load_from_hashes(db, cursor, 'XML'
                                         , {
                                     'type': 'sample',
@@ -421,16 +401,14 @@ def check_read(
                                     })
 
                             for run_id in \
-                                xml_file_dict[xml_to_downloads_path]['run'
-                                    ].keys():
+                                downloadsPath['run'].keys():
                                 if exp_id \
-                                    == xml_file_dict[xml_to_downloads_path]['run'
-                                        ][run_id]['exp_id']:
+                                    == downloadsPath['run'][run_id]['exp_id']:
                                     run_c = run_id
                                     run_xml = \
-    xml_file_dict[xml_to_downloads_path]['run'][run_id]['xml']
+				    	downloadsPath['run'][run_id]['xml']
                                     run_file = \
-    xml_file_dict[xml_to_downloads_path]['run'][run_id]['file']
+    					downloadsPath['run'][run_id]['file']
                                     mysql_load_from_hashes(db, cursor,
         'XML', {
                                         'type': 'run',
@@ -486,7 +464,7 @@ def check_read(
                 #basecalldirconfig=string2 #ML
                 #break
 	except: 
-		print "BOMB!"
+		print "checkReads(): error line 467."
 		sys.exit()
         try: 
           if file_type in [1,0]:
@@ -515,7 +493,7 @@ def check_read(
         # print "basecalldirconfig", basecalldirconfig
         # # get some data out of tacking_id and general
 	except: 
-		print "BOMBb!"
+		print "checkReads(): error line 496."
 		sys.exit()
         print basecalldirconfig
         print basecalldir
@@ -845,6 +823,14 @@ def check_read(
 
 def check_read_type(filepath, hdf):
     filetype = 1
+
+    '''
+    if hdf==(): 
+        print >> sys.stderr, \
+          'check_read_type(): error -- hdf == ()'
+	return()
+    '''
+	
 
     #print hdf
 

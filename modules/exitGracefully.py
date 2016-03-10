@@ -2,12 +2,40 @@ import MySQLdb
 import time
 import os
 import sys
+import psutil
+import ctypes
+
+
+def terminateSubProcesses(args, dbcheckhash, oper, minup_version):
+
+    # Sign off any mySQL connections ...
+    exitGracefully(args, dbcheckhash, minup_version) 
+
+    print "terminating sub-processes...."
+
+    pid = os.getpid() 
+
+    # Tell minup to terminate
+    if oper == "windows":
+    	# -- sending minup pid a Ctrl-C signal 
+    	# -- this also cleanly closes subprocesses and threads ....
+    	ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid) # 0 => Ctrl-C
+    else:
+	process = psutil.Process(pid)
+	for proc in process.children(recursive=True):
+                proc.kill()
+	process.kill()
+
+
+    print 'finished.'
+    sys.exit(1)
+
 
 
 def exitGracefully(args, dbcheckhash, minup_version):
 
-                                # if dbname is not None:
-                                #                #print "dbname", dbname
+  # if dbname is not None:
+	#                #print "dbname", dbname
 
     for name in dbcheckhash['dbname'].keys():
         dba = MySQLdb.connect(host=args.dbhost, user=args.dbusername,
@@ -23,8 +51,8 @@ def exitGracefully(args, dbcheckhash, minup_version):
 
         try: runindex = dbcheckhash['runindex'][name] # MS .. 
 	except: 
-		"exitGracefully(): line 26, dbcheckhash, key error: " + name
-		sys.exit(-1)
+		print "exitGracefully(): line 26, dbcheckhash, key error: " + name
+		return() # #sys.exit(1)
 
         finish_time = time.strftime('%Y-%m-%d %H:%M:%S')
         comment_string = 'minUp version %s finished' % minup_version
