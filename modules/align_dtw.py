@@ -4,7 +4,7 @@
 # File Name: align_dtw.py
 # Purpose:
 # Creation Date: 2015
-# Last Modified: Tue Mar  1 08:19:46 2016
+# Last Modified: Wed Mar 30 13:56:20 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -33,6 +33,7 @@ def scale(a):  # MS
 # ---------------------------------------------------------------------------
 
 def mysql_load_from_hashes2(
+    args, 
     cursorpre,
     tablename,
     data_hash,
@@ -49,7 +50,7 @@ def mysql_load_from_hashes2(
     values = ','.join(vals)
     sql = 'INSERT INTO %s (%s) VALUES (%s) ' % (tablename, cols, values)
 
-        #print sql
+    if args.debug is True: print sql
 
     cursorpre.execute(sql)
     dbpre.commit()
@@ -82,42 +83,49 @@ def squiggle_align(args, squiggle, hashthang):
 	print "squiggle_align(): Error -- squiggle == [] "
 	sys.exit()
 
-    
-    print len(squiggle), args.qryStartEnd
+   
+    if args.debug is True: 
+    	print "Squiggle len: ", len(squiggle), 
+    	print "qryStartEnd: ", args.qryStartEnd
 
 	# ?? ...
     if len(squiggle) >= 2*winSz \
 		and args.qryStartEnd is True: 
 	# Align just start and end of query...
-	print "Align just start and end of query..."
-    	res = squiggle_search3(winSz, squiggle, hashthang)
+	if args.debug is True: print "Align just start and end of query..."
+    	res = squiggle_search3(args, winSz, squiggle, hashthang)
     else:
 	# Align whole query ....
-	print "Align whole query ...."
-	res = squiggle_search2(squiggle, hashthang)
+	if args.debug is True: print "Align whole query ...."
+	res = squiggle_search2(args, squiggle, hashthang)
+
     return res
 	
 
 
-def squiggle_search3(winSz, squiggle, hashthang): 
+def squiggle_search3(args, winSz, squiggle, hashthang): 
+    if args.debug is True:
+	print "squiggle_search3 called..."
     #refLen = len(hashthang[ref]['Fprime'])
 
     # get result for start of query ..
     squiggleStart = squiggle[:winSz]
-    qryStartResults = squiggle_search2(squiggleStart, hashthang)
+    qryStartResults = squiggle_search2(args, squiggleStart, hashthang)
     seqmatchname, distance, fr, rs, re, qs, qe = qryStartResults
 
     # get result for end of query ...
     squiggleEnd = squiggle[-winSz:]
-    qryEndResults = squiggle_search2(squiggleEnd, hashthang)
+    qryEndResults = squiggle_search2(args, squiggleEnd, hashthang)
     seqmatchname_, distance_, fr_, rs_, re_, qs_, qe_ = qryEndResults
 
-
-    print "Len squiggle:" + str(len(squiggle))
-    print "qryStartRes: " + str(qryStartResults[1:])
-    print "qryEndRes:   " + str(qryEndResults[1:])
+    if args.debug is True:
+    	print "Len squiggle:" + str(len(squiggle))
+    	print "qryStartRes: " + str(qryStartResults[1:])
+    	print "qryEndRes:   " + str(qryEndResults[1:])
 
     # TODO CHECK MATCH TEST LOGIC ...
+
+    resultList = []
 
     # Matching on F only ...
     if( seqmatchname == seqmatchname_
@@ -140,7 +148,8 @@ def squiggle_search3(winSz, squiggle, hashthang):
 		, re_
 		, qs
 		, qe_)
-	  print "squiggle_seqrch3(): SUCCESS F ...."
+	  if args.debug is True:
+	  	print "squiggle_seqrch3(): SUCCESS F ...."
 
     # Matching on R only ...
     elif( seqmatchname == seqmatchname_
@@ -163,20 +172,23 @@ def squiggle_search3(winSz, squiggle, hashthang):
 		, re_
 		, qs
 		, qe_)
-	  print "squiggle_seqrch3(): SUCCESS R ...."
+	  if args.debug is True:
+	  	print "squiggle_seqrch3(): SUCCESS R ...."
 
     # Else FAIL ...
     else:
-	print "squiggle_seqrch3(): FAIL ??...."
-	sys.exit()
+	if args.debug is True:
+		print "squiggle_seqrch3(): FAIL ??...."
+	# sys.exit()
 
     return resultList
 
 
-def squiggle_search2(squiggle, hashthang):
+def squiggle_search2(args, squiggle, hashthang):
 
     result = []
-    print 'Squiggle search called'
+    if args.debug is True:
+    	print 'Squiggle search called'
 
     # print "hashthang"+ hashthang
 
@@ -265,18 +277,18 @@ def squiggle_search2(squiggle, hashthang):
 # ---------------------------------------------------------------------------
 
 def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
-	#print "mp_worker called"
+    	if args.debug is True:
+		print "mp_worker called ..."
 	dbpre = MySQLdb.connect(host=args.dbhost, user=args.dbusername, passwd=args.dbpass, port=args.dbport)
 	cursorpre = dbpre.cursor()
-	print "align_dtw: ",filename
-	'''
-	#print "kmerhashT",type(kmerhashT)
-	#print kmerhashT
-	#print "kmerhashC",type(kmerhashC)
-	#print "time",time
-	#print "raw_id",rawbasename_id
-	#print "db_name",db_name
-	'''
+	if args.debug is True: 
+		print "align_dtw: ",filename
+		#print "kmerhashT",type(kmerhashT)
+		#print kmerhashT
+		#print "kmerhashC",type(kmerhashC)
+		print "time",time
+		print "raw_id",rawbasename_id
+		print "db_name",db_name
 
 	sql = "use %s" % (db_name)
 	cursorpre.execute(sql)
@@ -284,13 +296,12 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 
 	#print "**** Database name is ",db_name
 	try:
-		'''
-		#print "Read start time",readstarttime
-		#print "Elapsed time since read=",(time.time()-readstarttime)
-		#squiggle = extractsquig(data.events)
-		#print data.events[0].start
-		#result = 'bernard'
-		'''
+		#if args.debug is True:
+			#print "Read start time",readstarttime
+			#print "Elapsed time since read=",(time.time()-readstarttime)
+			#squiggle = extractsquig(data.events)
+			#print data.events[0].start
+			#result = 'bernard'
 		hdf = h5py.File(filename, 'r')
 			## Need to harvest the squiggles.
 		for element in hdf['Analyses/EventDetection_000/Reads']:
@@ -335,7 +346,7 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 						squiggle_hash.update({'q_start':qsT})
 						squiggle_hash.update({'r_align_len':(end-start+1)})
 						squiggle_hash.update({'q_align_len':(qeT-qsT+1)})
-						mysql_load_from_hashes2(cursorpre,"pre_align_2d",squiggle_hash,dbpre)
+						mysql_load_from_hashes2(args, cursorpre,"pre_align_2d",squiggle_hash,dbpre)
 
 
 					### If the forward and reverse reads do not map appropriately to the reference then we only upload the template and complement mappings - even if both are on the same strand?
@@ -349,7 +360,7 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 					squiggle_hash.update({'q_start':qsT})
 					squiggle_hash.update({'r_align_len':(reT-rsT+1)})
 					squiggle_hash.update({'q_align_len':(qeT-qsT+1)})
-					mysql_load_from_hashes2(cursorpre,"pre_align_template",squiggle_hash,dbpre)
+					mysql_load_from_hashes2(args, cursorpre,"pre_align_template",squiggle_hash,dbpre)
 					squiggle_hash=dict()
 					squiggle_hash.update({'basename_id':rawbasename_id})
 					#### HORRID FIX BUT IM TOO TIRED TO DO IT WELL
@@ -360,12 +371,13 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 					squiggle_hash.update({'q_start':qsC})
 					squiggle_hash.update({'r_align_len':(reC-rsC+1)})
 					squiggle_hash.update({'q_align_len':(qeC-qsC+1)})
-					mysql_load_from_hashes2(cursorpre,"pre_align_complement",squiggle_hash,dbpre)
+					mysql_load_from_hashes2(args, cursorpre,"pre_align_complement",squiggle_hash,dbpre)
 
 					### If the forward and reverse reads do not map appropriately to the reference then we only upload the template and complement mappings - even if both are on the same strand?
 
 				else:
-					#print "No Hairpin"
+					if args.debug is True: 
+						print "No Hairpin"
 
 					(seqmatchnameT,distanceT,frT,rsT,reT,qsT,qeT) = squiggle_align(args, meansquiggle,kmerhashT)
 					squiggle_hash=dict()
@@ -378,19 +390,19 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 					squiggle_hash.update({'q_start':qsT})
 					squiggle_hash.update({'r_align_len':(reT-rsT+1)})
 					squiggle_hash.update({'q_align_len':(qeT-qsT+1)})
-					mysql_load_from_hashes2(cursorpre,"pre_align_template",squiggle_hash,dbpre)
-		'''
+					mysql_load_from_hashes2(args, cursorpre,"pre_align_template",squiggle_hash,dbpre)
 
-					###In this case we just want to insert the result into the database depending on the orientation
+		###In this case we just want to insert the result into the database depending on the orientation
 		#squiggleres = squiggle_align(args, squiggle,channel_id,data.read_id,kmerhash,seqlen)
 		#print squiggleres
 		#result = go_or_no(squiggleres[0],squiggleres[2],squiggleres[3],seqlen)
 		#print "result:",result
-		'''
+
+
 		hdf.close()
 		#return result,channel_id,data.read_id,data.events[0].start,squiggleres
 	except Exception, err:
 		err_string="Time Warping Stuff : %s" % ( err)
 		print >>sys.stderr, err_string
-	print "align_dtw finished: ",filename
+	if args.debug is True: print "align_dtw finished: ",filename
 	return (filename)

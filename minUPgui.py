@@ -4,7 +4,7 @@
 # File Name: gui.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Thu Mar  3 14:29:06 2016
+# Last Modified: Thu Mar 24 14:12:44 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -28,6 +28,10 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
 
 # ------------------------------------------------------------------------------
 
+fh = open("ver.txt", "r")
+ver = fh.readline()
+fh.close() 
+
 pid = 0 # os.getpid() # MS -- !!! this breaks ctrl-c !!!
 
 
@@ -36,6 +40,7 @@ def run(cmd):
 
     outF = open('log','w')
     outF.write(cmd+"\n")
+    
 
     exit_code = 0
     print 'Run started ....'
@@ -52,6 +57,7 @@ def run(cmd):
     while p.poll() is None:
         out = p.stdout.read(1)
         sys.stdout.write(out)
+	sys.stdout.flush()
 	outF.write(out)
 
     outF.close()
@@ -230,13 +236,13 @@ def fixAlignerOpts(aligner, (k, v)):
 # ------------------------------------------------------------------------------
 
 @Gooey(
-    program_name='minUP',
+    program_name='minUP '+ver,
     advanced=1,
     language='english',
     show_config=True,
     default_size=(1000, 600),
     required_cols=2,
-    optional_cols=3,
+    optional_cols=2,
     dump_build_config=0,
     )
 def main():

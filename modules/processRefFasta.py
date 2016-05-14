@@ -4,7 +4,7 @@
 # File Name: processRefFasta.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Thu Nov 19 15:31:54 2015
+# Last Modified: Thu Mar 24 20:02:53 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -17,6 +17,9 @@ from Bio import SeqIO
 import numpy as np
 import subprocess
 
+from progressbar import *
+from pbar import *
+
 
 # ---------------------------------------------------------------------------
 
@@ -27,7 +30,8 @@ import subprocess
 def scale(a):  # MS
     mu = np.mean(a, None)
     sigma = np.std(a)
-    return (a - mu) / sigma
+    if sigma == 0: return 0
+    else: return (a - mu) / sigma
 
 
 # ---------------------------------------------------------------------------
@@ -40,7 +44,8 @@ def process_ref_fasta(
     ref_fasta,
     ref_fasta_hash,
     ):
-    print 'processing the reference fasta.'
+    print 'Processing the reference fasta.' 
+    sys.stdout.flush()
 
     refdict = dict()
     refdict['seq_len'] = dict()
@@ -77,7 +82,8 @@ def process_ref_fasta(
     if os.path.isfile(validated_ref) is False \
         or os.stat(validated_ref).st_size == 0:
         valid_fasta_handle = open(validated_ref, 'w')
-        for fasta_file in files:
+
+        for i, fasta_file in enumerate(files):
             print 'FASTA file:', fasta_file
             fasta_records = list(SeqIO.parse(fasta_file, 'fasta'))
             if len(fasta_records) == 0:
@@ -90,6 +96,7 @@ def process_ref_fasta(
 
             try:
                 for record in fasta_records:
+			
 
                     # ref_fasta_hash["seq_file"][record.id]=os.path.splitext(os.path.basename(fasta_file))[0]
 
@@ -117,7 +124,14 @@ def process_ref_fasta(
                 sys.exit(1)
         valid_fasta_handle.close()
 
+    n = len(files)
+    bar = mkBar(n)
+    bar.start()
+    x=0
     for record in SeqIO.parse(validated_ref, 'fasta'):
+	bar.update(x)
+	x+=1
+	    
         if args.verbose is True:
             print 'processing seq: ', record.id
 
@@ -141,6 +155,7 @@ def process_ref_fasta(
             recomp = record.seq.reverse_complement()
             km = kmer_count_fasta(record.seq, recomp, 5)
             refdict['kmer'][record.id] = km
+    bar.finish()
 
     if args.last_align is True:
         last_index = os.path.join(os.path.sep, last_index_dir,
@@ -221,7 +236,7 @@ def process_ref_fasta_raw(ref_fasta, model_kmer_means):
 '''
 
 def process_ref_fasta_raw(ref_fasta, model_kmer_means):
-    print 'processing the reference fasta.'
+    print 'Processing the reference fasta.'
 
     kmer_len = len(model_kmer_means.keys()[0]) # 7 # MS
     kmer_means = dict()
@@ -233,20 +248,29 @@ def process_ref_fasta_raw(ref_fasta, model_kmer_means):
         kmer_means[record.id]['Rprime'] = list()
         print 'ID', record.id
         print 'length', len(record.seq)
-        print 'FORWARD STRAND'
 
+
+        print 'FORWARD STRAND'
+	sys.stdout.flush()
         seq = record.seq
+	bar = mkBar(len(seq))
+	bar.start()
         for x in range(len(seq) + 1 - kmer_len):
+	    #bar.update(x)
             kmer = str(seq[x:x + kmer_len])
             kmer_means[record.id]['F'
                                   ].append(float(model_kmer_means[kmer]))
 
             # if model_kmer_means[kmer]:
                 # print x, kmer, model_kmer_means[kmer]
+	bar.finish()
 
         print 'REVERSE STRAND'
+	sys.stdout.flush()
+	bar.start()
         seq = revcomp = record.seq.reverse_complement()
         for x in range(len(seq) + 1 - kmer_len):
+	    #bar.update(x)
             kmer = str(seq[x:x + kmer_len])
             kmer_means[record.id]['R'
                                   ].append(float(model_kmer_means[kmer]))
@@ -258,6 +282,7 @@ def process_ref_fasta_raw(ref_fasta, model_kmer_means):
 
         # @MS kmer_means[record.id]["Rprime"]=sklearn.preprocessing.scale(kmer_means[record.id]["R"], axis=0, with_mean=True, with_std=False, copy=True)
 
+	bar.finish()
         kmer_means[record.id]['Rprime'] = \
             scale(kmer_means[record.id]['R'])  # , axis=0, with_mean=True, with_std=False, copy=True)
     return kmer_means
@@ -267,14 +292,16 @@ def process_ref_fasta_raw(ref_fasta, model_kmer_means):
 #---------------------------------------------------------------------------
 
 def kmer_count_fasta(seq, revcompseq, kmer_len):
-                kmerhash =dict()
-                seqs = [seq, revcompseq]
-                for x in range(len(seq)+1-kmer_len):
-                                for s in seqs:
-                                                kmer = str(s[x:x+kmer_len])
-                                                if kmer in kmerhash:
-                                                                kmerhash[kmer]+=1
-                                                else:
-                                                                kmerhash[kmer]=1
-                return kmerhash
+	kmerhash =dict()
+	seqs = [seq, revcompseq]
+	
+	n = len(seq)+1-kmer_len
+	for x in range(n):
+	    for s in seqs:
+		kmer = str(s[x:x+kmer_len])
+		if kmer in kmerhash:
+				kmerhash[kmer]+=1
+		else:
+					kmerhash[kmer]=1
+	return kmerhash
 #---------------------------------------------------------------------------

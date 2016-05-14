@@ -4,7 +4,7 @@
 # File Name: sql.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Mon Nov 16 16:01:37 2015
+# Last Modified: Wed Mar 30 12:11:19 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -14,6 +14,9 @@ import sys
 import time
 import MySQLdb
 from warnings import filterwarnings
+
+def okSQLname(s): # MS 
+       return "." not in s and "-" not in s
 
 
 # ---------------------------------------------------------------------------
@@ -144,7 +147,24 @@ def create_pre_general_table(tablename, cursor):
         'start_mux INT(1) DEFAULT NULL',
         'start_time varchar(20) DEFAULT NULL',
         'total_events INT(20) DEFAULT NULL',
-        'sample_rate INT(20) DEFAULT NULL',
+	'sampling_rate float', 
+        '1minwin INT NOT NULL, INDEX(1minwin)',
+        '5minwin INT NOT NULL, INDEX(5minwin)',
+        '10minwin INT NOT NULL, INDEX(10minwin)',
+        '15minwin INT NOT NULL, INDEX(15minwin)',
+        's1minwin INT NOT NULL, INDEX(s1minwin)',
+        's5minwin INT NOT NULL, INDEX(s5minwin)',
+        's10minwin INT NOT NULL, INDEX(s10minwin)',
+        's15minwin INT NOT NULL, INDEX(s15minwin)',
+        'g_1minwin INT NOT NULL, INDEX(g_1minwin)',
+        'g_5minwin INT NOT NULL, INDEX(g_5minwin)',
+        'g_10minwin INT NOT NULL, INDEX(g_10minwin)',
+        'g_15minwin INT NOT NULL, INDEX(g_15minwin)',
+        'g_s1minwin INT NOT NULL, INDEX(g_s1minwin)',
+        'g_s5minwin INT NOT NULL, INDEX(g_s5minwin)',
+        'g_s10minwin INT NOT NULL, INDEX(g_s10minwin)',
+        'g_s15minwin INT NOT NULL, INDEX(g_s15minwin)',
+        'exp_start_time INT(15) NOT NULL', # Maybe change to pre_tracking_id ?
         )
     colheaders = ','.join(fields)
     sql = 'CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB' \
@@ -215,6 +235,18 @@ def create_general_table(tablename, cursor):
         '5minwin INT NOT NULL, INDEX(5minwin)',
         '10minwin INT NOT NULL, INDEX(10minwin)',
         '15minwin INT NOT NULL, INDEX(15minwin)',
+        's1minwin INT NOT NULL, INDEX(s1minwin)',
+        's5minwin INT NOT NULL, INDEX(s5minwin)',
+        's10minwin INT NOT NULL, INDEX(s10minwin)',
+        's15minwin INT NOT NULL, INDEX(s15minwin)',
+        'g_1minwin INT NOT NULL, INDEX(g_1minwin)',
+        'g_5minwin INT NOT NULL, INDEX(g_5minwin)',
+        'g_10minwin INT NOT NULL, INDEX(g_10minwin)',
+        'g_15minwin INT NOT NULL, INDEX(g_15minwin)',
+        'g_s1minwin INT NOT NULL, INDEX(g_s1minwin)',
+        'g_s5minwin INT NOT NULL, INDEX(g_s5minwin)',
+        'g_s10minwin INT NOT NULL, INDEX(g_s10minwin)',
+        'g_s15minwin INT NOT NULL, INDEX(g_s15minwin)',
         'align INT DEFAULT 0,  INDEX(align)',
         'pass INT(1) NOT NULL',
         )
@@ -355,13 +387,37 @@ def create_basecalled2d_fastq_table(tablename, cursor):
         '5minwin INT NOT NULL, INDEX(5minwin)',
         '10minwin INT NOT NULL, INDEX(10minwin)',
         '15minwin INT NOT NULL, INDEX(15minwin)',
+        's1minwin INT NOT NULL, INDEX(s1minwin)',
+        's5minwin INT NOT NULL, INDEX(s5minwin)',
+        's10minwin INT NOT NULL, INDEX(s10minwin)',
+        's15minwin INT NOT NULL, INDEX(s15minwin)',
+        'g_1minwin INT NOT NULL, INDEX(g_1minwin)',
+        'g_5minwin INT NOT NULL, INDEX(g_5minwin)',
+        'g_10minwin INT NOT NULL, INDEX(g_10minwin)',
+        'g_15minwin INT NOT NULL, INDEX(g_15minwin)',
+        'g_s1minwin INT NOT NULL, INDEX(g_s1minwin)',
+        'g_s5minwin INT NOT NULL, INDEX(g_s5minwin)',
+        'g_s10minwin INT NOT NULL, INDEX(g_s10minwin)',
+        'g_s15minwin INT NOT NULL, INDEX(g_s15minwin)',
         'exp_start_time INT(15) NOT NULL',
         'qual MEDIUMTEXT',
-        'index 10minalign (align,10minwin)',
         'index 1minalign (align,1minwin)',
-        'index 15minalign (align,15minwin)',
-        'pass INT(1) NOT NULL',
         'index 5minalign (align,5minwin)',
+        'index 10minalign (align,10minwin)',
+        'index 15minalign (align,15minwin)',
+        'index s1minalign (align,s1minwin)',
+        'index s5minalign (align,s5minwin)',
+        'index s10minalign (align,s10minwin)',
+        'index s15minalign (align,s15minwin)',
+        'index g_1minalign (align,g_1minwin)',
+        'index g_5minalign (align,g_5minwin)',
+        'index g_10minalign (align,g_10minwin)',
+        'index g_15minalign (align,g_15minwin)',
+        'index g_s1minalign (align,g_s1minwin)',
+        'index g_s5minalign (align,g_s5minwin)',
+        'index g_s10minalign (align,g_s10minwin)',
+        'index g_s15minalign (align,g_s15minwin)',
+        'pass INT(1) NOT NULL',
         )
     colheaders = ','.join(fields)
     sql = 'CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB' \
@@ -405,15 +461,39 @@ def create_events_model_fastq_table(tablename, cursor):
         '5minwin INT NOT NULL, INDEX(5minwin)',
         '10minwin INT NOT NULL, INDEX(10minwin)',
         '15minwin INT NOT NULL, INDEX(15minwin)',
+        's1minwin INT NOT NULL, INDEX(s1minwin)',
+        's5minwin INT NOT NULL, INDEX(s5minwin)',
+        's10minwin INT NOT NULL, INDEX(s10minwin)',
+        's15minwin INT NOT NULL, INDEX(s15minwin)',
+        'g_1minwin INT NOT NULL, INDEX(g_1minwin)',
+        'g_5minwin INT NOT NULL, INDEX(g_5minwin)',
+        'g_10minwin INT NOT NULL, INDEX(g_10minwin)',
+        'g_15minwin INT NOT NULL, INDEX(g_15minwin)',
+        'g_s1minwin INT NOT NULL, INDEX(g_s1minwin)',
+        'g_s5minwin INT NOT NULL, INDEX(g_s5minwin)',
+        'g_s10minwin INT NOT NULL, INDEX(g_s10minwin)',
+        'g_s15minwin INT NOT NULL, INDEX(g_s15minwin)',
         'align INT DEFAULT 0,  INDEX(align)',
         'pass INT(1) NOT NULL',
         'exp_start_time INT(15) NOT NULL',
         'sequence MEDIUMTEXT DEFAULT NULL',
         'qual MEDIUMTEXT DEFAULT NULL',
-        'index 10minalign (align,10minwin)',
         'index 1minalign (align,1minwin)',
-        'index 15minalign (align,15minwin)',
         'index 5minalign (align,5minwin)',
+        'index 10minalign (align,10minwin)',
+        'index 15minalign (align,15minwin)',
+        'index s1minalign (align,s1minwin)',
+        'index s5minalign (align,s5minwin)',
+        'index s10minalign (align,s10minwin)',
+        'index s15minalign (align,s15minwin)',
+        'index g_1minalign (align,g_1minwin)',
+        'index g_5minalign (align,g_5minwin)',
+        'index g_10minalign (align,g_10minwin)',
+        'index g_15minalign (align,g_15minwin)',
+        'index g_s1minalign (align,g_s1minwin)',
+        'index g_s5minalign (align,g_s5minwin)',
+        'index g_s10minalign (align,g_s10minwin)',
+        'index g_s15minalign (align,g_s15minwin)',
         )
     colheaders = ','.join(fields)
     sql = 'CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB' \
@@ -672,6 +752,18 @@ def create_basecall_summary_info(tablename, cursor):
         '5minwin INT NOT NULL, INDEX(5minwin)',
         '10minwin INT NOT NULL, INDEX(10minwin)',
         '15minwin INT NOT NULL, INDEX(15minwin)',
+        's1minwin INT NOT NULL, INDEX(s1minwin)',
+        's5minwin INT NOT NULL, INDEX(s5minwin)',
+        's10minwin INT NOT NULL, INDEX(s10minwin)',
+        's15minwin INT NOT NULL, INDEX(s15minwin)',
+        'g_1minwin INT NOT NULL, INDEX(g_1minwin)',
+        'g_5minwin INT NOT NULL, INDEX(g_5minwin)',
+        'g_10minwin INT NOT NULL, INDEX(g_10minwin)',
+        'g_15minwin INT NOT NULL, INDEX(g_15minwin)',
+        'g_s1minwin INT NOT NULL, INDEX(g_s1minwin)',
+        'g_s5minwin INT NOT NULL, INDEX(g_s5minwin)',
+        'g_s10minwin INT NOT NULL, INDEX(g_s10minwin)',
+        'g_s15minwin INT NOT NULL, INDEX(g_s15minwin)',
         'align INT DEFAULT 0,  INDEX(align)',
         'pass INT(1) NOT NULL',
         )
@@ -707,6 +799,18 @@ def create_basic_read_info(tablename, cursor):
         '5minwin INT NOT NULL, INDEX(5minwin)',
         '10minwin INT NOT NULL, INDEX(10minwin)',
         '15minwin INT NOT NULL, INDEX(15minwin)',
+        's1minwin INT NOT NULL, INDEX(s1minwin)',
+        's5minwin INT NOT NULL, INDEX(s5minwin)',
+        's10minwin INT NOT NULL, INDEX(s10minwin)',
+        's15minwin INT NOT NULL, INDEX(s15minwin)',
+        'g_1minwin INT NOT NULL, INDEX(g_1minwin)',
+        'g_5minwin INT NOT NULL, INDEX(g_5minwin)',
+        'g_10minwin INT NOT NULL, INDEX(g_10minwin)',
+        'g_15minwin INT NOT NULL, INDEX(g_15minwin)',
+        'g_s1minwin INT NOT NULL, INDEX(g_s1minwin)',
+        'g_s5minwin INT NOT NULL, INDEX(g_s5minwin)',
+        'g_s10minwin INT NOT NULL, INDEX(g_s10minwin)',
+        'g_s15minwin INT NOT NULL, INDEX(g_s15minwin)',
         'align INT DEFAULT 0,  INDEX(align)',
         'pass INT(1) NOT NULL',
         )

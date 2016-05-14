@@ -1,0 +1,87 @@
+632a
+			
+
+.
+625,631c
+                    '1minwin': end_time / 1,
+                    '5minwin': end_time / 5,
+                    '10minwin': end_time / 10,
+                    '15minwin': end_time / 15,
+                    's1minwin': start_time / 1,
+                    's5minwin': start_time / 5,
+                    's10minwin': start_time / 10,
+                    's15minwin': start_time / 15,
+.
+617c
+
+		    # 0.64a
+		    start_time = float(events_hash['start_time']) \
+				 / sampling_rate
+                    print "start_time:", start_time
+                    template_start = start_time
+
+		    # 0.64b
+		    end_time = float(hdf[ location + "/Events"][-1][-2]) \
+				 / sampling_rate
+
+                    template_end = end_time
+
+
+
+
+.
+573,576c
+                    '1minwin': int(template_end / 60),
+                    '5minwin': int(template_end / (5 * 60)),
+                    '10minwin': int(template_end / (10 * 60)),
+                    '15minwin': int(template_end / (15 * 60)),
+                    's1minwin': int(template_start / 60),
+                    's5minwin': int(template_start / (5 * 60)),
+                    's10minwin': int(template_start / (10 * 60)),
+                    's15minwin': int(template_start / (15 * 60)),
+.
+418a
+    basecall_summary_hash.update({'s1minwin': general_hash['s1minwin']})
+    basecall_summary_hash.update({'s5minwin': general_hash['s5minwin']})
+    basecall_summary_hash.update({'s10minwin': general_hash['s10minwin']})
+    basecall_summary_hash.update({'s15minwin': general_hash['s15minwin']})
+.
+278,291c
+        general_hash.update({'exp_start_time': 
+			tracking_id_hash['exp_start_time' ]})
+
+	sampling_rate = \
+	   float(tracking_id_hash['sampling_rate']) / 60.
+
+	start_time = \
+	   float(hdf5object.attrs['start_time']) / sampling_rate
+	
+	end_time = \
+	   float(hdf[ eventdectionreadstring + "/Events"][-1][-2]) \
+				/ sampling_rate 
+
+        general_hash.update({'1minwin': int(end_time/ 1)})  
+        general_hash.update({'5minwin': int(end_time/ 5)})  
+        general_hash.update({'10minwin': int(end_time/ 10)})  
+        general_hash.update({'15minwin': int(end_time/ 15)})
+        general_hash.update({'s1minwin': int(start_time/ 1)})  
+        general_hash.update({'s5minwin': int(start_time/ 5)})  
+        general_hash.update({'s10minwin': int(start_time/ 10)})  
+        general_hash.update({'s15minwin': int(start_time/ 15)})
+.
+238a
+    	# 0.64b ...
+    	# Use End time == Start time of final event ...
+	end_time = hdf[ eventdectionreadstring + "/Events"][-1][-2] 
+    	print "end_time: ", end_time
+
+
+    	template_start = end_time # 0.64b
+    	# ------------------------------------------
+.
+7c
+# Last Modified: Fri Mar 11 16:14:37 2016
+.
+1c
+#!/usr/bin/python
+.

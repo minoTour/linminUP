@@ -4,7 +4,7 @@
 # File Name: align_lastal.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Fri Nov 13 17:02:09 2015
+# Last Modified: Tue Mar 22 12:24:56 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -208,8 +208,8 @@ def do_last_align(
 
             # ---------------------------------------------------------------------------
 
-            if args.verbose is True:
-                align_message = '%s\tAligned:%s:%s-%s (%s) ' % (qname,
+            if args.debug is True:
+                align_message = '%s\n\tAligned:%s:%s-%s (%s) ' % (qname,
                         rname, rstart, rstart + rlen, strand)
                 print align_message
 

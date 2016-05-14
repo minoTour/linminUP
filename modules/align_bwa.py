@@ -4,7 +4,7 @@
 # File Name: align_bwa.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed Feb 24 12:23:46 2016
+# Last Modified: Thu Mar 24 18:08:59 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -17,6 +17,8 @@ import threading
 
 from cigar import translate_cigar_mdflag_to_reference
 
+#from progressbar import *
+#from pbar import *
 
 # ---------------------------------------------------------------------------
 
@@ -126,7 +128,7 @@ def do_bwa_align(
 
     read = '>%s \r\n%s' % (seqid, fastqhash['seq'])
 
-    if args.verbose is True:
+    if args.debug is True:
     	#read = read + '\r\n' + read # MS
     	print read
     	print "-"*80
@@ -147,8 +149,9 @@ def do_bwa_align(
     sam = out.encode('utf-8')
     samdata = sam.splitlines()
 
-    if args.verbose is True:
-    	for s in samdata: print s
+    if args.debug is True:
+    	for s in samdata: 
+		print s
     	print "="*80
 
 
@@ -246,8 +249,8 @@ def do_bwa_align(
 
                 # lo.pprint tablename
 
-                if args.verbose is True:
-                    align_message = '%s\tAligned:%s:%s-%s (%s) ' \
+                if args.debug is True:
+                    align_message = '%s\n\tAligned:%s:%s-%s (%s) ' \
                         % (qname, rname, align_info['r_start'],
                            align_info['r_stop'], strand)
                     print align_message
@@ -387,11 +390,19 @@ def do_bwa_align(
                     #cursor.execute(sql)
                     #db.commit()
 
-    for s in sqls: # MS
-        if args.verbose is True: print s # MS
+    #print "align_bwa insterting into database ...."
+    #sys.stdout.flush()
+
+    #n = len(sqls)
+    #bar = mkBar(n)
+    #bar.start()
+    for i,s in enumerate(sqls): # MS
+    #    bar.update(i)
+        if args.debug is True: print s # MS
     	cursor.execute(s) # MS
     db.commit() # MS
     sqls = []  # MS
+    #bar.finish()
 
 
 # ---------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Tue Mar  8 22:08:44 2016
+# Last Modified: Wed Mar 30 14:34:02 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -27,27 +27,51 @@ from watchdog.events import FileSystemEventHandler
 from checkRead import check_read, check_read_type
 
 from align_dtw import mp_worker
-from folderDict import file_dict_of_folder
+from folderDict import file_dict_of_folder, moveFile
 from processRefFasta import process_ref_fasta_raw
 from processFast5 import process_fast5
 from processFast5Raw import process_fast5_raw
-from exitGracefully import terminateSubProcesses, exitGracefully
+from exitGracefully import terminateMinup, exitGracefully
 
-# ---------------------------------------------------------------------------
-def moveFile(fast5file):
-	cmd = ' '.join(["mv",fast5file,fast5file+"bugged"])
-	os.system(cmd)
+from sql import okSQLname
+
+from progressbar import *
+from pbar import *
 
 
-def readFast5File(fast5file):
-	try: 
-		content = h5py.File(fast5file, 'r')
-		return content
+def readFast5File(args, fast5file):
+	try: hdf = h5py.File(fast5file, 'r')
 	except:
-                err_string = "readfast5File(): error ", fast5file
-                print >> sys.stderr, err_string
+		hdf.close()
+		hdf = None
+		moveFile(args, fast5file)
+		
+	return hdf
+
+	'''
+    try:
+    except:
+	print "readFast5File(): error invalid filename: " + fast5file
+	moveFile(args, fast5file)
+	return None
+	'''
+	
+	
+
+	'''
+	#fname = os.path.splitext(os.path.basename(fast5file))[0]
+	#if okSQLname(fname):
+	#	except:
+               	 	err_string = "readfast5File(): error ", fast5file
+               	 	print err_string
+			print >> sys.stderr, err_string
+			moveFile(args, fast5file)
+			return ''
+	else:
+		print "readFast5File(): error invalid filename: "+  \
+				fast5file
 		moveFile(fast5file)
-		return ()
+	'''
 
 
 class MyHandler(FileSystemEventHandler):
@@ -72,6 +96,7 @@ class MyHandler(FileSystemEventHandler):
 	self.check_read_args = check_read_args
 	self.xml_file_dict = xml_file_dict
 	self.minup_version = minup_version
+	self.hdf = ''
 
         t = threading.Thread(target=self.processfiles)
         t.daemon = True
@@ -87,7 +112,7 @@ class MyHandler(FileSystemEventHandler):
 
             self.p.close()  
             self.p.terminate()  
-            terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
+            terminateMinup(args, dbcheckhash, oper, self.minup_version)
             exitGracefully(args, dbcheckhash, self.minup_version)
 	    sys.exit(1) 
 
@@ -105,11 +130,11 @@ class MyHandler(FileSystemEventHandler):
 
             if not args.largerRef and shortestSeq > 10 ** 8:
                 if args.verbose is True: print "Length of references is >10^8: processing may be *EXTREMELY* slow. To overide rerun using the '-largerRef' option"  # MS
-                terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
+                terminateMinup(args, dbcheckhash, oper, self.minup_version)
             elif not args.largerRef and shortestSeq > 10 ** 7:
 
                 if args.verbose is True: print "Length of references is >10^7: processing may be *VERY* slow. To overide rerun using the '-largerRef' option"  # MS
-                terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
+                terminateMinup(args, dbcheckhash, oper, self.minup_version)
             else:
 
                 if args.verbose is True: print 'Length of references is <10^7: processing should be ok .... continuing .... '  # MS
@@ -179,7 +204,7 @@ class MyHandler(FileSystemEventHandler):
 
                                 # x.get()
 
-        if args.verbose is True: print x
+        if args.debug is True: print x
         #print 'Call complete'
 
     def processfiles(self):
@@ -201,7 +226,6 @@ class MyHandler(FileSystemEventHandler):
                                 #               timeout=args.timeout_true
 
         while self.running:
-            time.sleep(5)
             ts = time.time()
             if args.preproc is True:
                 print datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'
@@ -214,6 +238,8 @@ class MyHandler(FileSystemEventHandler):
                         ), 'CACHED:', len(self.creates), 'PROCESSED:', \
                     len(self.processed)
 
+	    # MS UPDATE SummaryStatsTable ....
+
             if args.customup is True:
                 #print "In customup"
                 if len(self.creates) > 0:
@@ -221,10 +247,56 @@ class MyHandler(FileSystemEventHandler):
                 else:
                     customtimeout+=1
                 if customtimeout > 6:
-		    terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
+		    terminateMinup(args, dbcheckhash, oper, self.minup_version)
 
-            for (fast5file, createtime) in sorted(self.creates.items(), 
-						key=lambda x: x[1]):
+	    print "Sorting files by timestamps...."
+	    sys.stdout.flush()
+	    '''
+	    ks = self.creates.keys()
+	    n = len(ks)
+	    bar = mkBar(n)
+	    bar.start()
+	    bar.update(10*n/100)
+	    bar.update(25*n/100)
+	
+
+	    bar.update(75*n/100)
+	    bar.update(100*n/100)
+	    bar.finish()
+	    sys.stdout.flush()
+	    '''
+
+
+	    '''
+	    if args.verbose is False and args.debug is False:
+
+		#print "Processing files ..."
+		#sys.stdout.flush()
+
+	    	#n = len(sortedFiles)
+	    	#bar = mkBar(n)
+	    	#bar.start()
+		#i=0
+
+		# ??? MS
+	    if len(self.creates.keys())==0:
+            	print "No files found."
+		terminateMinup(args, dbcheckhash, oper, self.minup_version)
+            	exitGracefully(args, dbcheckhash, self.minup_version)
+		sys.exit()
+	    '''
+	
+
+	    sortedFiles = sorted(self.creates.items(), key=lambda x: x[1])
+            for (fast5file, createtime) in sortedFiles:
+		'''
+	    	#if args.verbose is False and args.debug is False:
+			#bar.update(i) # self.processed)
+			#i+=1	
+		'''
+		if args.debug is True: 
+			print "Processing: ", fast5file
+
 
                 # tn=time.time()
 
@@ -233,7 +305,7 @@ class MyHandler(FileSystemEventHandler):
                     if fast5file not in self.processed.keys():
 
                         try:
-			  self.hdf = readFast5File(fast5file)
+			  self.hdf = readFast5File(args, fast5file)
                           self.creates.pop(fast5file, None)
                           self.processed[fast5file] = time.time()
                           # starttime = time.time()
@@ -247,7 +319,10 @@ class MyHandler(FileSystemEventHandler):
 
                             #print "Basecalled Read"
                             #print fast5file
-                          if self.file_type > 0 :
+			  if args.debug is True:
+				print "self.file_type: ", self.file_type
+			  sys.stdout.flush()
+                          if self.file_type > 0 : # BASECALLED FILE ...
                             self.db_name = check_read(
                                     db,
                                     args,
@@ -275,7 +350,7 @@ class MyHandler(FileSystemEventHandler):
                                     self.db_name,
                                     cursor,
                                     )
-                          else:
+                          else: # RAW FILE TO PROCESS ...
                             #print "Not Basecalled"
                             #print fast5file
                             self.db_name = check_read(
@@ -306,12 +381,12 @@ class MyHandler(FileSystemEventHandler):
                             # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
 
 			    if args.prealign is True:
-                        	print "prealigning", fast5file
-                            	x = \
-                                    self.apply_async_with_callback(fast5file,
-                                        rawbasename_id, self.db_name)
-                            	if args.verbose is True: print x  # x.get()
-                        	print "prealign finished ", fast5file
+                        	if args.debug is True: 
+					print "Prealigning ...", fast5file
+                            	x = self.apply_async_with_callback(fast5file, rawbasename_id, self.db_name)
+                            	if args.debug is True: 
+					print x #.get()
+					print "... finished Prealign.", fast5file
 			except Exception, err:
 			    if self.hdf: # CI
                                 self.hdf.close() # CI
@@ -325,8 +400,12 @@ class MyHandler(FileSystemEventHandler):
                                 % (fast5file, err)
                             #print >> sys.stderr, err_string
                             print err_string
+
+
+			    #moveFile(args, fast5file)
+			    #if args.debug is True: sys.exit()
 			
-			    return ()
+			    #return ()
 
 			'''
                                                                                                 #               if dbname is not None:
@@ -350,9 +429,30 @@ class MyHandler(FileSystemEventHandler):
         ), 'CACHED:', len(self.creates), 'PROCESSED:', \
     len(self.processed)
                             everyten = 0
+	    '''
+	    if args.verbose is False and args.debug is False:
+	    	#bar.finish()
+		print "... finished processing files."
+		sys.stdout.flush()
+	    '''
+            time.sleep(5)
 
 
 
+    # From ML 22.03.16 ....
+    def on_created(self, event):
+	args = self.args
+        if args.preproc is True:
+            if ('uploaded' in event.src_path or 'downloads' in event.src_path) and 'muxscan' not in event.src_path \
+                and event.src_path.endswith('.fast5'):
+                self.creates[event.src_path] = time.time()
+        else:
+            if 'downloads' in event.src_path and 'muxscan' \
+                not in event.src_path \
+                and event.src_path.endswith('.fast5'):
+                self.creates[event.src_path] = time.time()
+
+    '''
     def on_created(self, event):
 	args = self.args
         if args.preproc is True:
@@ -364,6 +464,7 @@ class MyHandler(FileSystemEventHandler):
                 not in event.src_path \
                 and event.src_path.endswith('.fast5'):
                 self.creates[event.src_path] = time.time()
+    '''
 
 # ---------------------------------------------------------------------------
 
@@ -391,11 +492,18 @@ def process_model_file(model_file):
 '''
 
 def process_model_file(args, oper, model_file):
+    #print "Processing model file..."
+    #sys.stdout.flush()
+
     model_kmers = dict()
     with open(model_file, 'rb') as csv_file:
         reader = csv.reader(csv_file, delimiter="\t")
         d = list(reader)
+	#n = len(d)
+	#bar = mkBar(n)
+	#bar.start()
         for r in range(0, len(d)):
+	#    bar.update(r)
             #print r
             kmer = d[r][0]
             #print kmer
@@ -405,11 +513,12 @@ def process_model_file(args, oper, model_file):
                 if (float(mean) <= 5):
                     print "Looks like you have a poorly formatted model file. These aren't the means you are looking for.\n"
                     print "The value supplied for "+kmer+" was "+str(mean)
-		    terminateSubProcesses(args, dbcheckhash, oper, self.minup_version)
+		    terminateMinup(args, dbcheckhash, oper, self.minup_version)
             except Exception,err:
                 print "Problem with means - but it isn't terminal - we assume this is the header line!"
             #if (args.verbose is True): print kmer, mean
             model_kmers[kmer]=mean
+	#bar.finish()
     return     model_kmers
 
 

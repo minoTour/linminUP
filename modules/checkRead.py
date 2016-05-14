@@ -4,7 +4,7 @@
 # File Name: checkRead.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Tue Mar  8 22:07:35 2016
+# Last Modified: Tue Mar 29 15:35:06 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -21,7 +21,19 @@ import datetime
 
 from sql import *
 from hdf5HashUtils import *
-from exitGracefully import terminateSubProcesses 
+from exitGracefully import terminateMinup, terminateSubProcesses 
+#from processFast5 import getBasecalltype
+from progressbar import *
+from pbar import *
+
+def getBasecalltype(filetype):
+    if filetype == 0: basecalltype = 'raw'
+    if filetype == 1: basecalltype = 'Basecall_2D'
+    if filetype == 2: basecalltype= "Hairpin_Split" 
+    if filetype == 3: basecalltype = 'Basecall_1D'
+    # print "hdf basecalledtype:", basecalltype
+    sys.stdout.flush()
+    return basecalltype
 
 # Unbuffered IO
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
@@ -58,10 +70,15 @@ def check_read(
 
     global runindex
 
+    if args.debug is True:
+    	print "Checking read ..."
+    	sys.stdout.flush()
+
     filename = os.path.basename(filepath)
-    if args.verbose is True:
+    if args.debug is True:
         print time.strftime('%Y-%m-%d %H:%M:%S'), 'processing:', \
             filename
+	sys.stdout.flush()
     parts = filename.split('_')
     str = '_'
 
@@ -91,6 +108,7 @@ def check_read(
         if dbcheckhash['dbname'][dbname] is False:
             if args.verbose is True:
                 print 'switching to database: ', dbname
+		sys.stdout.flush()
             sql = 'USE %s' % dbname
             cursor.execute(sql)
 
@@ -100,6 +118,7 @@ def check_read(
             except:  
                 print "checkRead(): line 112, dbcheckhash, key error: " \
 				+ dbname
+		sys.stdout.flush()
                 #sys.exit()
 		return ()
 
@@ -125,9 +144,16 @@ def check_read(
 
             # ---------------------------------------------------------------------------
 
-            for e in dbcheckhash['dbname'].keys():
-                dbcheckhash['dbname'][e] = False
-            dbcheckhash['dbname'][dbname] = True
+
+	    ks = dbcheckhash['dbname'].keys()
+	    n = len(ks)
+	    bar = mkBar(n)
+	    bar.start()
+	    for i, e in enumerate(ks):
+		bar.update(i)
+		dbcheckhash['dbname'][e] = False
+	    bar.finish()
+	    dbcheckhash['dbname'][dbname] = True
 
 
     # ---------------------------------------------------------------------------
@@ -139,6 +165,7 @@ def check_read(
                 logfolder, dbname + '.minup.log')
         if args.verbose is True:
             print 'trying database: ', dbname
+	    sys.stdout.flush()
         sql = "SHOW DATABASES LIKE \'%s\'" % dbname
 
         # print sql
@@ -147,6 +174,7 @@ def check_read(
         if cursor.fetchone():
             if args.verbose is True:
                 print 'database exists!'
+		sys.stdout.flush()
 
             # # drop the existing database, if selected
 
@@ -159,20 +187,25 @@ def check_read(
                 db.commit()
                 if args.verbose is True:
                     print 'database dropped.'
+		    sys.stdout.flush()
             else:
+                print >> sys.stderr, "="*80 
                 print >> sys.stderr, \
-                    '%s run database already exists. To write over the data re-run the minUP command with option -d' \
-                    % dbname
+                    'WARNING: DATABASE \"%s\" already EXISTS.\nTo write over the data re-run the minUP command with option -d' % dbname
+                print >> sys.stderr, "="*80 
+		sys.stdout.flush()
                 if args.batch_fasta == False:
 
                                   # MS next 6 lines ...
 
                     print >> sys.stderr, \
                         'not in batch mode so exiting ...'
-                    terminateSubProcesses(args, dbcheckhash, oper, minup_version)
+		    sys.stdout.flush()
+                    terminateMinup(args, dbcheckhash, oper, minup_version)
 
         if args.drop_db is True:
-            print 'deleting exisiting run from Gru now.'
+            print 'Deleting exisiting run from Gru now ...'
+	    sys.stdout.flush()
             sql = \
                 'DELETE FROM Gru.userrun WHERE runindex IN (SELECT runindex FROM Gru.minIONruns WHERE runname = "%s")' \
                 % dbname
@@ -188,6 +221,8 @@ def check_read(
 
             cursor.execute(sql)
             db.commit()
+            print '.... Run deleted.'
+	    sys.stdout.flush()
 
         # -------- mincontrol --------
         # # get the IP address of the host
@@ -209,8 +244,9 @@ def check_read(
 
         # -------- Create a new empty database
 
-        if args.verbose is True:
-            print 'making new database: ', dbname
+        #if args.verbose is True:
+        print 'Making new database: ', dbname
+	sys.stdout.flush()
 
         sql = 'CREATE DATABASE %s' % dbname
         cursor.execute(sql)
@@ -240,6 +276,10 @@ def check_read(
             create_model_data_table('model_data', cursor)
 
         # ---------------------------------------------------------------------------
+        if args.preproc is True:
+                create_pretrackingid_table('pre_tracking_id', cursor)  # make another table
+                create_pre_general_table('pre_config_general', cursor)  # pre config general table
+
         # -------- Assign the correct reference fasta for this dbname if applicable
 
         if args.batch_fasta is not False:
@@ -267,17 +307,6 @@ def check_read(
             create_5_3_prime_align_tables('last_align_basecalled_2d',
                     cursor)
 
-            if args.preproc is True:
-                create_pretrackingid_table('pre_tracking_id', cursor)  # make another table
-                create_pre_general_table('pre_config_general', cursor)  # pre config general table
-                create_pre_align_table('pre_align_template', cursor)
-                create_pre_align_table('pre_align_complement', cursor)
-                create_pre_align_table('pre_align_2d', cursor)
-                create_align_table_raw('last_align_raw_template',
-                        cursor)
-                create_align_table_raw('last_align_raw_complement',
-                        cursor)
-                create_align_table_raw('last_align_raw_2d', cursor)
 
             if args.last_align is True:
 
@@ -305,6 +334,17 @@ def check_read(
             if args.telem is True:
                 create_ref_kmer_table('ref_sequence_kmer', cursor)
 
+
+            if args.prealign is True:
+                create_pre_align_table('pre_align_template', cursor)
+                create_pre_align_table('pre_align_complement', cursor)
+                create_pre_align_table('pre_align_2d', cursor)
+                create_align_table_raw('last_align_raw_template',
+                        cursor)
+                create_align_table_raw('last_align_raw_complement',
+                        cursor)
+                create_align_table_raw('last_align_raw_2d', cursor)
+
             for refname in ref_fasta_hash[dbname]['seq_len'].iterkeys():
 
                 # print "refname", refname
@@ -313,7 +353,7 @@ def check_read(
                 reflen = ref_fasta_hash[dbname]['seq_len'][refname]
                 reflength = ref_fasta_hash[dbname]['seq_file_len'
                         ][reference]
-                refid = mysql_load_from_hashes(db, cursor,
+                refid = mysql_load_from_hashes(args,db, cursor,
                         'reference_seq_info', {
                     'refname': refname,
                     'reflen': reflen,
@@ -341,6 +381,7 @@ def check_read(
                     filepath)).rstrip('\\|\/|re')
             if common_path.endswith('downloads'):
                 print 'found XML data for:', dbname
+		sys.stdout.flush()
                 create_xml_table('XML', cursor)
 
                 # ---------------------------------------------------------------------------
@@ -360,7 +401,7 @@ def check_read(
                     exp_c = 'NA'
                     samp_c = 'NA'
                     run_c = 'NA'
-                    mysql_load_from_hashes(db, cursor, 'XML', {
+                    mysql_load_from_hashes(args,db, cursor, 'XML', {
                         'type': 'study',
                         'primary_id': study_id,
                         'filename': study_file,
@@ -377,7 +418,7 @@ def check_read(
                                 downloadsPath['experiment'][exp_id]['file']
                             sample_id = \
                                 downloadsPath['experiment'][exp_id]['sample_id']
-                            mysql_load_from_hashes(db, cursor, 'XML', {
+                            mysql_load_from_hashes(args,db, cursor, 'XML', {
                                 'type': 'experiment',
                                 'primary_id': exp_id,
                                 'filename': exp_file,
@@ -392,7 +433,7 @@ def check_read(
                                     downloadsPath['sample'][sample_id]['xml']
                                 sample_file = \
                                     downloadsPath['sample'][sample_id]['file']
-                                mysql_load_from_hashes(db, cursor, 'XML'
+                                mysql_load_from_hashes(args,db, cursor, 'XML'
                                         , {
                                     'type': 'sample',
                                     'primary_id': sample_id,
@@ -409,7 +450,7 @@ def check_read(
 				    	downloadsPath['run'][run_id]['xml']
                                     run_file = \
     					downloadsPath['run'][run_id]['file']
-                                    mysql_load_from_hashes(db, cursor,
+                                    mysql_load_from_hashes(args,db, cursor,
         'XML', {
                                         'type': 'run',
                                         'primary_id': run_id,
@@ -430,16 +471,20 @@ def check_read(
         # ---------------------------------------------------------------------------
         # --------- Make entries in the Gru database
         # try and get the right basecall-configuration general
+
+
         file_type = check_read_type(filepath,hdf)
         #print "FILETYPE is", file_type
 
+        basecalltype=getBasecalltype(file_type) # MS
+        basecalldir=''
+        basecalldirconfig=''
+        basecallindexpos='' #ML
+
+	'''
 	try: 
          if file_type == 2:
-            basecalltype="Basecall_1D" #ML
             basecalltype2="Basecall_2D"
-            basecalldir=''
-            basecalldirconfig=''
-            basecallindexpos='' #ML
             string2='' #ML
             for x in range (0,9):
                 string2 = '/Analyses/Hairpin_Split_00%s/Configuration/general' % (x) #ML
@@ -473,6 +518,8 @@ def check_read(
             basecalldir = ''
             basecalldirconfig = ''
             basecallindexpos=''
+	'''
+	try: # MS
             for x in range(0, 9):
                 string = '/Analyses/%s_00%s/Configuration/general' \
                     % (basecalltype, x)
@@ -481,22 +528,26 @@ def check_read(
                     basecalldirconfig = string
                     basecallindexpos=x
                     break
+		'''
                 string = '/Analyses/%s_00%s/Configuration/general' \
                     % (basecalltype2, x)
                 if string in hdf:
-                    basecalldir = '/Analyses/%s_00%s/' % (basecalltype2, x)
+                    basecalldir = '/Analyses/%s_00%s/' % (basecalltype, x)
                     basecalldirconfig = string
                     basecallindexpos=x
                     break
+		'''
 
 
         # print "basecalldirconfig", basecalldirconfig
         # # get some data out of tacking_id and general
 	except: 
 		print "checkReads(): error line 496."
+		sys.stdout.flush()
 		sys.exit()
-        print basecalldirconfig
-        print basecalldir
+        
+	#print basecalldirconfig
+        #print basecalldir
         if len(basecalldirconfig) > 0:
             configdata = hdf[basecalldirconfig]
             if len(basecalldir) > 0:
@@ -577,7 +628,9 @@ def check_read(
 
         #print sql
 
-	print 'OK'
+        #if args.verbose is True:
+	print '... Database created.'
+	sys.stdout.flush()
 
         db.escape_string(sql)
         cursor.execute(sql)
@@ -590,7 +643,8 @@ def check_read(
         # # add us">> ", view_users
 
         if args.verbose is True:
-            print "adding users."
+            print "Adding users..."
+	    sys.stdout.flush()
 
         view_users=[username]
 	
@@ -619,6 +673,7 @@ def check_read(
             else:
                 print 'The MinoTour username "%s" does not exist. Please create it or remove it from the input arguments' \
                     % user_name
+		sys.stdout.flush()
                 sys.exit()
 
         # # Create comment table if it doesn't exist
@@ -629,7 +684,7 @@ def check_read(
 
         start_time = time.strftime('%Y-%m-%d %H:%M:%S')
         comment_string = 'minUp version %s started' % minup_version
-        mysql_load_from_hashes(db, cursor, 'Gru.comments', {
+        mysql_load_from_hashes(args,db, cursor, 'Gru.comments', {
             'runindex': runindex,
             'runname': dbname,
             'user_name': args.minotourusername,
@@ -665,8 +720,7 @@ def check_read(
                                 % (args.telem, os.linesep))
             logfilehandle.write('Reference Sequences:' + os.linesep)
             if dbname in ref_fasta_hash:
-                for refname in ref_fasta_hash[dbname]['seq_len'
-                        ].iterkeys():
+                for refname in ref_fasta_hash[dbname]['seq_len'].iterkeys():
                     logfilehandle.write('Fasta:\t%s\tlength:\t%d%s'
                             % (ref_fasta_hash[dbname]['seq_file'
                             ][refname], ref_fasta_hash[dbname]['seq_len'
@@ -682,6 +736,7 @@ def check_read(
         if args.pin is not False:
             if args.verbose is True:
                 print 'starting mincontrol'
+	        sys.stdout.flush()
             control_ip = ip
             if args.ip_address is not False:
                 control_ip = args.ip_address
@@ -695,6 +750,8 @@ def check_read(
                     cursor)
 
             try:
+		# MS to be tested ...
+                terminateSubProcesses(args, dbcheckhash, oper, minup_version)
                 if oper is 'linux':
                     cmd = \
                         'python mincontrol.py -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
@@ -732,6 +789,7 @@ def check_read(
             except Exception, err:
                 err_string = 'Error starting mincontrol: %s ' % err
                 print >> sys.stderr, err_string
+	        sys.stdout.flush()
                 with open(dbcheckhash['logfile'][dbname], 'a') as \
                     logfilehandle:
                     logfilehandle.write(err_string + os.linesep)
@@ -759,10 +817,12 @@ def check_read(
 
                 print >> sys.stderr, \
                     "Can't setup MySQL connection pool: %s" % err
+	        sys.stdout.flush()
                 with open(dbcheckhash['logfile'][dbname], 'a') as \
                     logfilehandle:
                     logfilehandle.write(err_string + os.linesep)
                     logfilehandle.close()
+		sys.stdout.flush()
                 sys.exit()
 
         # --------- this bit last to set the active database in this hash
@@ -822,50 +882,26 @@ def check_read(
 # ---------------------------------------------------------------------------
 
 def check_read_type(filepath, hdf):
-    filetype = 1
-
-    '''
-    if hdf==(): 
-        print >> sys.stderr, \
-          'check_read_type(): error -- hdf == ()'
-	return()
-    '''
-	
-
-    #print hdf
-
-    if 'Analyses/Basecall_2D_000/' in hdf:
-
-        #print "Basecalled File"
-
-        filetype = 1
-    else:
-        filetype = 0
-
-    if 'Analyses/Hairpin_Split_000/' in hdf:
-        #print "Basecalled File"
-        filetype = 2
-    else:
-
-        #print "Raw File"
-
-        filetype = filetype
+    filetype = 0
+    if 'Analyses/Basecall_1D_000/' in hdf:	 filetype = 3
+    if 'Analyses/Basecall_2D_000/' in hdf:	 filetype = 1
+    if 'Analyses/Hairpin_Split_000/' in hdf:	 filetype = 2
     return filetype
 
 #---------------------------------------------------------------------------
 
 def load_ref_kmer_hash(db, tablename, kmers, refid, cursor):
-                sql="INSERT INTO %s (kmer, refid, count, total, freq) VALUES " % (tablename)
-                totalkmercount = sum(kmers.itervalues())
-                for kmer, count in kmers.iteritems():
-                                #n+=1
-                                f= 1 / (totalkmercount * float(count))
-                                freq ="{:.10f}".format(f)
-                                #print f, freq, totalkmercount, count
-                                sql+= "('%s',%s,%s,%s,%s)," % (kmer, refid, count, totalkmercount, freq)
-                sql=sql[:-1]
-                #print sql
-                cursor.execute(sql)
-                db.commit()
+	sql="INSERT INTO %s (kmer, refid, count, total, freq) VALUES " % (tablename)
+	totalkmercount = sum(kmers.itervalues())
+	for kmer, count in kmers.iteritems():
+		#n+=1
+		f= 1 / (totalkmercount * float(count))
+		freq ="{:.10f}".format(f)
+		#print f, freq, totalkmercount, count
+		sql+= "('%s',%s,%s,%s,%s)," % (kmer, refid, count, totalkmercount, freq)
+	sql=sql[:-1]
+	#print sql
+	cursor.execute(sql)
+	db.commit()
 
 #---------------------------------------------------------------------------

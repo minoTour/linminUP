@@ -6,7 +6,7 @@
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
 # Creation Date: 2014 - 2016
-# Last Modified: Tue Mar  8 21:56:39 2016
+# Last Modified: Thu Mar 24 16:30:27 2016
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -17,6 +17,7 @@ import sys
 import os
 import time
 from watchdog.observers.polling import PollingObserver as Observer
+import re
 import MySQLdb
 import configargparse
 import multiprocessing
@@ -29,28 +30,27 @@ sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)  # MS
 
 
 sys.path.append('modules')
-from exitGracefully import terminateSubProcesses
+from exitGracefully import terminateMinup
 from processRefFasta import process_ref_fasta
 from telem import *
 
+from sql import okSQLname
 
-def okSQLname(s): # MS
-        return "." not in s and "-" not in s
 
 # ---------------------------------------------------------------------------
 # main
 
 if __name__ == '__main__':
 
-    mtime = '16.02.2016'  # os.path.getmtime('minup.v0.6W.py') # MS
-
-
     multiprocessing.freeze_support()  # MS
 
     manager = multiprocessing.Manager()
 
     global minup_version
-    minup_version = '0.63'
+    fh = open("ver.txt", "r")
+    ver_txt = fh.readline()
+    fh.close()
+    minup_version = re.sub("[^.0-9]", "", ver_txt.split('_')[0])
     __version__ = minup_version
 
     global oper
@@ -69,8 +69,9 @@ if __name__ == '__main__':
     global last_index_dir
     xml_file_dict = dict()
 
-                # # linux version
 
+
+                # # linux version
     if oper is 'linux':
         config_file = os.path.join(os.path.sep,
                                    os.path.dirname(os.path.realpath('__file__'
@@ -102,18 +103,25 @@ if __name__ == '__main__':
         last_index_dir = os.path.join(os.path.sep, sys.prefix,
                 'last_indexes')
 
-    if not os.path.exists(logfolder):
-        os.makedirs(logfolder)
-    if not os.path.exists(valid_ref_dir):
-        os.makedirs(valid_ref_dir)
-    if not os.path.exists(bwa_index_dir):
-        os.makedirs(bwa_index_dir)
-    if not os.path.exists(last_index_dir):
-        os.makedirs(last_index_dir)
+#-------------------------------------------------------------------------------
+
+# Parser for command line arguments ...
 
     parser = \
         configargparse.ArgParser(description='minup: A program to analyse minION fast5 files in real-time or post-run.'
                                  , default_config_files=[config_file])
+    parser.add(
+        '-w',
+        '--watch-dir',
+        type=str,
+        required=True,
+        default=None,
+        help="The path to the folder containing the downloads directory with fast5 reads to analyse - e.g. C:\data\minion\downloads (for windows)."
+            ,
+        dest='watchdir',
+        )
+
+
     parser.add(
         '-dbh',
         '--mysql-host',
@@ -168,6 +176,7 @@ if __name__ == '__main__':
             ,
         dest='ref_fasta',
         )
+
     parser.add(
         '-b',
         '--align-batch-fasta',
@@ -186,16 +195,6 @@ if __name__ == '__main__':
         required=False,
         default=1,
         help='The number of processors to run this on.',
-        )
-    parser.add(
-        '-w',
-        '--watch-dir',
-        type=str,
-        required=True,
-        default=None,
-        help="The path to the folder containing the downloads directory with fast5 reads to analyse - e.g. C:\data\minion\downloads (for windows)."
-            ,
-        dest='watchdir',
         )
 
                 # parser.add('-n', '--aligning-threads', type=str, required=False, help="The number of threads to use for aligning", default=3, dest='threads')
@@ -405,19 +404,80 @@ if __name__ == '__main__':
         dest='qryStartEnd',
         )
 
-                # parser.add('-ver', '--version', action='store_true', help="Report the current version of minUP.", default=False, dest='version') # ML
+    parser.add( # MS ...
+        '-useHdfTimes',
+        '--use-hdf5_file-timestamps',
+        action='store_true',
+        help='Sort read files using hdt file timestamps rather than file modified times.',
+        default=False,
+        dest='hdfTimes',
+        )
 
-    parser.add_argument('-ver', '--version', action='version',
-                        version=('%(prog)s version={version} modified='
-                        + mtime).format(version=__version__))  # MS
+    parser.add( # MS ...
+        '-indexToRefDir',
+        '--store-indexes-in-ref-folder',
+        action='store_true',
+        help='Store the bwa/last index files in the reference genome folder',
+        default=False,
+        dest='indexToRefDir',
+        )
 
-                                                               # MS
+    parser.add( # MS ...
+        '-debug',
+        '--disable-MyHandler-try-except',
+        action='store_true',
+        help='Disable MyHandler try excep',
+        default=False,
+        dest='debug',
+        )
+
+    parser.add( # MS ...
+        '-standalone',
+        '--standalone-mode',
+        action='store_true',
+        help='Run without using metrichor download/uploaed folders.',
+        default=False,
+        dest='standalone',
+        )
+
+
+    # parser.add('-ver', '--version', action='store_true', help="Report the current version of minUP.", default=False, dest='version') # ML
+
+    # MS ...
+    parser.add_argument('-ver'
+	, '--version'
+	, action='version'
+      	, version=('%(prog)s version={version}').format(version=__version__)
+	) 
+
+#-------------------------------------------------------------------------------
 
     args = parser.parse_args()
+
+
+
+    # MS ...
+    if args.indexToRefDir is True:
+    	ref_dir = os.path.sep.join(args.ref_fasta.split(os.path.sep)[:-1])
+    	bwa_index_dir = ref_dir + '/bwa.indexes/'
+    	last_index_dir = ref_dir + '/last.indexes/'
+
+
+
+
+    if not os.path.exists(logfolder):
+        os.makedirs(logfolder)
+    if not os.path.exists(valid_ref_dir):
+        os.makedirs(valid_ref_dir)
+    if not os.path.exists(bwa_index_dir):
+        os.makedirs(bwa_index_dir)
+    if not os.path.exists(last_index_dir):
+        os.makedirs(last_index_dir)
 
     # Check inputs are OK...
     if not okSQLname(args.custom_name): # MS
         print 'Error: Invalid SQL name characters in custom_name : %s\nExiting ...' % (args.custom_name)
+	sys.stdout.flush()
         sys.exit(1)
 
 
@@ -453,6 +513,7 @@ if __name__ == '__main__':
     except Exception, err:
 
         print >> sys.stderr, "Can't connect to MySQL: %s" % err
+	sys.stdout.flush()
         sys.exit(1)
 
                 # if args.version == True: # ML
@@ -464,10 +525,12 @@ if __name__ == '__main__':
 
     if args.ref_fasta is not False and args.batch_fasta is not False:
         print 'Both --align-ref-fasta (-f) and --align-batch-fasta (-b) were set. Select only one and try again.'
+	sys.stdout.flush()
         sys.exit(1)
 
     if args.last_align is not False and args.bwa_align is not False:
         print 'Both --last-align-true (-last) and --bwa-align-true (-bwa) were set. Select only one and try again.'
+	sys.stdout.flush()
         sys.exit(1)
 
     if args.ref_fasta is not False:
@@ -502,10 +565,11 @@ if __name__ == '__main__':
     except (KeyboardInterrupt, SystemExit):
         print 'stopping monitor....'
         observer.stop()
-        terminateSubProcesses(args, dbcheckhash, oper, minup_version)
+        terminateMinup(args, dbcheckhash, oper, minup_version)
 	
 	print "finished."
         observer.join()
+	sys.stdout.flush()
 	sys.exit(1)
 
 
