@@ -44,13 +44,13 @@ def getHDFtime(args, f):
         reads = 'Analyses/EventDetection_000/Reads/'
         for read in hdf[reads]:
 		'''
-		# 0.64a .. 
-                startTime = hdf[ reads + read ].attrs['start_time'] 
+		# 0.64a ..
+                startTime = hdf[ reads + read ].attrs['start_time']
 		readTime = startTime
 		'''
 		# 0.64b ...
-		# End time is Start time of final event 
-                #endTime = hdf[ reads + read + "/Events"][-1][-2] 
+		# End time is Start time of final event
+                #endTime = hdf[ reads + read + "/Events"][-1][-2]
 		endTime = hdf[ reads + read + "/Events"].attrs['start'][-1    ]
 
 		readTime = endTime
@@ -59,7 +59,7 @@ def getHDFtime(args, f):
     except:
 	timestamp = -1
     return timestamp
-    
+
 
 
 def assignHDFtimes(args, d):
@@ -74,7 +74,7 @@ def assignHDFtimes(args, d):
 
 	for i, k in enumerate(ks) :
 		bar.update(i)
-		d_[k] = getHDFtime(args, k) 
+		d_[k] = getHDFtime(args, k)
 
 	bar.finish()
 	return d_
@@ -103,7 +103,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
 	    if args.debug is True: files = files[:10] # MS
 
 
-            for f in files: 
+            for f in files:
 
 	      # TODO ML to check 69 - 89 ....
 
@@ -159,7 +159,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
     # ....logfilehandle.close()
 
 
-    
+
     if args.hdfTimes == True and len(file_list_dict)>0 :
 	file_list_dict = assignHDFtimes(args, file_list_dict) # MS v0.64
 
@@ -294,6 +294,3 @@ def file_dict_of_folder_(args, xml_file_dict, path, file_list_dict):
 		print >> sys.stderr, err_string
 		#continue
     return xml_file_dict
-
-
-

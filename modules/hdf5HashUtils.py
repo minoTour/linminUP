@@ -5,7 +5,7 @@
 # Last Modified: Tue Mar 22 14:27:00 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
-# Credits: 
+# Credits:
 # --------------------------------------------------
 
 import time
@@ -16,7 +16,7 @@ def frmt(tm):
 
 
 def mysql_load_from_hashes(
-    args, 
+    args,
     db,
     cursor,
     tablename,
@@ -53,5 +53,3 @@ def make_hdf5_object_attr_hash(args, hdf5object, fields):
             att_hash[field] = hdf5object.attrs[field]
     if args.debug is True: print att_hash
     return att_hash
-
-

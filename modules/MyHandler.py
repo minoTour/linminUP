@@ -45,7 +45,7 @@ def readFast5File(args, fast5file):
 		hdf.close()
 		hdf = None
 		moveFile(args, fast5file)
-		
+
 	return hdf
 
 	'''
@@ -55,8 +55,8 @@ def readFast5File(args, fast5file):
 	moveFile(args, fast5file)
 	return None
 	'''
-	
-	
+
+
 
 	'''
 	#fname = os.path.splitext(os.path.basename(fast5file))[0]
@@ -100,21 +100,21 @@ class MyHandler(FileSystemEventHandler):
 
         t = threading.Thread(target=self.processfiles)
         t.daemon = True
-        
+
         try:
             t.start()
         except (KeyboardInterrupt, SystemExit):
 	    # MS -- Order here is critical ...
-            print 'Ctrl-C entered -- exiting'  
+            print 'Ctrl-C entered -- exiting'
 
-	    t.clear() 
-            t.stop() 
+	    t.clear()
+            t.stop()
 
-            self.p.close()  
-            self.p.terminate()  
+            self.p.close()
+            self.p.terminate()
             terminateMinup(args, dbcheckhash, oper, self.minup_version)
             exitGracefully(args, dbcheckhash, self.minup_version)
-	    sys.exit(1) 
+	    sys.exit(1)
 
 
         if args.ref_fasta is not False:
@@ -258,7 +258,7 @@ class MyHandler(FileSystemEventHandler):
 	    bar.start()
 	    bar.update(10*n/100)
 	    bar.update(25*n/100)
-	
+
 
 	    bar.update(75*n/100)
 	    bar.update(100*n/100)
@@ -285,22 +285,22 @@ class MyHandler(FileSystemEventHandler):
             	exitGracefully(args, dbcheckhash, self.minup_version)
 		sys.exit()
 	    '''
-	
+
 
 	    sortedFiles = sorted(self.creates.items(), key=lambda x: x[1])
             for (fast5file, createtime) in sortedFiles:
 		'''
 	    	#if args.verbose is False and args.debug is False:
 			#bar.update(i) # self.processed)
-			#i+=1	
+			#i+=1
 		'''
-		if args.debug is True: 
+		if args.debug is True:
 			print "Processing: ", fast5file
 
 
                 # tn=time.time()
 
-                if int(createtime) + 20 < time.time():  
+                if int(createtime) + 20 < time.time():
 		# file created 20 sec ago, so should be complete ....
                     if fast5file not in self.processed.keys():
 
@@ -381,10 +381,10 @@ class MyHandler(FileSystemEventHandler):
                             # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
 
 			    if args.prealign is True:
-                        	if args.debug is True: 
+                        	if args.debug is True:
 					print "Prealigning ...", fast5file
                             	x = self.apply_async_with_callback(fast5file, rawbasename_id, self.db_name)
-                            	if args.debug is True: 
+                            	if args.debug is True:
 					print x #.get()
 					print "... finished Prealign.", fast5file
 			except Exception, err:
@@ -394,7 +394,7 @@ class MyHandler(FileSystemEventHandler):
 
                             # print "This is a pre basecalled file"
 
-                            print "MyHandler(): except -- "+ fast5file 
+                            print "MyHandler(): except -- "+ fast5file
                             err_string = \
                                 'Error with fast5 file: %s : %s' \
                                 % (fast5file, err)
@@ -404,7 +404,7 @@ class MyHandler(FileSystemEventHandler):
 
 			    #moveFile(args, fast5file)
 			    #if args.debug is True: sys.exit()
-			
+
 			    #return ()
 
 			'''

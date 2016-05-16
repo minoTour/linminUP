@@ -150,7 +150,7 @@ def do_bwa_align(
     samdata = sam.splitlines()
 
     if args.debug is True:
-    	for s in samdata: 
+    	for s in samdata:
 		print s
     	print "="*80
 
@@ -385,7 +385,7 @@ def do_bwa_align(
 
                     # print "B", sql
 
-		
+
 		    sqls.append(sql) # MS
                     #cursor.execute(sql)
                     #db.commit()

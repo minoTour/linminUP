@@ -8,7 +8,7 @@
 # Last Modified: Thu Mar 24 16:31:56 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2016 The Author(s) All Rights Reserved
-# Credits: 
+# Credits:
 # --------------------------------------------------
 
 
@@ -18,8 +18,8 @@ from time import sleep
 
 
 def mkBar(n):
-	return progressbar.ProgressBar(maxval=n, 
-    		widgets=[progressbar.Bar('=', '[', ']') 
+	return progressbar.ProgressBar(maxval=n,
+    		widgets=[progressbar.Bar('=', '[', ']')
 			, ' ', progressbar.Percentage()])
 
 
@@ -34,5 +34,3 @@ def pbar(a):
 
 
 #pbar(xrange(2**12))
-	
-

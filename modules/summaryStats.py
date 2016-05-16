@@ -8,7 +8,7 @@
 # Last Modified: Thu Mar 10 10:56:06 2016
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2016 The Author(s) All Rights Reserved
-# Credits: 
+# Credits:
 # --------------------------------------------------
 
 
@@ -19,7 +19,7 @@ def insertSummaryStats( basenameid, dbname, db):
 	tablename = 'summaryStats'
 
 	sql = \
-	    "INSERT INTO %s (basename_id,qname,flag)" \ 
+	    "INSERT INTO %s (basename_id,qname,flag)" \
 				% (tablename, basenameid)
 
 	# print sql
@@ -43,6 +43,3 @@ def updateSummaryStats( basenameid, dbname, db):
 	db.commit()
 
 #--------------------------------------------------------------------------------
-
-
-

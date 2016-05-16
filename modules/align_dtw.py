@@ -33,7 +33,7 @@ def scale(a):  # MS
 # ---------------------------------------------------------------------------
 
 def mysql_load_from_hashes2(
-    args, 
+    args,
     cursorpre,
     tablename,
     data_hash,
@@ -59,7 +59,7 @@ def mysql_load_from_hashes2(
 
 
 # ---------------------------------------------------------------------------
-my_dtw_subsequence = dtw_subsequence 
+my_dtw_subsequence = dtw_subsequence
 
 '''
 def my_dtw_subsequence(xs,ys):
@@ -73,24 +73,24 @@ def toInt(xs): return map(rnd, xs)
 
 
 # MS lines 74 - 163
-def squiggle_align(args, squiggle, hashthang): 
+def squiggle_align(args, squiggle, hashthang):
     winSz = 256
 
     offset = 100
     squiggle = squiggle[offset:]
 
-    if squiggle == []: 
+    if squiggle == []:
 	print "squiggle_align(): Error -- squiggle == [] "
 	sys.exit()
 
-   
-    if args.debug is True: 
-    	print "Squiggle len: ", len(squiggle), 
+
+    if args.debug is True:
+    	print "Squiggle len: ", len(squiggle),
     	print "qryStartEnd: ", args.qryStartEnd
 
 	# ?? ...
     if len(squiggle) >= 2*winSz \
-		and args.qryStartEnd is True: 
+		and args.qryStartEnd is True:
 	# Align just start and end of query...
 	if args.debug is True: print "Align just start and end of query..."
     	res = squiggle_search3(args, winSz, squiggle, hashthang)
@@ -100,10 +100,10 @@ def squiggle_align(args, squiggle, hashthang):
 	res = squiggle_search2(args, squiggle, hashthang)
 
     return res
-	
 
 
-def squiggle_search3(args, winSz, squiggle, hashthang): 
+
+def squiggle_search3(args, winSz, squiggle, hashthang):
     if args.debug is True:
 	print "squiggle_search3 called..."
     #refLen = len(hashthang[ref]['Fprime'])
@@ -129,7 +129,7 @@ def squiggle_search3(args, winSz, squiggle, hashthang):
 
     # Matching on F only ...
     if( seqmatchname == seqmatchname_
-	and fr=="F" 
+	and fr=="F"
 	and fr == fr_
 
 	and qs <= qe
@@ -138,7 +138,7 @@ def squiggle_search3(args, winSz, squiggle, hashthang):
 	and rs_ <= re_
 	# ... obviously
 
-	and rs <= rs_ 
+	and rs <= rs_
 	and re <= rs_ # MS >= ??
 	):
 	  resultList = (seqmatchname
@@ -153,7 +153,7 @@ def squiggle_search3(args, winSz, squiggle, hashthang):
 
     # Matching on R only ...
     elif( seqmatchname == seqmatchname_
-	and fr=="R" 
+	and fr=="R"
 	and fr == fr_
 
 	and qs <= qe
@@ -162,8 +162,8 @@ def squiggle_search3(args, winSz, squiggle, hashthang):
 	and rs_ <= re_
 	# ... obviously
 
-	and rs >= rs_ 
-	and re >= rs_ 
+	and rs >= rs_
+	and re >= rs_
 	):
 	  resultList = (seqmatchname
 		, distance + distance_
@@ -194,9 +194,9 @@ def squiggle_search2(args, squiggle, hashthang):
 
     for ref in hashthang:
 	'''
-	# MS -- NB sklearn breaks Ctrl^C from GUI 
+	# MS -- NB sklearn breaks Ctrl^C from GUI
 	# so we use own z-score routines.
-	# 
+	#
         # print "We're in the kmerhash loop"
         # print ref
         # print len(kmerhash2[id][ref]['F'])
@@ -209,7 +209,7 @@ def squiggle_search2(args, squiggle, hashthang):
 	'''
 
 	# MS Maybe do this for whole squiggle ...  ??
-        queryarray = scale(np.array(squiggle))  
+        queryarray = scale(np.array(squiggle))
 			# ,axis=0,with_mean=True,with_std=False,copy=True)
 
 	'''
@@ -281,7 +281,7 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 		print "mp_worker called ..."
 	dbpre = MySQLdb.connect(host=args.dbhost, user=args.dbusername, passwd=args.dbpass, port=args.dbport)
 	cursorpre = dbpre.cursor()
-	if args.debug is True: 
+	if args.debug is True:
 		print "align_dtw: ",filename
 		#print "kmerhashT",type(kmerhashT)
 		#print kmerhashT
@@ -376,7 +376,7 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 					### If the forward and reverse reads do not map appropriately to the reference then we only upload the template and complement mappings - even if both are on the same strand?
 
 				else:
-					if args.debug is True: 
+					if args.debug is True:
 						print "No Hairpin"
 
 					(seqmatchnameT,distanceT,frT,rsT,reT,qsT,qeT) = squiggle_align(args, meansquiggle,kmerhashT)

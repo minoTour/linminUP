@@ -15,7 +15,7 @@ import time
 import MySQLdb
 from warnings import filterwarnings
 
-def okSQLname(s): # MS 
+def okSQLname(s): # MS
        return "." not in s and "-" not in s
 
 
@@ -147,7 +147,7 @@ def create_pre_general_table(tablename, cursor):
         'start_mux INT(1) DEFAULT NULL',
         'start_time varchar(20) DEFAULT NULL',
         'total_events INT(20) DEFAULT NULL',
-	'sampling_rate float', 
+	'sampling_rate float',
         '1minwin INT NOT NULL, INDEX(1minwin)',
         '5minwin INT NOT NULL, INDEX(5minwin)',
         '10minwin INT NOT NULL, INDEX(10minwin)',
