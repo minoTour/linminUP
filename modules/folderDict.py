@@ -4,7 +4,7 @@
 # File Name: folderDict.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed Mar 30 16:56:33 2016
+# Last Modified: Fri, May 13, 2016 12:53:27 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -18,7 +18,9 @@ import h5py
 from progressbar import *
 from pbar import *
 
+
 # ---------------------------------------------------------------------------
+
 def moveFile(args, fast5file):
 	print "moveFile(): " + fast5file
 	sys.stdout.flush()
@@ -34,7 +36,6 @@ def moveFile(args, fast5file):
 
 	print fast5file + " moved to " + fast5file_
 
-
 # ---------------------------------------------------------------------------
 def getHDFtime(args, f):
     try:
@@ -42,29 +43,33 @@ def getHDFtime(args, f):
         expStartTime = \
 		hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time']
         reads = 'Analyses/EventDetection_000/Reads/'
+
         for read in hdf[reads]:
 		'''
-		# 0.64a ..
-                startTime = hdf[ reads + read ].attrs['start_time']
+		# 0.64a .. 
+                startTime = hdf[ reads + read ].attrs['start_time'] 
 		readTime = startTime
 		'''
 		# 0.64b ...
-		# End time is Start time of final event
-                #endTime = hdf[ reads + read + "/Events"][-1][-2]
+		# End time is Start time of final event 
+                #endTime = hdf[ reads + read + "/Events"][-1][-2] 
 		endTime = hdf[ reads + read + "/Events"].attrs['start'][-1    ]
 
 		readTime = endTime
+
 	timestamp =  int(expStartTime) + int(readTime)
     	hdf.close()
     except:
 	timestamp = -1
     return timestamp
-
+    
 
 
 def assignHDFtimes(args, d):
+
 	print "Assigning HDF timestamps..."
 	sys.stdout.flush()
+
 	# return dict(map(getHDFtime, d.items()) )
 	d_ = dict()
 	ks = d.keys()
@@ -73,10 +78,11 @@ def assignHDFtimes(args, d):
 	bar.start()
 
 	for i, k in enumerate(ks) :
+		d_[k] = getHDFtime(args, k) 
 		bar.update(i)
-		d_[k] = getHDFtime(args, k)
 
 	bar.finish()
+
 	return d_
 
 
@@ -103,7 +109,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
 	    if args.debug is True: files = files[:10] # MS
 
 
-            for f in files:
+            for f in files: 
 
 	      # TODO ML to check 69 - 89 ....
 
@@ -159,7 +165,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
     # ....logfilehandle.close()
 
 
-
+    
     if args.hdfTimes == True and len(file_list_dict)>0 :
 	file_list_dict = assignHDFtimes(args, file_list_dict) # MS v0.64
 
@@ -294,3 +300,6 @@ def file_dict_of_folder_(args, xml_file_dict, path, file_list_dict):
 		print >> sys.stderr, err_string
 		#continue
     return xml_file_dict
+
+
+

@@ -10,15 +10,15 @@ def terminateMinup(args, dbcheckhash, oper, minup_version):
     sys.stdout.flush()
 
     # Sign off any mySQL connections ...
-    exitGracefully(args, dbcheckhash, minup_version)
+    exitGracefully(args, dbcheckhash, minup_version) 
 
     print "terminating sub-processes...."
 
-    pid = os.getpid()
+    pid = os.getpid() 
 
     # Tell minup to terminate
     if oper == "windows":
-    	# -- sending minup pid a Ctrl-C signal
+    	# -- sending minup pid a Ctrl-C signal 
     	# -- this also cleanly closes subprocesses and threads ....
     	ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid) # 0 => Ctrl-C
     else:
@@ -36,13 +36,13 @@ def terminateSubProcesses(args, dbcheckhash, oper, minup_version):
     print "terminating sub-processes...."
     sys.stdout.flush()
 
-    pid = os.getpid()
+    pid = os.getpid() 
     process = psutil.Process(pid)
     for proc in process.children(recursive=True):
       	if oper == "windows":
 	  pid_ = proc.as_dict(attrs=['pid'])['pid']
 	  # 0 => Ctrl-C
-      	  ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )
+      	  ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )  
     	else: proc.kill()
 
 
@@ -65,8 +65,8 @@ def exitGracefully(args, dbcheckhash, minup_version):
         cur.execute(sql)
         dba.commit()
 
-        try: runindex = dbcheckhash['runindex'][name] # MS ..
-	except:
+        try: runindex = dbcheckhash['runindex'][name] # MS .. 
+	except: 
 		print "exitGracefully(): line 26, dbcheckhash, key error: " + name
 		sys.stdout.flush()
 		return() # #sys.exit(1)
@@ -92,3 +92,7 @@ def exitGracefully(args, dbcheckhash, minup_version):
             logfilehandle.close()
         dba.close()
     sys.stdout.flush()
+
+
+
+

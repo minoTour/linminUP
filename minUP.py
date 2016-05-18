@@ -6,7 +6,7 @@
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
 # Creation Date: 2014 - 2016
-# Last Modified: Thu Mar 24 16:30:27 2016
+# Last Modified: Wed, May 18, 2016  3:58:49 PM
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -35,6 +35,7 @@ from processRefFasta import process_ref_fasta
 from telem import *
 
 from sql import okSQLname
+
 
 
 # ---------------------------------------------------------------------------
@@ -68,6 +69,7 @@ if __name__ == '__main__':
     global bwa_index_dir
     global last_index_dir
     xml_file_dict = dict()
+
 
 
 
@@ -538,6 +540,12 @@ if __name__ == '__main__':
 			, bwa_index_dir, last_index_dir  \
                         , args.ref_fasta, ref_fasta_hash)
 
+    global bwaclassrunner
+    bwaclassrunner = None
+    if args.bwa_align is not False:
+        from bwaClass import BwaClass
+        bwaclassrunner = BwaClass(100,10)
+
     comments['default'] = 'No Comment'
     if args.added_comment is not '':  # MS
         comments['default'] = ' '.join(args.added_comment)  # MS
@@ -556,7 +564,7 @@ if __name__ == '__main__':
 		comments, ref_fasta_hash, dbcheckhash, \
 		logfolder, cursor
         observer = Observer()
-        event_handler = MyHandler(dbcheckhash, oper, db, args, xml_file_dict, check_read_args, minup_version)
+        event_handler = MyHandler(dbcheckhash, oper, db, args, xml_file_dict, check_read_args, minup_version,bwaclassrunner)
         observer.schedule(event_handler, path=args.watchdir, recursive=True)
         observer.start()
         while True:

@@ -4,7 +4,7 @@
 # File Name: gui.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Thu Mar 24 14:12:44 2016
+# Last Modified: Fri, Apr 29, 2016 12:56:02 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -24,7 +24,8 @@ import datetime
 dateTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
 # Unbuffered IO
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+#sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
 # ------------------------------------------------------------------------------
 
@@ -44,11 +45,11 @@ def run(cmd):
 
     exit_code = 0
     print 'Run started ....'
-    p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
+    p = subprocess.Popen(cmd, shell=False, # True,
+			 stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
-
-          # , bufsize=0)
+			#,bufsize=0)
 
     pid = p.pid
     outF.write("PID: " + str(pid))
@@ -57,8 +58,13 @@ def run(cmd):
     while p.poll() is None:
         out = p.stdout.read(1)
         sys.stdout.write(out)
-	sys.stdout.flush()
+
+        #err = p.stderr.read()
+        #sys.stdout.write(err)
+
 	outF.write(out)
+	sys.stdout.flush()
+
 
     outF.close()
 
@@ -240,8 +246,8 @@ def fixAlignerOpts(aligner, (k, v)):
     advanced=1,
     language='english',
     show_config=True,
-    default_size=(1000, 600),
-    required_cols=2,
+    default_size=(1000, 1000),
+    required_cols=1,
     optional_cols=2,
     dump_build_config=0,
     )

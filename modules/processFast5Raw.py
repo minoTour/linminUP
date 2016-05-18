@@ -50,7 +50,7 @@ def process_fast5_raw(
             hdf['/UniqueGlobalKey/tracking_id'], tracking_id_fields)
     tracking_id_hash.update({'basename': basename,
                             'file_path': filepath, 'md5sum': checksum})
-
+ 
 
     if args.debug is True:
     	print '@'*40
@@ -60,7 +60,7 @@ def process_fast5_raw(
 
 #--------------------------------------------------------------------------------
     for element in hdf['Analyses/EventDetection_000/Reads']:
-
+	
         read_id_fields = [
             'duration',
             'hairpin_found',
@@ -94,13 +94,13 @@ def process_fast5_raw(
 		print "# read_info_hash"
 		for x in read_info_hash: print x
 
-    basenameid = mysql_load_from_hashes(args, db , cursor,
+    basenameid = mysql_load_from_hashes(args, db , cursor, 
 				'pre_tracking_id', tracking_id_hash)
 
     rawconfigdatastring = ''
 
     #for x in range(0, 10000):
-    if 1:
+    if 1: 
         x = read_info_hash['read_number']
         string = '/Analyses/EventDetection_000/Reads/Read_%s' % x
         if string in hdf:
@@ -133,7 +133,7 @@ def process_fast5_raw(
         general_hash = make_hdf5_object_attr_hash(args, rawconfigdata,
                 general_fields)
 
-
+	
 
         # print general_hash
         # print hdf[rawconfigdatastring+'/Events/']
@@ -157,13 +157,13 @@ def process_fast5_raw(
         # print type(sampling_hash['sampling_rate'])
         # print type(general_hash['start_time'])
 
-        general_hash.update({'sampling_rate':
+        general_hash.update({'sampling_rate': 
 	     sampling_hash['sampling_rate' ]})
-        general_hash.update({'start_time':
+        general_hash.update({'start_time': 
 	     general_hash['start_time'] / sampling_hash['sampling_rate']})
         general_hash.update({'basename_id': basenameid,
                             'basename': basename,
-                            'total_events':
+                            'total_events': 
 			len(hdf[rawconfigdatastring + '/Events/'])})
 
     	if args.debug is True:
@@ -238,18 +238,18 @@ def process_fast5_raw(
 	exp_start_time = int(tracking_id_hash['exp_start_time' ])
 	exp_start_time_f = frmt(exp_start_time)
 
-	if args.debug is True:
+	if args.debug is True: 
 		print "@@ exp start_time: ", exp_start_time_f
         general_hash.update({'exp_start_time': exp_start_time})
 
 	sampling_rate = float(general_hash['sampling_rate']) * 60.
-	if args.debug is True:
-		print "@@ sampling_rate: ", sampling_rate
-
+	if args.debug is True: 
+		print "@@ sampling_rate: ", sampling_rate 
+        	
 
 	start_time = \
 	   float(hdf5object.attrs['start_time']) / sampling_rate
-	if args.debug is True:
+	if args.debug is True: 
 		print "@@ start_time: ", start_time
 
 	g_start_time = exp_start_time + int(start_time)*60
@@ -260,44 +260,44 @@ def process_fast5_raw(
 
 	end_time = \
 	   float(hdf[ eventdectionreadstring + "/Events"][-1][-2]) \
-				/ sampling_rate
+				/ sampling_rate 
 	g_end_time = exp_start_time + int(end_time)*60
 
-	if args.debug is True:
+	if args.debug is True: 
     		print "@@ start / end times A Line 296: ", start_time, end_time
     		print "@@ g_start / g_end times g_A Line 296: ", frmt(g_start_time), frmt(g_end_time)
         #sys.stdout.flush()
 	#sys,exit()
 
-    	template_start = start_time
-    	template_end = end_time
+    	template_start = start_time 
+    	template_end = end_time 
 
 
-
+	
 	# Scale global times to minutes .....
 	g_start_time = int(g_start_time / 60)
 	g_end_time = int(g_end_time / 60)
-    	g_template_start = g_start_time
-    	g_template_end = g_end_time
+    	g_template_start = g_start_time 
+    	g_template_end = g_end_time 
 
 
    	# ------------------------------------------
-
-        general_hash.update({'1minwin': int(end_time/ 1.)})
-        general_hash.update({'5minwin': int(end_time/ 5.)})
-        general_hash.update({'10minwin': int(end_time/ 10.)})
+	
+        general_hash.update({'1minwin': int(end_time/ 1.)})  
+        general_hash.update({'5minwin': int(end_time/ 5.)})  
+        general_hash.update({'10minwin': int(end_time/ 10.)})  
         general_hash.update({'15minwin': int(end_time/ 15.)})
-        general_hash.update({'s1minwin': int(start_time/ 1.)})
-        general_hash.update({'s5minwin': int(start_time/ 5.)})
-        general_hash.update({'s10minwin': int(start_time/ 10.)})
+        general_hash.update({'s1minwin': int(start_time/ 1.)})  
+        general_hash.update({'s5minwin': int(start_time/ 5.)})  
+        general_hash.update({'s10minwin': int(start_time/ 10.)})  
         general_hash.update({'s15minwin': int(start_time/ 15.)})
-        general_hash.update({'g_1minwin': int(g_end_time/ 1.)})
-        general_hash.update({'g_5minwin': int(g_end_time/ 5.)})
-        general_hash.update({'g_10minwin': int(g_end_time/ 10.)})
+        general_hash.update({'g_1minwin': int(g_end_time/ 1.)})  
+        general_hash.update({'g_5minwin': int(g_end_time/ 5.)})  
+        general_hash.update({'g_10minwin': int(g_end_time/ 10.)})  
         general_hash.update({'g_15minwin': int(g_end_time/ 15.)})
-        general_hash.update({'g_s1minwin': int(g_start_time/ 1.)})
-        general_hash.update({'g_s5minwin': int(g_start_time/ 5.)})
-        general_hash.update({'g_s10minwin': int(g_start_time/ 10.)})
+        general_hash.update({'g_s1minwin': int(g_start_time/ 1.)})  
+        general_hash.update({'g_s5minwin': int(g_start_time/ 5.)})  
+        general_hash.update({'g_s10minwin': int(g_start_time/ 10.)})  
         general_hash.update({'g_s15minwin': int(g_start_time/ 15.)})
 
 

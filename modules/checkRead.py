@@ -4,7 +4,7 @@
 # File Name: checkRead.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Tue Mar 29 15:35:06 2016
+# Last Modified: Fri, May 13, 2016  3:33:52 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -21,22 +21,24 @@ import datetime
 
 from sql import *
 from hdf5HashUtils import *
-from exitGracefully import terminateMinup, terminateSubProcesses
+from exitGracefully import terminateMinup, terminateSubProcesses 
 #from processFast5 import getBasecalltype
 from progressbar import *
 from pbar import *
 
+from debug import debug
+
 def getBasecalltype(filetype):
     if filetype == 0: basecalltype = 'raw'
     if filetype == 1: basecalltype = 'Basecall_2D'
-    if filetype == 2: basecalltype= "Hairpin_Split"
+    if filetype == 2: basecalltype= "Hairpin_Split" 
     if filetype == 3: basecalltype = 'Basecall_1D'
     # print "hdf basecalledtype:", basecalltype
     sys.stdout.flush()
     return basecalltype
 
 # Unbuffered IO
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
 
 '''
 
@@ -44,7 +46,7 @@ def okSQLname(s): # MS
 	return "." not in s and "-" not in s
 
 	if okSQLname(args.custom_name): # MS
-	else:
+	else: 
            print >> sys.stderr, \
            'Error: Invalid SQL name characters in custom_name -- exiting ...'
            terminateSubProcesses(args, dbcheckhash, minup_version)
@@ -114,8 +116,8 @@ def check_read(
 
             # ---------------------------------------------------------------------------
 
-            try: runindex = dbcheckhash['runindex'][dbname] # MS ..
-            except:
+            try: runindex = dbcheckhash['runindex'][dbname] # MS .. 
+            except:  
                 print "checkRead(): line 112, dbcheckhash, key error: " \
 				+ dbname
 		sys.stdout.flush()
@@ -136,7 +138,7 @@ def check_read(
                 start_time,
                 )
 
-            # print sql
+            if debug is True: print sql; debug()
 
             db.escape_string(sql)
             cursor.execute(sql)
@@ -189,10 +191,10 @@ def check_read(
                     print 'database dropped.'
 		    sys.stdout.flush()
             else:
-                print >> sys.stderr, "="*80
+                print >> sys.stderr, "="*80 
                 print >> sys.stderr, \
                     'WARNING: DATABASE \"%s\" already EXISTS.\nTo write over the data re-run the minUP command with option -d' % dbname
-                print >> sys.stderr, "="*80
+                print >> sys.stderr, "="*80 
 		sys.stdout.flush()
                 if args.batch_fasta == False:
 
@@ -254,12 +256,12 @@ def check_read(
         cursor.execute(sql)
 
 	# Create Tables ....
-        create_general_table('config_general', cursor)
-        create_trackingid_table('tracking_id', cursor)
+        create_general_table('config_general', cursor)  
+        create_trackingid_table('tracking_id', cursor)  
         create_basecall_summary_info('basecall_summary', cursor)
-        create_events_model_fastq_table('basecalled_template', cursor)
-        create_events_model_fastq_table('basecalled_complement', cursor)
-        create_basecalled2d_fastq_table('basecalled_2d', cursor)
+        create_events_model_fastq_table('basecalled_template', cursor) 
+        create_events_model_fastq_table('basecalled_complement', cursor) 
+        create_basecalled2d_fastq_table('basecalled_2d', cursor) 
 
         # ---------------------------------------------------------------------------
 
@@ -367,8 +369,8 @@ def check_read(
                             refid, cursor)
 
         # ---------------------------------------------------------------------------
-        # -------- See if theres any ENA XML stuff to add.
-        # -------- Need to do this now as it changes the "comment"
+        # -------- See if theres any ENA XML stuff to add. 
+        # -------- Need to do this now as it changes the "comment" 
         # -------- in Gru.minionRuns entry
         # print "C", comment
 
@@ -482,7 +484,7 @@ def check_read(
         basecallindexpos='' #ML
 
 	'''
-	try:
+	try: 
          if file_type == 2:
             basecalltype2="Basecall_2D"
             string2='' #ML
@@ -508,10 +510,10 @@ def check_read(
                 basecalldir='/Analyses/%s_00%s/' % (basecalltype2,basecallindexpos)
                 #basecalldirconfig=string2 #ML
                 #break
-	except:
+	except: 
 		print "checkReads(): error line 467."
 		sys.exit()
-        try:
+        try: 
           if file_type in [1,0]:
             basecalltype = 'Basecall_1D_CDNA'
             basecalltype2 = 'Basecall_2D'
@@ -541,11 +543,11 @@ def check_read(
 
         # print "basecalldirconfig", basecalldirconfig
         # # get some data out of tacking_id and general
-	except:
+	except: 
 		print "checkReads(): error line 496."
 		sys.stdout.flush()
 		sys.exit()
-
+        
 	#print basecalldirconfig
         #print basecalldir
         if len(basecalldirconfig) > 0:
@@ -627,6 +629,7 @@ def check_read(
             )
 
         #print sql
+        if debug is True: print sql; debug()
 
         #if args.verbose is True:
 	print '... Database created.'
@@ -634,9 +637,9 @@ def check_read(
 
         db.escape_string(sql)
         cursor.execute(sql)
-        db.commit()
+        db.commit() 
         runindex = cursor.lastrowid
-        dbcheckhash['runindex'][dbname] = runindex
+        dbcheckhash['runindex'][dbname] = runindex 
 
         #print "Runindex:",runindex
 
@@ -647,7 +650,7 @@ def check_read(
 	    sys.stdout.flush()
 
         view_users=[username]
-
+	
         if args.view_users:
             extra_names = args.view_users.split(',')
             # view_users = args.view_users + extra_names # MS
@@ -666,6 +669,7 @@ def check_read(
                     'INSERT INTO Gru.userrun (user_id, runindex) VALUES ((SELECT user_id FROM Gru.users WHERE user_name =\'%s\') , (SELECT runindex FROM Gru.minIONruns WHERE runname = "%s") )' \
                     % (user_name, dbname)
 
+                if debug is True: print sql; debug()
                 # print sql
 
                 cursor.execute(sql)
@@ -872,6 +876,7 @@ def check_read(
                 % ','.join(bcs)
 
             # print sql
+            if debug is True: print sql; debug()
 
             cursor.execute(sql)
             db.commit()
@@ -886,6 +891,7 @@ def check_read_type(filepath, hdf):
     if 'Analyses/Basecall_1D_000/' in hdf:	 filetype = 3
     if 'Analyses/Basecall_2D_000/' in hdf:	 filetype = 1
     if 'Analyses/Hairpin_Split_000/' in hdf:	 filetype = 2
+    if debug is True: print "filetype: ", filetype
     return filetype
 
 #---------------------------------------------------------------------------
@@ -901,6 +907,7 @@ def load_ref_kmer_hash(db, tablename, kmers, refid, cursor):
 		sql+= "('%s',%s,%s,%s,%s)," % (kmer, refid, count, totalkmercount, freq)
 	sql=sql[:-1]
 	#print sql
+        if debug is True: print sql; debug()
 	cursor.execute(sql)
 	db.commit()
 

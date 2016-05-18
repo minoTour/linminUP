@@ -4,7 +4,7 @@
 # File Name: sql.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed Mar 30 12:11:19 2016
+# Last Modified: Wed, May 18, 2016  3:10:59 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -15,7 +15,7 @@ import time
 import MySQLdb
 from warnings import filterwarnings
 
-def okSQLname(s): # MS
+def okSQLname(s): # MS 
        return "." not in s and "-" not in s
 
 
@@ -147,7 +147,7 @@ def create_pre_general_table(tablename, cursor):
         'start_mux INT(1) DEFAULT NULL',
         'start_time varchar(20) DEFAULT NULL',
         'total_events INT(20) DEFAULT NULL',
-	'sampling_rate float',
+	'sampling_rate float', 
         '1minwin INT NOT NULL, INDEX(1minwin)',
         '5minwin INT NOT NULL, INDEX(5minwin)',
         '10minwin INT NOT NULL, INDEX(10minwin)',
@@ -449,13 +449,13 @@ def create_events_model_fastq_table(tablename, cursor):
         'seqid VARCHAR(150) NOT NULL, UNIQUE INDEX (seqid)',
         'duration FLOAT(25,17) NOT NULL',
         'start_time FLOAT(25,17) NOT NULL',
-        'scale FLOAT(25,17) NOT NULL',
-        'shift FLOAT(25,17) NOT NULL',
+        'scale FLOAT(25,17)',
+        'shift FLOAT(25,17)',
         'gross_shift FLOAT(25,17) DEFAULT NULL',
-        'drift FLOAT(25,17) NOT NULL',
-        'scale_sd FLOAT(25,17) NOT NULL',
-        'var_sd FLOAT(25,17) NOT NULL',
-        'var FLOAT(25,17) NOT NULL',
+        'drift FLOAT(25,17)',
+        'scale_sd FLOAT(25,17)',
+        'var_sd FLOAT(25,17)',
+        'var FLOAT(25,17)',
         'seqlen INT NOT NULL',
         '1minwin INT NOT NULL, INDEX(1minwin)',
         '5minwin INT NOT NULL, INDEX(5minwin)',

@@ -4,7 +4,7 @@
 # File Name: processFast5.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed Mar 30 13:07:43 2016
+# Last Modified: Fri, May 13, 2016  4:51:44 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -25,6 +25,8 @@ from hdf5HashUtils import *
 from sql import upload_model_data
 from telem import init_tel_threads2
 from checkRead import check_read_type, getBasecalltype
+
+from debug import debug
 
 # ---------------------------------------------------------------------------
 
@@ -56,10 +58,11 @@ def process_fast5(
     hdf,
     dbname,
     cursor,
+    bwaclassrunner,
     ):
 
     try: checksum = hashlib.md5(open(filepath, 'rb').read()).hexdigest()
-    except:
+    except: 
         err_string = "process_fast5(): error checksum ", filepath
         print >> sys.stderr, err_string
 	sys.exit()
@@ -68,7 +71,7 @@ def process_fast5(
     # ## find the right basecall_2D location, get configuaration genral data, and define the basename.
 
     file_type = check_read_type(filepath,hdf)
-    if args.debug is True:
+    if args.debug is True: 
 	print "@@ "+ ('='*40)
 	print "@@ filepath:", filepath
 	print "@@ file_type:", file_type
@@ -332,7 +335,7 @@ GROUP "/" {
 	exp_start_time = int(tracking_id_hash['exp_start_time' ])
 	exp_start_time_f = frmt(exp_start_time)
 
-	if args.debug is True:
+	if args.debug is True: 
 		print "@@ exp start_time: ", exp_start_time_f
         general_hash.update({'exp_start_time': exp_start_time})
 
@@ -350,44 +353,44 @@ GROUP "/" {
 
 	end_time = \
 	   float(hdf[ eventdectionreadstring + "/Events"][-1][-2]) \
-				/ sampling_rate
+				/ sampling_rate 
 	g_end_time = exp_start_time + int(end_time)*60
 
-	if args.debug is True:
+	if args.debug is True: 
     		print "@@ start / end times A Line 296: ", start_time, end_time
     		print "@@ g_start / g_end times g_A Line 296: ", frmt(g_start_time), frmt(g_end_time)
         	sys.stdout.flush()
 		#sys,exit()
 
-    	template_start = start_time
-    	template_end = end_time
+    	template_start = start_time 
+    	template_end = end_time 
 
 
-
+	
 	# Scale global times to minutes .....
 	g_start_time = int(g_start_time / 60)
 	g_end_time = int(g_end_time / 60)
-    	g_template_start = g_start_time
-    	g_template_end = g_end_time
+    	g_template_start = g_start_time 
+    	g_template_end = g_end_time 
 
 
    	# ------------------------------------------
-
-        general_hash.update({'1minwin': int(end_time/ 1.)})
-        general_hash.update({'5minwin': int(end_time/ 5.)})
-        general_hash.update({'10minwin': int(end_time/ 10.)})
+	
+        general_hash.update({'1minwin': int(end_time/ 1.)})  
+        general_hash.update({'5minwin': int(end_time/ 5.)})  
+        general_hash.update({'10minwin': int(end_time/ 10.)})  
         general_hash.update({'15minwin': int(end_time/ 15.)})
-        general_hash.update({'s1minwin': int(start_time/ 1.)})
-        general_hash.update({'s5minwin': int(start_time/ 5.)})
-        general_hash.update({'s10minwin': int(start_time/ 10.)})
+        general_hash.update({'s1minwin': int(start_time/ 1.)})  
+        general_hash.update({'s5minwin': int(start_time/ 5.)})  
+        general_hash.update({'s10minwin': int(start_time/ 10.)})  
         general_hash.update({'s15minwin': int(start_time/ 15.)})
-        general_hash.update({'g_1minwin': int(g_end_time/ 1.)})
-        general_hash.update({'g_5minwin': int(g_end_time/ 5.)})
-        general_hash.update({'g_10minwin': int(g_end_time/ 10.)})
+        general_hash.update({'g_1minwin': int(g_end_time/ 1.)})  
+        general_hash.update({'g_5minwin': int(g_end_time/ 5.)})  
+        general_hash.update({'g_10minwin': int(g_end_time/ 10.)})  
         general_hash.update({'g_15minwin': int(g_end_time/ 15.)})
-        general_hash.update({'g_s1minwin': int(g_start_time/ 1.)})
-        general_hash.update({'g_s5minwin': int(g_start_time/ 5.)})
-        general_hash.update({'g_s10minwin': int(g_start_time/ 10.)})
+        general_hash.update({'g_s1minwin': int(g_start_time/ 1.)})  
+        general_hash.update({'g_s5minwin': int(g_start_time/ 5.)})  
+        general_hash.update({'g_s10minwin': int(g_start_time/ 10.)})  
         general_hash.update({'g_s15minwin': int(g_start_time/ 15.)})
 
         # if ('start_mux' in hdf5object.attrs.keys() ):
@@ -439,7 +442,7 @@ GROUP "/" {
       		basecall_summary_fields)
 
     if file_type == 2:
-        basecall_summary_hash=make_hdf5_object_attr_hash(args,
+        basecall_summary_hash=make_hdf5_object_attr_hash(args, 
 		hdf['/Analyses/Hairpin_Split_00'+
 			str(basecallindexpos)+'/Summary/split_hairpin'],
 		basecall_summary_fields)
@@ -533,7 +536,7 @@ GROUP "/" {
 	    sys.exit()
 
     # # Adding key indexes and time stamps
-    if args.debug is True:
+    if args.debug is True: 
     	print "@@ start / end times B Line 429: ", start_time, end_time
     	print "@@ g_start / g_end g_times B Line 429: ", \
 				frmt(g_start_time), frmt(g_end_time)
@@ -643,6 +646,7 @@ GROUP "/" {
                                     cursor, db)
                             dbcheckhash['modelcheck'
                                     ][dbname][complement_model] = 1
+                if debug is True: print sql; debug()
 
                 cursor.execute(sql)
                 db.commit()
@@ -691,6 +695,7 @@ GROUP "/" {
 
 
 
+    if debug is True: debug()
     fastqhash = dict()
 
     # tel_sql_list=list()
@@ -731,7 +736,7 @@ GROUP "/" {
 
                 # print "we're looking at a 2D read",template_start,"\n\n"
 
-
+		
 
                 mysql_load_from_hashes(args, db, cursor, readtype, {
                     'basename_id': basenameid,
@@ -786,22 +791,27 @@ GROUP "/" {
                 'sequence',
                 'qual',
                 ]
-            if location + 'Events' in hdf and location + 'Model' in hdf:  # so its either template or complement
+        
+            #if location + 'Events' in hdf and location + 'Model' in hdf:  
+            if location + 'Events' in hdf and location + 'Fastq' in hdf:  
+            # so its either template or complement
                 events_hash = make_hdf5_object_attr_hash(args,
                         hdf[location + 'Events'],
                         complement_and_template_fields)
-                model_hash = make_hdf5_object_attr_hash(args,
+                if location + 'Model' in hdf:  
+                    model_hash = make_hdf5_object_attr_hash(args,
                         hdf[location + 'Model'],
                         complement_and_template_fields)
+                    events_hash.update(model_hash)
 
                 # #Logging the start time of a template read to pass to the 2d read in order to speed up mysql processing
 
                 if readtype == 'basecalled_template':
 
 		    # 0.64a
-		    '''
+		    ''' 
 		    ???
-		    start_time = float(events_hash['start_time'])
+		    start_time = float(events_hash['start_time']) 
 				 # /  sampling_rate
 		    '''
 
@@ -821,24 +831,24 @@ GROUP "/" {
                     g_template_end = g_end_time
 
 
-
-		if args.debug is True:
-			print "@@ location: ", location
-
+	
+		if args.debug is True: 
+			print "@@ location: ", location	
+		
 			print "@@ template start / end times: ",  \
 					template_start, template_end
-
+                
 			print "@@ start / end times C Line 781",  \
 					start_time, end_time
-
+		
 			print "@@ g_template start / end times: ",  \
 			    frmt(g_template_start), frmt(g_template_end)
-
+                
 			print "@@ g_start / g_end times C Line 784", \
 			    frmt(g_start_time), frmt(g_end_time)
-
+		
 			print "@@ "+ ("-"*40)
-
+    		
 			sys.stdout.flush()
 		#sys.exit()
 
@@ -849,7 +859,6 @@ GROUP "/" {
 		g_template_end = int(g_template_end / 60)
 
 
-                events_hash.update(model_hash)
                 events_hash.update({
                     'basename_id': basenameid,
                     'seqid': rec.id,
@@ -873,7 +882,7 @@ GROUP "/" {
                     'g_s10minwin': g_start_time / 10,
                     'g_s15minwin': g_start_time / 15,
                     })
-
+			
 
                 events_hash.update({'exp_start_time': tracking_id_hash['exp_start_time'
                                    ], 'pass': passcheck})
@@ -919,6 +928,15 @@ GROUP "/" {
             if args.bwa_align is True:
                 if args.debug is True:
                     print 'BWA aligning....'
+                bwaclassrunner.setjob(args,
+                   ref_fasta_hash,
+                   connection_pool[dbname],
+                   fastqhash,
+                   basename,
+                   basenameid,
+                   dbname,
+                   )
+                '''
                 init_bwa_threads(
                     args,
                     ref_fasta_hash,
@@ -928,6 +946,7 @@ GROUP "/" {
                     basenameid,
                     dbname,
                     )
+                '''
                 if args.debug is True:
                     print '... finished BWA aligning.'
 

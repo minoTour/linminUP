@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed Mar 30 14:34:02 2016
+# Last Modified: Fri, May 13, 2016  4:59:10 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -38,15 +38,15 @@ from sql import okSQLname
 from progressbar import *
 from pbar import *
 
+#from debug import debug
+
 
 def readFast5File(args, fast5file):
-	try: hdf = h5py.File(fast5file, 'r')
+	try: 
+		hdf = h5py.File(fast5file, 'r')
+		return hdf
 	except:
-		hdf.close()
-		hdf = None
 		moveFile(args, fast5file)
-
-	return hdf
 
 	'''
     try:
@@ -55,8 +55,8 @@ def readFast5File(args, fast5file):
 	moveFile(args, fast5file)
 	return None
 	'''
-
-
+	
+	
 
 	'''
 	#fname = os.path.splitext(os.path.basename(fast5file))[0]
@@ -76,7 +76,7 @@ def readFast5File(args, fast5file):
 
 class MyHandler(FileSystemEventHandler):
 
-    def __init__(self, dbcheckhash, oper, db, args, xml_file_dict, check_read_args, minup_version):
+    def __init__(self, dbcheckhash, oper, db, args, xml_file_dict, check_read_args, minup_version,bwaclassrunner): 
 
         self.creates, xml_file_dict = \
 		file_dict_of_folder(args, xml_file_dict, args.watchdir)
@@ -97,24 +97,31 @@ class MyHandler(FileSystemEventHandler):
 	self.xml_file_dict = xml_file_dict
 	self.minup_version = minup_version
 	self.hdf = ''
+        self.bwaclassrunner=bwaclassrunner
+
+	'''
+	print "Sorting files by timestamps...."
+	sys.stdout.flush()
+	self.sortedFiles = sorted(self.creates.items(), key=lambda x: x[1])
+	'''
 
         t = threading.Thread(target=self.processfiles)
         t.daemon = True
-
+        
         try:
             t.start()
         except (KeyboardInterrupt, SystemExit):
 	    # MS -- Order here is critical ...
-            print 'Ctrl-C entered -- exiting'
+            print 'Ctrl-C entered -- exiting'  
 
-	    t.clear()
-            t.stop()
+	    t.clear() 
+            t.stop() 
 
-            self.p.close()
-            self.p.terminate()
+            self.p.close()  
+            self.p.terminate()  
             terminateMinup(args, dbcheckhash, oper, self.minup_version)
             exitGracefully(args, dbcheckhash, self.minup_version)
-	    sys.exit(1)
+	    sys.exit(1) 
 
 
         if args.ref_fasta is not False:
@@ -249,8 +256,6 @@ class MyHandler(FileSystemEventHandler):
                 if customtimeout > 6:
 		    terminateMinup(args, dbcheckhash, oper, self.minup_version)
 
-	    print "Sorting files by timestamps...."
-	    sys.stdout.flush()
 	    '''
 	    ks = self.creates.keys()
 	    n = len(ks)
@@ -258,7 +263,7 @@ class MyHandler(FileSystemEventHandler):
 	    bar.start()
 	    bar.update(10*n/100)
 	    bar.update(25*n/100)
-
+	
 
 	    bar.update(75*n/100)
 	    bar.update(100*n/100)
@@ -285,22 +290,24 @@ class MyHandler(FileSystemEventHandler):
             	exitGracefully(args, dbcheckhash, self.minup_version)
 		sys.exit()
 	    '''
+	
+	    print "Sorting files by timestamps...."
+	    sys.stdout.flush()
+	    self.sortedFiles = sorted(self.creates.items(), key=lambda x: x[1])
 
-
-	    sortedFiles = sorted(self.creates.items(), key=lambda x: x[1])
-            for (fast5file, createtime) in sortedFiles:
+            for (fast5file, createtime) in self.sortedFiles:
 		'''
 	    	#if args.verbose is False and args.debug is False:
 			#bar.update(i) # self.processed)
-			#i+=1
+			#i+=1	
 		'''
-		if args.debug is True:
+		if args.debug is True: 
 			print "Processing: ", fast5file
 
 
                 # tn=time.time()
 
-                if int(createtime) + 20 < time.time():
+                if int(createtime) + 20 < time.time():  
 		# file created 20 sec ago, so should be complete ....
                     if fast5file not in self.processed.keys():
 
@@ -349,6 +356,7 @@ class MyHandler(FileSystemEventHandler):
                                     self.hdf,
                                     self.db_name,
                                     cursor,
+                                    self.bwaclassrunner,
                                     )
                           else: # RAW FILE TO PROCESS ...
                             #print "Not Basecalled"
@@ -381,10 +389,10 @@ class MyHandler(FileSystemEventHandler):
                             # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
 
 			    if args.prealign is True:
-                        	if args.debug is True:
+                        	if args.debug is True: 
 					print "Prealigning ...", fast5file
                             	x = self.apply_async_with_callback(fast5file, rawbasename_id, self.db_name)
-                            	if args.debug is True:
+                            	if args.debug is True: 
 					print x #.get()
 					print "... finished Prealign.", fast5file
 			except Exception, err:
@@ -394,7 +402,7 @@ class MyHandler(FileSystemEventHandler):
 
                             # print "This is a pre basecalled file"
 
-                            print "MyHandler(): except -- "+ fast5file
+                            print "MyHandler(): except -- "+ fast5file 
                             err_string = \
                                 'Error with fast5 file: %s : %s' \
                                 % (fast5file, err)
@@ -404,7 +412,7 @@ class MyHandler(FileSystemEventHandler):
 
 			    #moveFile(args, fast5file)
 			    #if args.debug is True: sys.exit()
-
+			
 			    #return ()
 
 			'''
