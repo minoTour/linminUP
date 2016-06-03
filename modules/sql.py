@@ -4,7 +4,7 @@
 # File Name: sql.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed, May 18, 2016  3:10:59 PM
+# Last Modified: Fri, Jun  3, 2016  5:07:21 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -15,7 +15,7 @@ import time
 import MySQLdb
 from warnings import filterwarnings
 
-def okSQLname(s): # MS 
+def okSQLname(s): # MS
        return "." not in s and "-" not in s
 
 
@@ -34,8 +34,8 @@ def create_align_table_sam(tablename, cursor):
         'rnext VARCHAR(100)',
         'pnext INT(4)',
         'tlen INT(4)',
-        'seq TEXT',
-        'qual TEXT',
+        'seq LONGTEXT',
+        'qual LONGTEXT',
         'n_m VARCHAR(10)',
         'm_d TEXT',
         'a_s VARCHAR(10)',
@@ -54,14 +54,14 @@ def create_align_table_sam(tablename, cursor):
 def create_barcode_table(tablename, cursor):
     fields = (
         'basename_id INT(10), PRIMARY KEY(basename_id)',
-        'pos0_start INT(5) NOT NULL',
-        'score INT(6) NOT NULL',
-        'design VARCHAR(10) NOT NULL',
-        'pos1_end INT(5) NOT NULL',
-        'pos0_end INT(5) NOT NULL',
-        'pos1_start INT(5) NOT NULL',
-        'variant VARCHAR(8) NOT NULL',
-        'barcode_arrangement VARCHAR(12) NOT NULL',
+        'pos0_start INT(5) ',
+        'score INT(6) ',
+        'design VARCHAR(10) ',
+        'pos1_end INT(5) ',
+        'pos0_end INT(5) ',
+        'pos1_start INT(5) ',
+        'variant VARCHAR(8) ',
+        'barcode_arrangement VARCHAR(12) ',
         )
     colheaders = ','.join(fields)
     sql = 'CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB' \
@@ -147,7 +147,7 @@ def create_pre_general_table(tablename, cursor):
         'start_mux INT(1) DEFAULT NULL',
         'start_time varchar(20) DEFAULT NULL',
         'total_events INT(20) DEFAULT NULL',
-	'sampling_rate float', 
+	'sampling_rate float',
         '1minwin INT NOT NULL, INDEX(1minwin)',
         '5minwin INT NOT NULL, INDEX(5minwin)',
         '10minwin INT NOT NULL, INDEX(10minwin)',
@@ -199,26 +199,28 @@ def create_general_table(tablename, cursor):
                 # = 1403015537
         'basename_id INT(10) NOT NULL, PRIMARY KEY(basename_id)',
         'basename VARCHAR(150) NOT NULL, UNIQUE KEY(basename)',
-        'local_folder VARCHAR(50) NOT NULL',
+        'read_type VARCHAR(50)',
+        'local_folder VARCHAR(50) ',
         'workflow_script VARCHAR(50) DEFAULT NULL',
-        'workflow_name VARCHAR(50) NOT NULL',
-        'read_id INT(4) NOT NULL',
-        'use_local VARCHAR(10) NOT NULL',
-        'tag VARCHAR(50) NOT NULL',
-        'model_path VARCHAR(50) NOT NULL',
-        'complement_model TEXT(10) NOT NULL',
-        'max_events INT(10) NOT NULL',
-        'input VARCHAR(200) NOT NULL',
-        'min_events INT(4) NOT NULL',
-        'config VARCHAR(100) NOT NULL',
-        'template_model VARCHAR(8) NOT NULL',
-        'channel INT(4) NOT NULL',
-        'metrichor_version VARCHAR(10) NOT NULL',
-        'metrichor_time_stamp VARCHAR(20) NOT NULL',
+        'workflow_name VARCHAR(50) ',
+        'read_id TEXT ',
+        'use_local VARCHAR(10) ',
+        'tag VARCHAR(50) ',
+        'model_path VARCHAR(50) ',
+        'complement_model TEXT(10) ',
+        'max_events INT(10) ',
+        'input VARCHAR(200) ',
+        'min_events INT(4) ',
+        'config VARCHAR(100) ',
+        'template_model VARCHAR(8) ',
+        'channel INT(4) ',
+        'metrichor_version VARCHAR(10) ',
+        'metrichor_time_stamp VARCHAR(20) ',
         'abasic_event_index INT(1)',
         'abasic_found INT(1)',
         'abasic_peak_height FLOAT(25,17)',
         'duration INT(15)',
+        'sampling_rate FLOAT(25,17)',
         'hairpin_event_index INT(10)',
         'hairpin_found INT(1)',
         'hairpin_peak_height FLOAT(25,17)',
@@ -248,7 +250,7 @@ def create_general_table(tablename, cursor):
         'g_s10minwin INT NOT NULL, INDEX(g_s10minwin)',
         'g_s15minwin INT NOT NULL, INDEX(g_s15minwin)',
         'align INT DEFAULT 0,  INDEX(align)',
-        'pass INT(1) NOT NULL',
+        'pass INT(1) ',
         )
     colheaders = ','.join(fields)
     sql = 'CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB' \
@@ -447,8 +449,8 @@ def create_events_model_fastq_table(tablename, cursor):
                 # = 1403015537
         'basename_id INT(10) NOT NULL, PRIMARY KEY (basename_id)',
         'seqid VARCHAR(150) NOT NULL, UNIQUE INDEX (seqid)',
-        'duration FLOAT(25,17) NOT NULL',
-        'start_time FLOAT(25,17) NOT NULL',
+        'duration FLOAT(25,17)',
+        'start_time FLOAT(25,17)',
         'scale FLOAT(25,17)',
         'shift FLOAT(25,17)',
         'gross_shift FLOAT(25,17) DEFAULT NULL',

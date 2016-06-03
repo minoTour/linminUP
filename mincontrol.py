@@ -18,6 +18,7 @@ from thrift.transport import TTransport
 from thrift.protocol import TCompactProtocol
 
 
+
 # import memcache
 
 import hashlib
@@ -252,7 +253,7 @@ class DummyClient(WebSocketClient):
             return
         transport = TTransport.TMemoryBuffer(m.data)
         protocol = TCompactProtocol.TCompactProtocol(transport)
-        print "Binary Message"
+        #print "Binary Message"
         #self.close()
         #msg = es.ServerMessage()
         #msg.read(protocol)
@@ -784,7 +785,7 @@ if __name__ == '__main__':
 
     # A few extra bits here to automatically reconnect if the server goes down
     # and is brought back up again.
-    wsip = "ws://"+ args.ip + ":9000/"
+    wsip = "ws://"+ args.ip + ":8003/"
     #ws = DummyClient('ws://127.0.0.1:9000/')
     #sys.exit()
     ws = DummyClient(wsip)

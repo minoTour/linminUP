@@ -33,7 +33,7 @@ def mysql_load_from_hashes(
     values = ','.join(vals)
     sql = 'INSERT INTO %s (%s) VALUES (%s) ' % (tablename, cols, values)
 
-    if args.debug is True: print sql
+    if args.verbose == "high": print sql
 
     cursor.execute(sql)
     db.commit()
@@ -51,7 +51,7 @@ def make_hdf5_object_attr_hash(args, hdf5object, fields):
             # print "filed: ",field (args.ref_fasta is not None), hdf5object.attrs[field]
 
             att_hash[field] = hdf5object.attrs[field]
-    if args.debug is True: print att_hash
+    if args.verbose == "high": print att_hash
     return att_hash
 
 

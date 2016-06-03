@@ -29,7 +29,7 @@ def process_fast5_raw(
     checksum = hashlib.md5(open(filepath, 'rb').read()).hexdigest()
     basename = '.'.join(os.path.split(filepath)[-1].split('.')[:-1]) # MS
 		  # =LomanLabz_013731_11rx_v2_3135_1_ch49_file28_strand
-    if args.debug is True:
+    if args.verbose == "high":
 	print "basename", basename
 
     # # get all the tracking_id data, make primary entry for basename, and get basenameid
@@ -52,7 +52,7 @@ def process_fast5_raw(
                             'file_path': filepath, 'md5sum': checksum})
  
 
-    if args.debug is True:
+    if args.verbose == "high":
     	print '@'*40
     	print "# tracking_id_hash"
     	for x in tracking_id_hash: print x
@@ -78,7 +78,7 @@ def process_fast5_raw(
 
 
         # ............print read_info_hash['hairpin_found']
-    	if args.debug is True:
+    	if args.verbose == "high":
 		print "-"*40
 		print "# read_info_hash"
 		for x in read_info_hash: print x
@@ -89,7 +89,7 @@ def process_fast5_raw(
         else:
             tracking_id_hash.update({'hairpin_found': '0'})
 
-    	if args.debug is True:
+    	if args.verbose == "high":
 		print "="*40
 		print "# read_info_hash"
 		for x in read_info_hash: print x
@@ -147,7 +147,7 @@ def process_fast5_raw(
         sampling_hash = make_hdf5_object_attr_hash(args,
                 hdf['/UniqueGlobalKey/channel_id'], ['sampling_rate'])
 
-    	if args.debug is True:
+    	if args.verbose == "high":
 		print '#'*40
 		print "# sampling_hash"
 		for x in sampling_hash: print x
@@ -166,7 +166,7 @@ def process_fast5_raw(
                             'total_events': 
 			len(hdf[rawconfigdatastring + '/Events/'])})
 
-    	if args.debug is True:
+    	if args.verbose == "high":
 		print '\''*40
 		print "# General Hash"
 		for x in general_hash: print x
@@ -176,7 +176,7 @@ def process_fast5_raw(
        '/Analyses/EventDetection_000/Reads/Read_%s' \
        % general_hash['read_number']
 
-    if args.debug is True: print "read_number", general_hash['read_number']
+    if args.verbose == "high": print "read_number", general_hash['read_number']
 
     #sys.stdout.flush()
     #sys.exit()
@@ -212,7 +212,7 @@ def process_fast5_raw(
 
 
         # Specific to catch read_id as different class:
-    	if args.debug is True:
+    	if args.verbose == "high":
 		print '\"'*40
 		print "line 213#> General Hash"
 		for x in general_hash: print x
@@ -229,7 +229,7 @@ def process_fast5_raw(
 
 	# ------------------------------------------
 
-    	if args.debug is True:
+    	if args.verbose == "high":
 		print '\"'*40
 		print "line 229 ## General Hash"
 		for x in general_hash: print x
@@ -238,18 +238,18 @@ def process_fast5_raw(
 	exp_start_time = int(tracking_id_hash['exp_start_time' ])
 	exp_start_time_f = frmt(exp_start_time)
 
-	if args.debug is True: 
+	if args.verbose == "high": 
 		print "@@ exp start_time: ", exp_start_time_f
         general_hash.update({'exp_start_time': exp_start_time})
 
 	sampling_rate = float(general_hash['sampling_rate']) * 60.
-	if args.debug is True: 
+	if args.verbose == "high": 
 		print "@@ sampling_rate: ", sampling_rate 
         	
 
 	start_time = \
 	   float(hdf5object.attrs['start_time']) / sampling_rate
-	if args.debug is True: 
+	if args.verbose == "high": 
 		print "@@ start_time: ", start_time
 
 	g_start_time = exp_start_time + int(start_time)*60
@@ -263,7 +263,7 @@ def process_fast5_raw(
 				/ sampling_rate 
 	g_end_time = exp_start_time + int(end_time)*60
 
-	if args.debug is True: 
+	if args.verbose == "high": 
     		print "@@ start / end times A Line 296: ", start_time, end_time
     		print "@@ g_start / g_end times g_A Line 296: ", frmt(g_start_time), frmt(g_end_time)
         #sys.stdout.flush()
@@ -303,7 +303,7 @@ def process_fast5_raw(
 
 	'''
 	'''
-    if args.debug is True:
+    if args.verbose == "high":
     	print "~"*40
     	print "line 302 #>> general_hash"
     	for x in general_hash: print x

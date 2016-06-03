@@ -4,7 +4,7 @@
 # File Name: checkRead.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Fri, May 13, 2016  3:33:52 PM
+# Last Modified: Fri, Jun  3, 2016  5:01:31 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -19,22 +19,26 @@ import time
 import datetime
 
 
+
 from sql import *
 from hdf5HashUtils import *
-from exitGracefully import terminateMinup, terminateSubProcesses 
+from exitGracefully import terminateMinup, terminateSubProcesses , terminateMinControl
 #from processFast5 import getBasecalltype
 from progressbar import *
 from pbar import *
 
 from debug import debug
 
-def getBasecalltype(filetype):
+def getBasecalltype(args, filetype):
     if filetype == 0: basecalltype = 'raw'
     if filetype == 1: basecalltype = 'Basecall_2D'
     if filetype == 2: basecalltype= "Hairpin_Split" 
     if filetype == 3: basecalltype = 'Basecall_1D'
-    # print "hdf basecalledtype:", basecalltype
-    sys.stdout.flush()
+    if filetype == 4: basecalltype = 'Basecall_RNN_1D'
+    if filetype == 5: basecalltype = 'OnlineBasecall'
+    if args.verbose == "high": 
+        print "hdf basecalledtype:", basecalltype
+        debug()
     return basecalltype
 
 # Unbuffered IO
@@ -72,12 +76,12 @@ def check_read(
 
     global runindex
 
-    if args.debug is True:
+    if args.verbose == "high":
     	print "Checking read ..."
     	sys.stdout.flush()
 
     filename = os.path.basename(filepath)
-    if args.debug is True:
+    if args.verbose == "high":
         print time.strftime('%Y-%m-%d %H:%M:%S'), 'processing:', \
             filename
 	sys.stdout.flush()
@@ -108,7 +112,7 @@ def check_read(
 
     if dbname in dbcheckhash['dbname']:  # so data from this run has been seen before in this instance of minup so switch to it!
         if dbcheckhash['dbname'][dbname] is False:
-            if args.verbose is True:
+            if args.verbose == "high":
                 print 'switching to database: ', dbname
 		sys.stdout.flush()
             sql = 'USE %s' % dbname
@@ -138,7 +142,7 @@ def check_read(
                 start_time,
                 )
 
-            if debug is True: print sql; debug()
+            if args.verbose == "high": print sql; debug()
 
             db.escape_string(sql)
             cursor.execute(sql)
@@ -165,7 +169,7 @@ def check_read(
         dbcheckhash['barcode_info'][dbname] = False
         dbcheckhash['logfile'][dbname] = os.path.join(os.path.sep,
                 logfolder, dbname + '.minup.log')
-        if args.verbose is True:
+        if args.verbose == "high":
             print 'trying database: ', dbname
 	    sys.stdout.flush()
         sql = "SHOW DATABASES LIKE \'%s\'" % dbname
@@ -174,7 +178,7 @@ def check_read(
 
         cursor.execute(sql)
         if cursor.fetchone():
-            if args.verbose is True:
+            if args.verbose == "high":
                 print 'database exists!'
 		sys.stdout.flush()
 
@@ -187,7 +191,7 @@ def check_read(
 
                 cursor.execute(sql)
                 db.commit()
-                if args.verbose is True:
+                if args.verbose == "high":
                     print 'database dropped.'
 		    sys.stdout.flush()
             else:
@@ -246,7 +250,7 @@ def check_read(
 
         # -------- Create a new empty database
 
-        #if args.verbose is True:
+        #if args.verbose == "high":
         print 'Making new database: ', dbname
 	sys.stdout.flush()
 
@@ -475,10 +479,10 @@ def check_read(
         # try and get the right basecall-configuration general
 
 
-        file_type = check_read_type(filepath,hdf)
+        file_type = check_read_type(args, filepath,hdf)
         #print "FILETYPE is", file_type
 
-        basecalltype=getBasecalltype(file_type) # MS
+        basecalltype=getBasecalltype(args, file_type) # MS
         basecalldir=''
         basecalldirconfig=''
         basecallindexpos='' #ML
@@ -546,7 +550,7 @@ def check_read(
 	except: 
 		print "checkReads(): error line 496."
 		sys.stdout.flush()
-		sys.exit()
+		#sys.exit()
         
 	#print basecalldirconfig
         #print basecalldir
@@ -629,9 +633,9 @@ def check_read(
             )
 
         #print sql
-        if debug is True: print sql; debug()
+        if args.verbose == "high": print sql; debug()
 
-        #if args.verbose is True:
+        #if args.verbose == "high":
 	print '... Database created.'
 	sys.stdout.flush()
 
@@ -645,7 +649,7 @@ def check_read(
 
         # # add us">> ", view_users
 
-        if args.verbose is True:
+        if args.verbose == "high":
             print "Adding users..."
 	    sys.stdout.flush()
 
@@ -669,7 +673,7 @@ def check_read(
                     'INSERT INTO Gru.userrun (user_id, runindex) VALUES ((SELECT user_id FROM Gru.users WHERE user_name =\'%s\') , (SELECT runindex FROM Gru.minIONruns WHERE runname = "%s") )' \
                     % (user_name, dbname)
 
-                if debug is True: print sql; debug()
+                if args.verbose == "high": print sql; debug()
                 # print sql
 
                 cursor.execute(sql)
@@ -738,7 +742,7 @@ def check_read(
             logfilehandle.write('Errors:' + os.linesep)
             logfilehandle.close()
         if args.pin is not False:
-            if args.verbose is True:
+            if args.verbose == "high":
                 print 'starting mincontrol'
 	        sys.stdout.flush()
             control_ip = ip
@@ -755,10 +759,11 @@ def check_read(
 
             try:
 		# MS to be tested ...
-                terminateSubProcesses(args, dbcheckhash, oper, minup_version)
+                terminateMinControl(args, dbcheckhash, oper, minup_version)
+                time.sleep(2)
                 if oper is 'linux':
                     cmd = \
-                        'python mincontrol.py -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
+                        'python mincontrol.py -h -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
                         % (
                         args.dbhost,
                         args.dbusername,
@@ -769,13 +774,13 @@ def check_read(
                         control_ip,
                         )
 
-                    # print "CMD", cmd
+                    if args.verbose == "high": print "CMD", cmd
 
                     subprocess.Popen(cmd, stdout=None, stderr=None,
                             stdin=None, shell=True)
                 if oper is 'windows':
                     cmd = \
-                        'mincontrol.exe -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
+                        '.\mincontrol.exe -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
                         % (
                         args.dbhost,
                         args.dbusername,
@@ -786,7 +791,7 @@ def check_read(
                         control_ip,
                         )
 
-                    # print "CMD", cmd
+                    if args.verbose == "high": print "CMD", cmd
 
                     subprocess.Popen(cmd, stdout=None, stderr=None,
                             stdin=None, shell=True)  # , creationflags=subprocess.CREATE_NEW_CONSOLE)
@@ -799,6 +804,7 @@ def check_read(
                     logfilehandle.write(err_string + os.linesep)
                     logfilehandle.close()
 
+        
         # # connection_pool for this db
 
         connection_pool[dbname] = list()
@@ -850,6 +856,20 @@ def check_read(
                 barcoded = True
                 barcode_align_obj = string + '/Barcoding/Aligns'
                 break
+
+
+        # NEW MINOTOUR BARCODE STUFF ....
+        if barcoded is False: #for x in range(0, 9):
+            string = '/minoTour_meta/barcodes' 
+
+            # print string
+
+            if string in hdf:
+                barcoded = True
+                barcode_align_obj = string # + '/Barcoding/Aligns'
+
+
+
         if barcoded is True:
             create_barcode_table('barcode_assignment', cursor)  # and create the table
             dbcheckhash['barcoded'][dbname] = True
@@ -876,7 +896,7 @@ def check_read(
                 % ','.join(bcs)
 
             # print sql
-            if debug is True: print sql; debug()
+            if args.verbose == "high": print sql; debug()
 
             cursor.execute(sql)
             db.commit()
@@ -886,12 +906,16 @@ def check_read(
 
 # ---------------------------------------------------------------------------
 
-def check_read_type(filepath, hdf):
+def check_read_type(args, filepath, hdf):
     filetype = 0
     if 'Analyses/Basecall_1D_000/' in hdf:	 filetype = 3
     if 'Analyses/Basecall_2D_000/' in hdf:	 filetype = 1
     if 'Analyses/Hairpin_Split_000/' in hdf:	 filetype = 2
-    if debug is True: print "filetype: ", filetype
+    if 'Analyses/Basecall_RNN_1D_000/' in hdf:	 filetype = 4
+    if 'Analyses/OnlineBasecall_000/' in hdf:	 filetype = 5
+    if args.verbose == "high": 
+        print "filetype: ", filetype
+        debug()
     return filetype
 
 #---------------------------------------------------------------------------
@@ -907,7 +931,7 @@ def load_ref_kmer_hash(db, tablename, kmers, refid, cursor):
 		sql+= "('%s',%s,%s,%s,%s)," % (kmer, refid, count, totalkmercount, freq)
 	sql=sql[:-1]
 	#print sql
-        if debug is True: print sql; debug()
+        if args.verbose == "high": print sql; debug()
 	cursor.execute(sql)
 	db.commit()
 

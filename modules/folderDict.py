@@ -4,7 +4,7 @@
 # File Name: folderDict.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Fri, May 13, 2016 12:53:27 PM
+# Last Modified: Fri, Jun  3, 2016  4:57:52 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -106,7 +106,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
         print 'Caching existing fast5 files in: %s' % path
         for (path, dirs, files) in os.walk(path):
 
-	    if args.debug is True: files = files[:10] # MS
+	    #if args.debugs True: files = files[:10] # MS
 
 
             for f in files: 

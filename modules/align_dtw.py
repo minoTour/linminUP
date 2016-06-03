@@ -50,7 +50,7 @@ def mysql_load_from_hashes2(
     values = ','.join(vals)
     sql = 'INSERT INTO %s (%s) VALUES (%s) ' % (tablename, cols, values)
 
-    if args.debug is True: print sql
+    if args.verbose == "high": print sql
 
     cursorpre.execute(sql)
     dbpre.commit()
@@ -84,7 +84,7 @@ def squiggle_align(args, squiggle, hashthang):
 	sys.exit()
 
    
-    if args.debug is True: 
+    if args.verbose == "high": 
     	print "Squiggle len: ", len(squiggle), 
     	print "qryStartEnd: ", args.qryStartEnd
 
@@ -92,11 +92,11 @@ def squiggle_align(args, squiggle, hashthang):
     if len(squiggle) >= 2*winSz \
 		and args.qryStartEnd is True: 
 	# Align just start and end of query...
-	if args.debug is True: print "Align just start and end of query..."
+	if args.verbose == "high": print "Align just start and end of query..."
     	res = squiggle_search3(args, winSz, squiggle, hashthang)
     else:
 	# Align whole query ....
-	if args.debug is True: print "Align whole query ...."
+	if args.verbose == "high": print "Align whole query ...."
 	res = squiggle_search2(args, squiggle, hashthang)
 
     return res
@@ -104,7 +104,7 @@ def squiggle_align(args, squiggle, hashthang):
 
 
 def squiggle_search3(args, winSz, squiggle, hashthang): 
-    if args.debug is True:
+    if args.verbose == "high":
 	print "squiggle_search3 called..."
     #refLen = len(hashthang[ref]['Fprime'])
 
@@ -118,7 +118,7 @@ def squiggle_search3(args, winSz, squiggle, hashthang):
     qryEndResults = squiggle_search2(args, squiggleEnd, hashthang)
     seqmatchname_, distance_, fr_, rs_, re_, qs_, qe_ = qryEndResults
 
-    if args.debug is True:
+    if args.verbose == "high":
     	print "Len squiggle:" + str(len(squiggle))
     	print "qryStartRes: " + str(qryStartResults[1:])
     	print "qryEndRes:   " + str(qryEndResults[1:])
@@ -148,7 +148,7 @@ def squiggle_search3(args, winSz, squiggle, hashthang):
 		, re_
 		, qs
 		, qe_)
-	  if args.debug is True:
+	  if args.verbose == "high":
 	  	print "squiggle_seqrch3(): SUCCESS F ...."
 
     # Matching on R only ...
@@ -172,12 +172,12 @@ def squiggle_search3(args, winSz, squiggle, hashthang):
 		, re_
 		, qs
 		, qe_)
-	  if args.debug is True:
+	  if args.verbose == "high":
 	  	print "squiggle_seqrch3(): SUCCESS R ...."
 
     # Else FAIL ...
     else:
-	if args.debug is True:
+	if args.verbose == "high":
 		print "squiggle_seqrch3(): FAIL ??...."
 	# sys.exit()
 
@@ -187,7 +187,7 @@ def squiggle_search3(args, winSz, squiggle, hashthang):
 def squiggle_search2(args, squiggle, hashthang):
 
     result = []
-    if args.debug is True:
+    if args.verbose == "high":
     	print 'Squiggle search called'
 
     # print "hashthang"+ hashthang
@@ -277,11 +277,11 @@ def squiggle_search2(args, squiggle, hashthang):
 # ---------------------------------------------------------------------------
 
 def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
-    	if args.debug is True:
+    	if args.verbose == "high":
 		print "mp_worker called ..."
 	dbpre = MySQLdb.connect(host=args.dbhost, user=args.dbusername, passwd=args.dbpass, port=args.dbport)
 	cursorpre = dbpre.cursor()
-	if args.debug is True: 
+	if args.verbose == "high": 
 		print "align_dtw: ",filename
 		#print "kmerhashT",type(kmerhashT)
 		#print kmerhashT
@@ -296,7 +296,7 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 
 	#print "**** Database name is ",db_name
 	try:
-		#if args.debug is True:
+		#if args.verbose == "high":
 			#print "Read start time",readstarttime
 			#print "Elapsed time since read=",(time.time()-readstarttime)
 			#squiggle = extractsquig(data.events)
@@ -376,7 +376,7 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 					### If the forward and reverse reads do not map appropriately to the reference then we only upload the template and complement mappings - even if both are on the same strand?
 
 				else:
-					if args.debug is True: 
+					if args.verbose == "high": 
 						print "No Hairpin"
 
 					(seqmatchnameT,distanceT,frT,rsT,reT,qsT,qeT) = squiggle_align(args, meansquiggle,kmerhashT)
@@ -404,5 +404,5 @@ def mp_worker((filename,kmerhashT,kmerhashC,time,rawbasename_id,db_name, args)):
 	except Exception, err:
 		err_string="Time Warping Stuff : %s" % ( err)
 		print >>sys.stderr, err_string
-	if args.debug is True: print "align_dtw finished: ",filename
+	if args.verbose == "high": print "align_dtw finished: ",filename
 	return (filename)

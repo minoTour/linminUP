@@ -46,6 +46,24 @@ def terminateSubProcesses(args, dbcheckhash, oper, minup_version):
     	else: proc.kill()
 
 
+def terminateMinControl(args, dbcheckhash, oper, minup_version):
+    print "terminating sub-processes...."
+    sys.stdout.flush()
+
+    pid = os.getpid() 
+    process = psutil.Process(pid)
+    for proc in process.children(recursive=True):
+     if proc.name() == "mincontrol.exe":
+        proc.kill()
+    '''
+      	if oper == "windows":
+	  pid_ = proc.as_dict(attrs=['pid'])['pid']
+	  # 0 => Ctrl-C
+      	  ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )  
+    	else: proc.kill()
+    '''
+
+
 
 def exitGracefully(args, dbcheckhash, minup_version):
 

@@ -208,7 +208,7 @@ def do_last_align(
 
             # ---------------------------------------------------------------------------
 
-            if args.debug is True:
+            if args.verbose == "high":
                 align_message = '%s\n\tAligned:%s:%s-%s (%s) ' % (qname,
                         rname, rstart, rstart + rlen, strand)
                 print align_message

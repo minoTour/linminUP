@@ -6,7 +6,7 @@
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
 # Creation Date: 2014 - 2016
-# Last Modified: Wed, May 18, 2016  3:58:49 PM
+# Last Modified: Thu, Jun  2, 2016  2:25:43 PM
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -342,9 +342,10 @@ if __name__ == '__main__':
     parser.add(
         '-v',
         '--verbose-true',
-        action='store_true',
         help='Print detailed messages while processing files.',
-        default=False,
+        type=str,
+        required=False,
+        default='none',
         dest='verbose',
         )
     parser.add(
@@ -431,7 +432,7 @@ if __name__ == '__main__':
         help='Disable MyHandler try excep',
         default=False,
         dest='debug',
-        )
+       )
 
     parser.add( # MS ...
         '-standalone',
@@ -456,7 +457,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
+    if args.verbose == 'high':
+        print args
+        sys.stdout.flush()
 
     # MS ...
     if args.indexToRefDir is True:

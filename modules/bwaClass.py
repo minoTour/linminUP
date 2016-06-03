@@ -49,6 +49,9 @@ class BwaClass():
         #self.job = task
         #self.color = color
 
+    def getProgress(self):
+        return self,todo, self.done
+
     def run(self):
         """ Method that runs forever """
         timecheck = time.time()

@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Fri, May 13, 2016  4:59:10 PM
+# Last Modified: Fri, Jun  3, 2016  4:57:20 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -130,21 +130,21 @@ class MyHandler(FileSystemEventHandler):
 
             # print type(seqlen)
 
-            if args.verbose is True: print seqlen
+            if args.verbose == "high": print seqlen
             shortestSeq = np.min(seqlen.values())
-            if args.verbose is True: print shortestSeq
-            if args.verbose is True: print args.largerRef
+            if args.verbose == "high": print shortestSeq
+            if args.verbose == "high": print args.largerRef
 
             if not args.largerRef and shortestSeq > 10 ** 8:
-                if args.verbose is True: print "Length of references is >10^8: processing may be *EXTREMELY* slow. To overide rerun using the '-largerRef' option"  # MS
+                if args.verbose == "high": print "Length of references is >10^8: processing may be *EXTREMELY* slow. To overide rerun using the '-largerRef' option"  # MS
                 terminateMinup(args, dbcheckhash, oper, self.minup_version)
             elif not args.largerRef and shortestSeq > 10 ** 7:
 
-                if args.verbose is True: print "Length of references is >10^7: processing may be *VERY* slow. To overide rerun using the '-largerRef' option"  # MS
+                if args.verbose == "high": print "Length of references is >10^7: processing may be *VERY* slow. To overide rerun using the '-largerRef' option"  # MS
                 terminateMinup(args, dbcheckhash, oper, self.minup_version)
             else:
 
-                if args.verbose is True: print 'Length of references is <10^7: processing should be ok .... continuing .... '  # MS
+                if args.verbose == "high": print 'Length of references is <10^7: processing should be ok .... continuing .... '  # MS
 
                                                 # model_file = "model.txt"
                                                 # model_kmer_means=process_model_file(model_file)
@@ -180,7 +180,7 @@ class MyHandler(FileSystemEventHandler):
                                 # print self.rawprocessed
                                 # print actions
 
-        if args.verbose is True:
+        if args.verbose == "high":
             print 'Read Warped'
 
     def apply_async_with_callback(
@@ -211,7 +211,7 @@ class MyHandler(FileSystemEventHandler):
 
                                 # x.get()
 
-        if args.debug is True: print x
+        if args.verbose == "high": print x
         #print 'Call complete'
 
     def processfiles(self):
@@ -301,7 +301,7 @@ class MyHandler(FileSystemEventHandler):
 			#bar.update(i) # self.processed)
 			#i+=1	
 		'''
-		if args.debug is True: 
+		if args.verbose == "high": 
 			print "Processing: ", fast5file
 
 
@@ -311,90 +311,8 @@ class MyHandler(FileSystemEventHandler):
 		# file created 20 sec ago, so should be complete ....
                     if fast5file not in self.processed.keys():
 
-                        try:
-			  self.hdf = readFast5File(args, fast5file)
-                          self.creates.pop(fast5file, None)
-                          self.processed[fast5file] = time.time()
-                          # starttime = time.time()
-
-
-# ##             We want to check if this is a raw read or a basecalled read
-
-                          self.file_type = check_read_type(fast5file,
-                                    self.hdf)
-		   	  #print str(("file_type: ", self.file_type) )
-
-                            #print "Basecalled Read"
-                            #print fast5file
-			  if args.debug is True:
-				print "self.file_type: ", self.file_type
-			  sys.stdout.flush()
-                          if self.file_type > 0 : # BASECALLED FILE ...
-                            self.db_name = check_read(
-                                    db,
-                                    args,
-                                    connection_pool,
-                                    minup_version,
-                                    comments,
-                                    xml_file_dict,
-                                    ref_fasta_hash,
-                                    dbcheckhash,
-                                    logfolder,
-                                    fast5file,
-                                    self.hdf,
-                                    cursor,
-                                    oper,
-                                    )
-                            process_fast5(
-				    oper,
-                                    db,
-                                    connection_pool,
-                                    args,
-                                    ref_fasta_hash,
-                                    dbcheckhash,
-                                    fast5file,
-                                    self.hdf,
-                                    self.db_name,
-                                    cursor,
-                                    self.bwaclassrunner,
-                                    )
-                          else: # RAW FILE TO PROCESS ...
-                            #print "Not Basecalled"
-                            #print fast5file
-                            self.db_name = check_read(
-                                    db,
-                                    args,
-                                    connection_pool,
-                                    minup_version,
-                                    comments,
-                                    xml_file_dict,
-                                    ref_fasta_hash,
-                                    dbcheckhash,
-                                    logfolder,
-                                    fast5file,
-                                    self.hdf,
-                                    cursor,
-				    oper,
-                                    )
-                            self.rawcount[fast5file] = time.time()
-                            rawbasename_id = process_fast5_raw(
-                                    db,
-                                    args,
-                                    fast5file,
-                                    self.hdf,
-                                    self.db_name,
-                                    cursor,
-                                    )
-
-                            # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
-
-			    if args.prealign is True:
-                        	if args.debug is True: 
-					print "Prealigning ...", fast5file
-                            	x = self.apply_async_with_callback(fast5file, rawbasename_id, self.db_name)
-                            	if args.debug is True: 
-					print x #.get()
-					print "... finished Prealign.", fast5file
+                      if args.debug is True: 
+                        try: self.do_file_processing(fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor)
 			except Exception, err:
 			    if self.hdf: # CI
                                 self.hdf.close() # CI
@@ -408,43 +326,131 @@ class MyHandler(FileSystemEventHandler):
                                 % (fast5file, err)
                             #print >> sys.stderr, err_string
                             print err_string
+                            print "X"*80
+                            sys.exit()
 
 
 			    #moveFile(args, fast5file)
-			    #if args.debug is True: sys.exit()
+			    #if args.verbose == "high": sys.exit()
 			
 			    #return ()
 
-			'''
-                                                                                                #               if dbname is not None:
-                                                                                                #                               if dbname in dbcheckhash["dbname"]:
-                                                                                                #                                               with open(dbcheckhash["logfile"][dbname],"a") as logfilehandle:
-                                                                                                #                                                               logfilehandle.write(err_string+os.linesep)
-                                                                                                # s                                                              logfilehandle.close()
-			'''
-
-                        everyten += 1
-                        if everyten == 10:
+                      else: self.do_file_processing(fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor)
+                      everyten += 1
+                      if everyten == 10:
                             tm = time.time()
                             if ts + 5 < tm:  # just to stop it printing two status messages one after the other.
                                 if args.preproc is True:
                                     print datetime.datetime.fromtimestamp(tm).strftime('%Y-%m-%d %H:%M:%S'
         ), 'CACHED:', len(self.creates), 'PROCESSED:', \
-    len(self.processed), 'RAW FILES:', len(self.rawcount), \
-    'RAW WARPED:', len(self.rawprocessed)
+        len(self.processed), 'RAW FILES:', len(self.rawcount), \
+        'RAW WARPED:', len(self.rawprocessed)
                                 else:
                                     print datetime.datetime.fromtimestamp(tm).strftime('%Y-%m-%d %H:%M:%S'
         ), 'CACHED:', len(self.creates), 'PROCESSED:', \
-    len(self.processed)
+        len(self.processed)
                             everyten = 0
-	    '''
-	    if args.verbose is False and args.debug is False:
-	    	#bar.finish()
-		print "... finished processing files."
-		sys.stdout.flush()
-	    '''
-            time.sleep(5)
 
+                    '''
+                    if args.verbose is False and args.debug is False:
+                        #bar.finish()
+                        print "... finished processing files."
+                        sys.stdout.flush()
+                    '''
+            time.sleep(5)
+    # ..... END PROCESSFILE()
+
+
+    def do_file_processing(self, fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor):
+          args = self.args
+	  db = self.db
+	  oper = self.oper
+	  xml_file_dict = self.xml_file_dict
+          self.hdf = readFast5File(args, fast5file)
+          self.creates.pop(fast5file, None)
+          self.processed[fast5file] = time.time()
+          # starttime = time.time()
+
+
+    # ## We want to check if this is a raw read or a basecalled read
+
+          self.file_type = check_read_type(args, fast5file,
+                    self.hdf)
+          #print str(("file_type: ", self.file_type) )
+
+            #print "Basecalled Read"
+            #print fast5file
+          if args.verbose == "high":
+                print "self.file_type: ", self.file_type
+          sys.stdout.flush()
+          if self.file_type > 0 : # BASECALLED FILE ...
+            self.db_name = check_read(
+                    db,
+                    args,
+                    connection_pool,
+                    minup_version,
+                    comments,
+                    xml_file_dict,
+                    ref_fasta_hash,
+                    dbcheckhash,
+                    logfolder,
+                    fast5file,
+                    self.hdf,
+                    cursor,
+                    oper,
+                    )
+            process_fast5(
+                    oper,
+                    db,
+                    connection_pool,
+                    args,
+                    ref_fasta_hash,
+                    dbcheckhash,
+                    fast5file,
+                    self.hdf,
+                    self.db_name,
+                    cursor,
+                    self.bwaclassrunner,
+                    )
+          else: # RAW FILE TO PROCESS ...
+            #print "Not Basecalled"
+            #print fast5file
+            self.db_name = check_read(
+                    db,
+                    args,
+                    connection_pool,
+                    minup_version,
+                    comments,
+                    xml_file_dict,
+                    ref_fasta_hash,
+                    dbcheckhash,
+                    logfolder,
+                    fast5file,
+                    self.hdf,
+                    cursor,
+                    oper,
+                    )
+            self.rawcount[fast5file] = time.time()
+            rawbasename_id = process_fast5_raw(
+                    db,
+                    args,
+                    fast5file,
+                    self.hdf,
+                    self.db_name,
+                    cursor,
+                    )
+
+            # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
+
+            if args.prealign is True:
+                if args.verbose == "high": 
+                        print "Prealigning ...", fast5file
+                x = self.apply_async_with_callback(fast5file, rawbasename_id, self.db_name)
+                if args.verbose == "high": 
+                        print x #.get()
+                        print "... finished Prealign.", fast5file
+
+    # ..... END DO_FILE_PROCESSING()
 
 
     # From ML 22.03.16 ....

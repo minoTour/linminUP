@@ -4,7 +4,7 @@
 # File Name: align_bwa.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Fri, May 13, 2016  4:57:30 PM
+# Last Modified: Fri, Jun  3, 2016  5:05:16 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -139,7 +139,7 @@ def do_bwa_align2(args,
     #print read
 
 
-    if args.debug is True:
+    if args.verbose == "high":
     	#read = read + '\r\n' + read # MS
     	print read
     	print "-"*80
@@ -155,12 +155,12 @@ def do_bwa_align2(args,
     (out, err) = proc.communicate(input=read)
     status = proc.wait()
 
-    # print "BWA Error", err
+    #print "BWA Error", err
 
     sam = out.encode('utf-8')
     samdata = sam.splitlines()
 
-    if args.debug is True:
+    if args.verbose == "high":
         for s in samdata:
             print s
             print "="*80
@@ -169,17 +169,21 @@ def do_bwa_align2(args,
     sqls = [] # MS
     for line in samdata:
 
-        # print line
-
         if not line.startswith('@'):
             line = line.strip('\n')
             record = line.split('\t')
+            if args.verbose == "high": 
+                print "Processing Alignment Record ", record[0]
+                debug()
+                print record
+                print "x"*80
+                
 
-            #print "RECORD", len(record)
-            #print "Processing ", record[0]
-
-
-            if record[2] is not '*':
+            if record[2] == '*':
+                if args.verbose == "high":
+                   print "Alignement failed:", line
+                   debug()
+            else:
                 qname = record[0]
                 qualscores = mydicttopass[qname]["fastqdata"]['quals']
                 flag = int(record[1])
@@ -245,6 +249,7 @@ def do_bwa_align2(args,
                 # print sql
 
 		sqls.append(sql) # MS
+                #print sql
                 #cursor.execute(sql)
                 #db.commit()
 
@@ -267,7 +272,7 @@ def do_bwa_align2(args,
 
                 # lo.pprint tablename
 
-                if args.debug is True:
+                if args.verbose == "high":
                     align_message = '%s\n\tAligned:%s:%s-%s (%s) ' \
                         % (qname, rname, align_info['r_start'],
                            align_info['r_stop'], strand)
@@ -416,8 +421,12 @@ def do_bwa_align2(args,
     #bar.start()
     for i,s in enumerate(sqls): # MS
     #    bar.update(i)
-        if args.debug is True: print s # MS
-    	cursor.execute(s) # MS
+        if args.verbose == "high": print s # MS
+    	try:
+            cursor.execute(s) # MS
+        except:
+            if args.verbose == "high" : debug()
+            pass
     db.commit() # MS
     sqls = []  # MS
     #bar.finish()
@@ -460,7 +469,7 @@ def do_bwa_align(
 
     read = '>%s \r\n%s' % (seqid, fastqhash['seq'])
 
-    if args.debug is True:
+    if args.verbose == "high":
     	#read = read + '\r\n' + read # MS
     	print read
     	print "-"*80
@@ -468,7 +477,8 @@ def do_bwa_align(
     cmd = 'bwa mem -x ont2d %s %s -' % (options,
             ref_fasta_hash[dbname]['bwa_index'])
 
-    if debug is True: print cmd; debug()
+    if args.verbose == "high": 
+        print cmd; debug()
 
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
@@ -476,34 +486,38 @@ def do_bwa_align(
     (out, err) = proc.communicate(input=read)
     status = proc.wait()
 
-    # print "BWA Error", err
+    #print "BWA Error", err
 
     sam = out.encode('utf-8')
     samdata = sam.splitlines()
 
-    if args.debug is True:
-    	for s in samdata: 
-		print s
+    if args.verbose == "high":
+    	for s in samdata: print s
     	print "="*80
-
-    if debug is True: debug()
-
 
     sqls = [] # MS
     for line in samdata:
-
-        # print line
+        if args.verbose == "high": 
+            debug()
+            print line
+            print "-"*80
 
         if not line.startswith('@'):
+            if args.verbose == "high": 
+                    debug()
             line = line.strip('\n')
             record = line.split('\t')
 
-            if debug is True: 
+            if args.verbose == "high": 
                    print "RECORD", len(record)
                    debug()
 
-            if record[2] is not '*':
-                if debug is True: debug()
+            if record[2] == '*':
+                print "Alignement failed:", line
+                sys.stdout.flush()
+            else:
+                if args.verbose == "high": 
+                    debug()
                 qname = record[0]
                 flag = int(record[1])
                 rname = record[2]
@@ -523,7 +537,8 @@ def do_bwa_align(
 
                 align_strand = str()
                 strand = str()
-                if debug is True: debug()
+                if args.verbose == "high": 
+                    debug()
 
                 if flag == 0 or flag == 2048:
                     strand = '+'
@@ -538,9 +553,11 @@ def do_bwa_align(
                     tablename = 'align_sam_basecalled_2d'
                 if qname.endswith('complement'):
                     tablename = 'align_sam_basecalled_complement'
-                if qname.endswith('template'):
+                #if qname.endswith('template'):
+                else: # MS 01.06.16 for rrn called reas ....
                     tablename = 'align_sam_basecalled_template'
-                if debug is True: debug()
+                if args.verbose == "high": 
+                    debug()
                 sql = \
                     "INSERT INTO %s (basename_id,qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual,N_M,M_D,A_S,X_S) VALUES (%d,\'%s\',%d,\'%s\',%d,%d,\'%s\',\'%s\',\'%s\',%d,\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')" \
                     % (
@@ -563,7 +580,8 @@ def do_bwa_align(
                     x_s,
                     )
 
-                if debug is True: print sql; debug()
+                if args.verbose == "high": 
+                        print sql; debug()
 
 		sqls.append(sql) # MS
                 #cursor.execute(sql)
@@ -588,7 +606,7 @@ def do_bwa_align(
 
                 # lo.pprint tablename
 
-                if args.debug is True:
+                if args.verbose == "high":
                     align_message = '%s\n\tAligned:%s:%s-%s (%s) ' \
                         % (qname, rname, align_info['r_start'],
                            align_info['r_stop'], strand)
@@ -604,9 +622,10 @@ def do_bwa_align(
                     + ' SET align=\'1\' WHERE basename_id="%s" ' \
                     % basenameid  # ML
 
-		sqls.append(sql) # MS
-                #cursor.execute(sql)
-                #db.commit()
+		#sqls.append(sql) # MS
+                print sql
+                cursor.execute(sql)
+                db.commit()
 
                 if flag == 0:  # so it's a primary alignment, POSITIVE strand
                     fiveprimetable = tablename + '_5prime'
@@ -636,7 +655,7 @@ def do_bwa_align(
                     sql = 'INSERT INTO %s (%s) VALUES %s' \
                         % (fiveprimetable, colstring, valstring)
 
-                    if debug is True: print sql; debug()
+                    if args.verbose == "high": print sql; debug()
 
 		    sqls.append(sql) # MS
                     #cursor.execute(sql)
@@ -662,7 +681,7 @@ def do_bwa_align(
                     sql = 'INSERT INTO %s (%s) VALUES %s' \
                         % (threeprimetable, colstring, valstring)
 
-                    if debug is True: print sql, debug()
+                    if args.verbose == "high": print sql, debug()
 
 		    sqls.append(sql) # MS
                     #cursor.execute(sql)
@@ -696,7 +715,7 @@ def do_bwa_align(
                     sql = 'INSERT INTO %s (%s) VALUES %s' \
                         % (fiveprimetable, colstring, valstring)
 
-                    if debug is True: print sql; debug()
+                    if args.verbose == "high": print sql; debug()
 
 		    sqls.append(sql) # MS
                     #cursor.execute(sql)
@@ -723,7 +742,7 @@ def do_bwa_align(
                         % (threeprimetable, colstring, valstring)
 
                     
-                    if debug is True: debug; print sql
+                    if args.verbose == "high": debug; print sql
 
 		
 		    sqls.append(sql) # MS
@@ -738,7 +757,7 @@ def do_bwa_align(
     #bar.start()
     for i,s in enumerate(sqls): # MS
     #    bar.update(i)
-        if args.debug is True: print s # MS
+        if args.verbose == "high": print s # MS
     	cursor.execute(s) # MS
     db.commit() # MS
     sqls = []  # MS
