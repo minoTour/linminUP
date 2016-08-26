@@ -4,7 +4,7 @@
 # File Name: folderDict.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Fri, Jun  3, 2016  4:57:52 PM
+# Last Modified: Fri, Aug 26, 2016 12:25:45 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -22,68 +22,68 @@ from pbar import *
 # ---------------------------------------------------------------------------
 
 def moveFile(args, fast5file):
-	print "moveFile(): " + fast5file
-	sys.stdout.flush()
+        print "moveFile(): " + fast5file
+        sys.stdout.flush()
 
-	sep = os.path.sep
-	suffix = sep+".."+sep+".."+sep+"HDF_fail"+sep
-	path_ = os.path.splitext(os.path.dirname(fast5file))[0] + suffix
-	if not os.path.exists(path_): os.makedirs(path_)
+        sep = os.path.sep
+        suffix = sep+".."+sep+".."+sep+"HDF_fail"+sep
+        path_ = os.path.splitext(os.path.dirname(fast5file))[0] + suffix
+        if not os.path.exists(path_): os.makedirs(path_)
 
-	fname = os.path.splitext(os.path.basename(fast5file))[0]
-	fast5file_ = path_ + fname + ".fast5"
-	os.rename(fast5file, fast5file_)
+        fname = os.path.splitext(os.path.basename(fast5file))[0]
+        fast5file_ = path_ + fname + ".fast5"
+        os.rename(fast5file, fast5file_)
 
-	print fast5file + " moved to " + fast5file_
+        print fast5file + " moved to " + fast5file_
 
 # ---------------------------------------------------------------------------
 def getHDFtime(args, f):
-    try:
-    	hdf = h5py.File(f)
-        expStartTime = \
-		hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time']
-        reads = 'Analyses/EventDetection_000/Reads/'
+    with h5py.File(f) as hdf:
+        try:
+            expStartTime = \
+                    hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time']
+            reads = 'Analyses/EventDetection_000/Reads/'
 
-        for read in hdf[reads]:
-		'''
-		# 0.64a .. 
-                startTime = hdf[ reads + read ].attrs['start_time'] 
-		readTime = startTime
-		'''
-		# 0.64b ...
-		# End time is Start time of final event 
-                #endTime = hdf[ reads + read + "/Events"][-1][-2] 
-		endTime = hdf[ reads + read + "/Events"].attrs['start'][-1    ]
+            for read in hdf[reads]:
+                    '''
+                    # 0.64a .. 
+                    startTime = hdf[ reads + read ].attrs['start_time'] 
+                    readTime = startTime
+                    '''
+                    # 0.64b ...
+                    # End time is Start time of final event 
+                    #endTime = hdf[ reads + read + "/Events"][-1][-2] 
+                    endTime = hdf[ reads + read + "/Events"].attrs['start'][-1    ]
 
-		readTime = endTime
+                    readTime = endTime
 
-	timestamp =  int(expStartTime) + int(readTime)
-    	hdf.close()
-    except:
-	timestamp = -1
+            timestamp =  int(expStartTime) + int(readTime)
+            hdf.close()
+        except:
+            timestamp = -1
     return timestamp
     
 
 
 def assignHDFtimes(args, d):
 
-	print "Assigning HDF timestamps..."
-	sys.stdout.flush()
+        print "Assigning HDF timestamps..."
+        sys.stdout.flush()
 
-	# return dict(map(getHDFtime, d.items()) )
-	d_ = dict()
-	ks = d.keys()
+        # return dict(map(getHDFtime, d.items()) )
+        d_ = dict()
+        ks = d.keys()
 
-	bar = mkBar(len(ks))
-	bar.start()
+        bar = mkBar(len(ks))
+        bar.start()
 
-	for i, k in enumerate(ks) :
-		d_[k] = getHDFtime(args, k) 
-		bar.update(i)
+        for i, k in enumerate(ks) :
+                d_[k] = getHDFtime(args, k) 
+                bar.update(i)
 
-	bar.finish()
+        bar.finish()
 
-	return d_
+        return d_
 
 
 # ---------------------------------------------------------------------------
@@ -106,31 +106,36 @@ def file_dict_of_folder(args, xml_file_dict, path):
         print 'Caching existing fast5 files in: %s' % path
         for (path, dirs, files) in os.walk(path):
 
-	    #if args.debugs True: files = files[:10] # MS
+            #if args.debugs True: files = files[:10] # MS
 
 
             for f in files: 
 
-	      # TODO ML to check 69 - 89 ....
+              # TODO ML to check 69 - 89 ....
 
               if args.standalone is False:
                 if 'downloads' in path and args.preproc is False \
                     or args.preproc is True and \
-			('downloads' in path or 'uploaded' in path) :
+                        ('downloads' in path or 'uploaded' in path) :
                     if 'muxscan' not in f and f.endswith('.fast5'):
                         file_list_dict[os.path.join(path, f)] = \
                             os.stat(os.path.join(path, f)).st_mtime
-		    xml_file_dict = file_dict_of_folder_(args
-				, xml_file_dict, path, file_list_dict)
+                    xml_file_dict = file_dict_of_folder_(args
+                                , xml_file_dict, path, file_list_dict)
 
-	      else:
-                if 'downloads' in path and args.preproc is False \
+              elif 'downloads' in path and args.preproc is False \
                     or args.preproc is True:
                     if 'muxscan' not in f and f.endswith('.fast5'):
                        file_list_dict[os.path.join(path, f)] = \
                             os.stat(os.path.join(path, f)).st_mtime
-		    xml_file_dict = file_dict_of_folder_(args
-				, xml_file_dict, path, file_list_dict)
+                    xml_file_dict = file_dict_of_folder_(args
+                                , xml_file_dict, path, file_list_dict)
+              else:
+                    if 'muxscan' not in f and f.endswith('.fast5'):
+                       file_list_dict[os.path.join(path, f)] = \
+                            os.stat(os.path.join(path, f)).st_mtime
+                    xml_file_dict = file_dict_of_folder_(args
+                                , xml_file_dict, path, file_list_dict)
 
 
     print 'Found %d existing fast5 files to process first.'  % len(file_list_dict)
@@ -155,10 +160,10 @@ def file_dict_of_folder(args, xml_file_dict, path):
 
         for path in ref_list_dict.keys():
             files = ','.join(ref_list_dict[path])
-            process_ref_fasta(args, valid_ref_dir
-				, bwa_index_dir
-				, bwa_index_dir
-                              , files, ref_fasta_hash)
+        # process_ref_fasta(args, valid_ref_dir
+        #                       , bwa_index_dir
+        #                       , bwa_index_dir
+        #                      , files, ref_fasta_hash)
 
     # with open(dbcheckhash["logfile"][dbname],"a") as logfilehandle:
     # ....logfilehandle.write(found_fast5_note+os.linesep)
@@ -167,7 +172,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
 
     
     if args.hdfTimes == True and len(file_list_dict)>0 :
-	file_list_dict = assignHDFtimes(args, file_list_dict) # MS v0.64
+        file_list_dict = assignHDFtimes(args, file_list_dict) # MS v0.64
 
     return file_list_dict, xml_file_dict
 
@@ -176,129 +181,129 @@ def file_dict_of_folder(args, xml_file_dict, path):
 
 def file_dict_of_folder_(args, xml_file_dict, path, file_list_dict):
     if args.batch_fasta is True:
-	if 'reference' in path:
-	    if f.endswith('.fa') or f.endswith('.fasta'
-		    ) or f.endswith('.fna'):
-		ref_path = path
-		while 'downloads' \
-		    not in os.path.split(ref_path)[1]:
-		    ref_path = os.path.split(ref_path)[0]
-		if ref_path not in ref_list_dict:
-		    ref_list_dict[ref_path] = list()
-		ref_list_dict[ref_path].append(os.path.join(path, f))
+        if 'reference' in path:
+            if f.endswith('.fa') or f.endswith('.fasta'
+                    ) or f.endswith('.fna'):
+                ref_path = path
+                while 'downloads' \
+                    not in os.path.split(ref_path)[1]:
+                    ref_path = os.path.split(ref_path)[0]
+                if ref_path not in ref_list_dict:
+                    ref_list_dict[ref_path] = list()
+                ref_list_dict[ref_path].append(os.path.join(path, f))
 
     if 'XML' in path:
-	if f.endswith('.xml'):
-	    xml_path = path
-	    while 'downloads' \
-		not in os.path.split(xml_path)[1]:
+        if f.endswith('.xml'):
+            xml_path = path
+            while 'downloads' \
+                not in os.path.split(xml_path)[1]:
 
-		# print xml_path, os.path.split(xml_path), len (os.path.split(xml_path))
+                # print xml_path, os.path.split(xml_path), len (os.path.split(xml_path))
 
-		xml_path = os.path.split(xml_path)[0]
+                xml_path = os.path.split(xml_path)[0]
 
-		# print "FINAL", xml_path
+                # print "FINAL", xml_path
 
-	    try:
-		xmlraw = open(os.path.join(path, f), 'r').read()
-		xmldict = xmltodict.parse(xmlraw)
-		if xml_path not in xml_file_dict:
-		    xml_file_dict[xml_path] = dict()
-		    '''
-		    xml_file_dict[xml_path]['study'] =  dict()
-		    xml_file_dict[xml_path]['experiment' ] = dict()
-		    xml_file_dict[xml_path]['run'] = dict()
-		    xml_file_dict[xml_path]['sample'] = dict()
-		    '''
-		    for attr in ['study','experiment','run','sample']:
-		    	xml_file_dict[xml_path][attr] = dict()
+            try:
+                xmlraw = open(os.path.join(path, f), 'r').read()
+                xmldict = xmltodict.parse(xmlraw)
+                if xml_path not in xml_file_dict:
+                    xml_file_dict[xml_path] = dict()
+                    '''
+                    xml_file_dict[xml_path]['study'] =  dict()
+                    xml_file_dict[xml_path]['experiment' ] = dict()
+                    xml_file_dict[xml_path]['run'] = dict()
+                    xml_file_dict[xml_path]['sample'] = dict()
+                    '''
+                    for attr in ['study','experiment','run','sample']:
+                        xml_file_dict[xml_path][attr] = dict()
 
 
-		if 'STUDY_SET' in xmldict:
-		    # print "STUDY", f
+                if 'STUDY_SET' in xmldict:
+                    # print "STUDY", f
 
-		    target_string = 'STUDY_SET/STUDY'
-		    primary_id = xmldict[ target_string + \
-					'IDENTIFIERS/PRIMARY_ID']
-		    # print "STUDY_ID", primary_id
+                    target_string = 'STUDY_SET/STUDY'
+                    primary_id = xmldict[ target_string + \
+                                        'IDENTIFIERS/PRIMARY_ID']
+                    # print "STUDY_ID", primary_id
 
-		    title = xmldict[ target_string + \
-					'/DESCRIPTOR/STUDY_TITLE']
-		    # print "TITLE", title
+                    title = xmldict[ target_string + \
+                                        '/DESCRIPTOR/STUDY_TITLE']
+                    # print "TITLE", title
 
-		    abstr = xmldict[ target_string + \
-					'/DESCRIPTOR/STUDY_ABSTRACT']
-		    # print "ABSTRACT", abstr
+                    abstr = xmldict[ target_string + \
+                                        '/DESCRIPTOR/STUDY_ABSTRACT']
+                    # print "ABSTRACT", abstr
 
-		    target = xml_file_dict[xml_path]['study' ]
-		    if primary_id not in target: target[primary_id] = dict()
-		    target[primary_id]['file'] = f
-		    target[primary_id]['xml'] = xmlraw
-		    target[primary_id]['title'] = title
-		    target[primary_id]['abstract'] = abstr
-		    target[primary_id]['path'] = path
+                    target = xml_file_dict[xml_path]['study' ]
+                    if primary_id not in target: target[primary_id] = dict()
+                    target[primary_id]['file'] = f
+                    target[primary_id]['xml'] = xmlraw
+                    target[primary_id]['title'] = title
+                    target[primary_id]['abstract'] = abstr
+                    target[primary_id]['path'] = path
 
-		if 'EXPERIMENT_SET' in xmldict:
-		    # print "EXPERIMENT", f
+                if 'EXPERIMENT_SET' in xmldict:
+                    # print "EXPERIMENT", f
 
-		    target_string = 'EXPERIMENT_SET/EXPERIMENT/'
-		    primary_id = xmldict[ target_string + \
-					'/IDENTIFIERS/PRIMARY_ID']
-		    # print "EXP_ID", primary_id
+                    target_string = 'EXPERIMENT_SET/EXPERIMENT/'
+                    primary_id = xmldict[ target_string + \
+                                        '/IDENTIFIERS/PRIMARY_ID']
+                    # print "EXP_ID", primary_id
 
-		    study_id = xmldict[ target_string + \
-					'STUDY_REF/IDENTIFIERS/PRIMARY_ID']
-		    # print "STUDY_ID", study_id
+                    study_id = xmldict[ target_string + \
+                                        'STUDY_REF/IDENTIFIERS/PRIMARY_ID']
+                    # print "STUDY_ID", study_id
 
-		    sample_id = xmldict[ target_string + \
-			'DESIGN/SAMPLE_DESCRIPTOR/IDENTIFIERS/PRIMARY_ID']
-		    # print "SAMPLE_ID", sample_id
+                    sample_id = xmldict[ target_string + \
+                        'DESIGN/SAMPLE_DESCRIPTOR/IDENTIFIERS/PRIMARY_ID']
+                    # print "SAMPLE_ID", sample_id
 
-		    target = xml_file_dict[xml_path]['experiment']
-		    if primary_id not in target: target[primary_id] = dict()
-		    target[primary_id]['file'] = f
-		    target[primary_id]['xml'] = xmlraw
-		    target[primary_id]['sample_id'] = sample_id
-		    target[primary_id]['study_id'] = study_id
+                    target = xml_file_dict[xml_path]['experiment']
+                    if primary_id not in target: target[primary_id] = dict()
+                    target[primary_id]['file'] = f
+                    target[primary_id]['xml'] = xmlraw
+                    target[primary_id]['sample_id'] = sample_id
+                    target[primary_id]['study_id'] = study_id
 
-		    # for a,b in \
-		    #	xmldict['EXPERIMENT_SET']['EXPERIMENT'].items():
-		    # ....print a,b
+                    # for a,b in \
+                    #   xmldict['EXPERIMENT_SET']['EXPERIMENT'].items():
+                    # ....print a,b
 
-		if 'SAMPLE_SET' in xmldict:
-		    # print "SAMPLE_SET", f
+                if 'SAMPLE_SET' in xmldict:
+                    # print "SAMPLE_SET", f
 
-		    primary_id = xmldict[
-			'SAMPLE_SET/SAMPLE/IDENTIFIERS/PRIMARY_ID']
-		    # print "SAMPLE_ID", primary_id
+                    primary_id = xmldict[
+                        'SAMPLE_SET/SAMPLE/IDENTIFIERS/PRIMARY_ID']
+                    # print "SAMPLE_ID", primary_id
 
-		    target = xml_file_dict[xml_path]['sample' ]
-		    if primary_id not in target: target[primary_id] = dict()
-		    target[primary_id]['file'] = f
-		    target[primary_id]['xml'] = xmlraw
+                    target = xml_file_dict[xml_path]['sample' ]
+                    if primary_id not in target: target[primary_id] = dict()
+                    target[primary_id]['file'] = f
+                    target[primary_id]['xml'] = xmlraw
 
-		if 'RUN_SET' in xmldict:
-		    # print "RUN", f
+                if 'RUN_SET' in xmldict:
+                    # print "RUN", f
 
-		    target_string = 'RUN_SET/RUN/'
-		    primary_id = xmldict[ target_string + \
-				'IDENTIFIERS/PRIMARY_ID']
-		    exp_id = xmldict[ target_string + \
-				'EXPERIMENT_REF/IDENTIFIERS/PRIMARY_ID']
+                    target_string = 'RUN_SET/RUN/'
+                    primary_id = xmldict[ target_string + \
+                                'IDENTIFIERS/PRIMARY_ID']
+                    exp_id = xmldict[ target_string + \
+                                'EXPERIMENT_REF/IDENTIFIERS/PRIMARY_ID']
 
-		    # print "RUN_ID", primary_id
+                    # print "RUN_ID", primary_id
 
-		    target = xml_file_dict[xml_path]['run']
-		    if primary_id not in target: target[primary_id] = dict()
-		    target[primary_id]['xml'] = xmlraw
-		    target[primary_id]['file'] = f
-		    target[primary_id]['exp_id'] = exp_id
+                    target = xml_file_dict[xml_path]['run']
+                    if primary_id not in target: target[primary_id] = dict()
+                    target[primary_id]['xml'] = xmlraw
+                    target[primary_id]['file'] = f
+                    target[primary_id]['exp_id'] = exp_id
 
-	    except Exception, err:
+            except Exception, err:
 
-		err_string = 'Error with XML file: %s : %s' % (f, err)
-		print >> sys.stderr, err_string
-		#continue
+                err_string = 'Error with XML file: %s : %s' % (f, err)
+                print >> sys.stderr, err_string
+                #continue
     return xml_file_dict
 
 

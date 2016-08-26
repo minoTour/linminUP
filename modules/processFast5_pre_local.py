@@ -16,16 +16,16 @@ def process_pre_local_basecalling_fast5(
     except: 
         err_string = "process_fast5(): error checksum ", filepath
         print >> sys.stderr, err_string
-	sys.exit()
+        sys.exit()
 
     # print checksum, type(checksum)
     # ## find the right basecall_2D location, get configuaration genral data, and define the basename.
 
     read_type = check_read_type(args, filepath, hdf)
     if args.verbose == "high": 
-	print "@@ "+ ('='*40)
-	print "@@ filepath:", filepath
-	print "@@ read_type:", read_type
+        print "@@ "+ ('='*40)
+        print "@@ filepath:", filepath
+        print "@@ read_type:", read_type
     #print "FILETYPE is", read_type
 
 
@@ -42,7 +42,7 @@ GROUP "/" {
          GROUP "BaseCalled_2D" {
          GROUP "BaseCalled_complement" {
          GROUP "BaseCalled_template" {
-	...
+        ...
 
 AGBT: # Type 2
 GROUP "/" {
@@ -50,7 +50,7 @@ GROUP "/" {
       GROUP "Basecall_1D_000" {
          GROUP "BaseCalled_complement" {
          GROUP "BaseCalled_template" {
-	...
+        ...
 
     '''
 
@@ -70,25 +70,25 @@ GROUP "/" {
             basecallindexpos=x #ml
             basecalldir = '/Analyses/%s_00%s/' % (basecalltype, x)
 
-	    if read_type==1:
-	    	basecalldir1 = '/Analyses/Basecall_2D_00%s/' % \
-				(basecallindexpos)
-	    else:
-	    	basecalldir1 = '/Analyses/Basecall_1D_00%s/' % \
-				(basecallindexpos)
+            if read_type==1:
+                basecalldir1 = '/Analyses/Basecall_2D_00%s/' % \
+                                (basecallindexpos)
+            else:
+                basecalldir1 = '/Analyses/Basecall_1D_00%s/' % \
+                                (basecallindexpos)
 
-	    basecalldir2 = '/Analyses/Basecall_2D_00%s/' % \
-				(basecallindexpos)
+            basecalldir2 = '/Analyses/Basecall_2D_00%s/' % \
+                                (basecallindexpos)
             basecalldirconfig = string
             break
 
     if args.verbose == "high":
-	    print string
-	    print basecalldir
-	    print basecalldir1
-	    print basecalldir2
-	    sys.stdout.flush()
-	    #sys.exit()
+            print string
+            print basecalldir
+            print basecalldir1
+            print basecalldir2
+            sys.stdout.flush()
+            #sys.exit()
 
     configdata = hdf[basecalldirconfig]
     basename = configdata.attrs['basename']  # = PLSP57501_17062014lambda_3216_1_ch101_file10_strand
@@ -233,50 +233,50 @@ GROUP "/" {
 
         general_hash.update({'pass': passcheck})
 
-	exp_start_time = int(tracking_id_hash['exp_start_time' ])
-	exp_start_time_f = frmt(exp_start_time)
+        exp_start_time = int(tracking_id_hash['exp_start_time' ])
+        exp_start_time_f = frmt(exp_start_time)
 
-	if args.verbose == "high": 
-		print "@@ exp start_time: ", exp_start_time_f
+        if args.verbose == "high": 
+                print "@@ exp start_time: ", exp_start_time_f
         general_hash.update({'exp_start_time': exp_start_time})
 
-	sampling_rate = \
-	   float(tracking_id_hash['sampling_rate']) * 60.
+        sampling_rate = \
+           float(tracking_id_hash['sampling_rate']) * 60.
 
-	start_time = \
-	   float(hdf5object.attrs['start_time']) / sampling_rate
+        start_time = \
+           float(hdf5object.attrs['start_time']) / sampling_rate
 
-	g_start_time = exp_start_time + int(start_time)*60
+        g_start_time = exp_start_time + int(start_time)*60
 
-   	# ------------------------------------------
-    	# 0.64b ...
-    	# Use End time == Start time of final event ...
+        # ------------------------------------------
+        # 0.64b ...
+        # Use End time == Start time of final event ...
 
-	end_time = \
-	   float(hdf[ eventdectionreadstring + "/Events"][-1][-2]) \
-				/ sampling_rate 
-	g_end_time = exp_start_time + int(end_time)*60
+        end_time = \
+           float(hdf[ eventdectionreadstring + "/Events"][-1][-2]) \
+                                / sampling_rate 
+        g_end_time = exp_start_time + int(end_time)*60
 
-	if args.verbose == "high": 
-    		print "@@ start / end times A Line 296: ", start_time, end_time
-    		print "@@ g_start / g_end times g_A Line 296: ", frmt(g_start_time), frmt(g_end_time)
-        	sys.stdout.flush()
-		#sys,exit()
+        if args.verbose == "high": 
+                print "@@ start / end times A Line 296: ", start_time, end_time
+                print "@@ g_start / g_end times g_A Line 296: ", frmt(g_start_time), frmt(g_end_time)
+                sys.stdout.flush()
+                #sys,exit()
 
-    	template_start = start_time 
-    	template_end = end_time 
-
-
-	
-	# Scale global times to minutes .....
-	g_start_time = int(g_start_time / 60)
-	g_end_time = int(g_end_time / 60)
-    	g_template_start = g_start_time 
-    	g_template_end = g_end_time 
+        template_start = start_time 
+        template_end = end_time 
 
 
-   	# ------------------------------------------
-	
+        
+        # Scale global times to minutes .....
+        g_start_time = int(g_start_time / 60)
+        g_end_time = int(g_end_time / 60)
+        g_template_start = g_start_time 
+        g_template_end = g_end_time 
+
+
+        # ------------------------------------------
+        
         general_hash.update({'1minwin': int(end_time/ 1.)})  
         general_hash.update({'5minwin': int(end_time/ 5.)})  
         general_hash.update({'10minwin': int(end_time/ 10.)})  
@@ -342,15 +342,15 @@ GROUP "/" {
 
 
     if read_type == 1:
-    	basecall_summary_hash = make_hdf5_object_attr_hash(args,
-      		hdf[basecalldir + 'Summary/split_hairpin'],
-      		basecall_summary_fields)
+        basecall_summary_hash = make_hdf5_object_attr_hash(args,
+                hdf[basecalldir + 'Summary/split_hairpin'],
+                basecall_summary_fields)
 
     if read_type == 2:
         basecall_summary_hash=make_hdf5_object_attr_hash(args, 
-		hdf['/Analyses/Hairpin_Split_00'+
-			str(basecallindexpos)+'/Summary/split_hairpin'],
-		basecall_summary_fields)
+                hdf['/Analyses/Hairpin_Split_00'+
+                        str(basecallindexpos)+'/Summary/split_hairpin'],
+                basecall_summary_fields)
 
     if read_type == 3: # MS NB Cludge to get it to run ....
         basecall_summary_hash = make_hdf5_object_attr_hash(args,
@@ -432,35 +432,35 @@ GROUP "/" {
 
     '''
     if args.verbose == "high":
-	    print "="*60
-	    print "WE ARE HERE"
-	    for k,v in sorted(basecall_summary_hash.items()): print k,v
-	    print basecalldir
-	    print basecalldir1
-	    print basecalldir2
-	    sys.stdout.flush()
-	    sys.exit()
+            print "="*60
+            print "WE ARE HERE"
+            for k,v in sorted(basecall_summary_hash.items()): print k,v
+            print basecalldir
+            print basecalldir1
+            print basecalldir2
+            sys.stdout.flush()
+            sys.exit()
     '''
 
     # # Adding key indexes and time stamps
     if args.verbose == "high": 
-    	print "@@ start / end times B Line 429: ", start_time, end_time
-    	print "@@ g_start / g_end g_times B Line 429: ", \
-				frmt(g_start_time), frmt(g_end_time)
-    	sys.stdout.flush()
+        print "@@ start / end times B Line 429: ", start_time, end_time
+        print "@@ g_start / g_end g_times B Line 429: ", \
+                                frmt(g_start_time), frmt(g_end_time)
+        sys.stdout.flush()
 
     basecall_summary_hash.update({'basename_id': basenameid})
     basecall_summary_hash.update({'pass': passcheck})
     basecall_summary_hash.update({'exp_start_time': tracking_id_hash['exp_start_time' ]})
 
-    fields = 	[ '1minwin', '5minwin', '10minwin', '15minwin'
-		, 's1minwin', 's5minwin', 's10minwin', 's15minwin'
-		, 'g_1minwin', 'g_5minwin', 'g_10minwin', 'g_15minwin'
-		, 'g_s1minwin', 'g_s5minwin', 'g_s10minwin', 'g_s15minwin'
-		]
+    fields =    [ '1minwin', '5minwin', '10minwin', '15minwin'
+                , 's1minwin', 's5minwin', 's10minwin', 's15minwin'
+                , 'g_1minwin', 'g_5minwin', 'g_10minwin', 'g_15minwin'
+                , 'g_s1minwin', 'g_s5minwin', 'g_s10minwin', 'g_s15minwin'
+                ]
 
     for x in fields:
-    	basecall_summary_hash.update({x: general_hash[x]})
+        basecall_summary_hash.update({x: general_hash[x]})
 
     # print basecall_summary_hash
 
@@ -566,41 +566,41 @@ GROUP "/" {
     # ---------------------------------------------------------------------------
 
     if read_type == 1:
-    	readtypes =  \
-	{ 'basecalled_template'  : basecalldir + 'BaseCalled_template/'
-	, 'basecalled_complement': basecalldir + 'BaseCalled_complement/'
-	, 'basecalled_2d'  	 : basecalldir + 'BaseCalled_2D/'
-	}
+        readtypes =  \
+        { 'basecalled_template'  : basecalldir + 'BaseCalled_template/'
+        , 'basecalled_complement': basecalldir + 'BaseCalled_complement/'
+        , 'basecalled_2d'        : basecalldir + 'BaseCalled_2D/'
+        }
 
     if read_type == 3:
         readtypes =  \
-	{ 'basecalled_template'	 : basecalldir + 'BaseCalled_template/'
-	, 'basecalled_complement': basecalldir + 'BaseCalled_complement/'
-	, 'basecalled_1d'  	 : basecalldir + 'BaseCalled_1D/' # MS ??
-	}
+        { 'basecalled_template'  : basecalldir + 'BaseCalled_template/'
+        , 'basecalled_complement': basecalldir + 'BaseCalled_complement/'
+        , 'basecalled_1d'        : basecalldir + 'BaseCalled_1D/' # MS ??
+        }
 
     if read_type == 2:
         readtypes =  \
-	{ 'basecalled_template'   : basecalldir1 + 'BaseCalled_template/'
-	, 'basecalled_complement' : basecalldir1 +'BaseCalled_complement/'
-	, 'basecalled_2d'  	  : basecalldir2 + 'BaseCalled_2D/'
-	}
+        { 'basecalled_template'   : basecalldir1 + 'BaseCalled_template/'
+        , 'basecalled_complement' : basecalldir1 +'BaseCalled_complement/'
+        , 'basecalled_2d'         : basecalldir2 + 'BaseCalled_2D/'
+        }
 
 
     '''
     # MS -- old school way ...
     if read_type == 2:
         readtypes = \
-	{ 'basecalled_template' : \
-		'/Analyses/Basecall_1D_00%s/BaseCalled_template/'\
-			%(basecallindexpos)
-	, 'basecalled_complement' : \
-		'/Analyses/Basecall_1D_00%s/BaseCalled_complement/' \
-			%(basecallindexpos)
-	, 'basecalled_2d' : \
-		'/Analyses/Basecall_2D_00%s/BaseCalled_2D/'\
-			%(basecallindexpos)
-	}
+        { 'basecalled_template' : \
+                '/Analyses/Basecall_1D_00%s/BaseCalled_template/'\
+                        %(basecallindexpos)
+        , 'basecalled_complement' : \
+                '/Analyses/Basecall_1D_00%s/BaseCalled_complement/' \
+                        %(basecallindexpos)
+        , 'basecalled_2d' : \
+                '/Analyses/Basecall_2D_00%s/BaseCalled_2D/'\
+                        %(basecallindexpos)
+        }
     '''
 
 
@@ -657,7 +657,7 @@ GROUP "/" {
 
                 # print "we're looking at a 2D read",template_start,"\n\n"
 
-		
+                
 
                 mysql_load_from_hashes(args, db, cursor, readtype, {
                     'basename_id': basenameid,
@@ -729,21 +729,21 @@ GROUP "/" {
 
                 if readtype == 'basecalled_template':
 
-		    # 0.64a
-		    ''' 
-		    ???
-		    start_time = float(events_hash['start_time']) 
-				 # /  sampling_rate
-		    '''
+                    # 0.64a
+                    ''' 
+                    ???
+                    start_time = float(events_hash['start_time']) 
+                                 # /  sampling_rate
+                    '''
 
-		    events_table = hdf[ location + "/Events"]
-		    start_time = float(events_table[0][1]) / 60.
-		    g_start_time = exp_start_time + int(start_time)*60
+                    events_table = hdf[ location + "/Events"]
+                    start_time = float(events_table[0][1]) / 60.
+                    g_start_time = exp_start_time + int(start_time)*60
 
 
-		    # 0.64b
-		    end_time = float(events_table[-1][1]) / 60.
-		    g_end_time = exp_start_time + int(end_time)*60
+                    # 0.64b
+                    end_time = float(events_table[-1][1]) / 60.
+                    g_end_time = exp_start_time + int(end_time)*60
 
 
                     template_start = start_time
@@ -752,32 +752,32 @@ GROUP "/" {
                     g_template_end = g_end_time
 
 
-	
-		if args.verbose == "high": 
-			print "@@ location: ", location	
-		
-			print "@@ template start / end times: ",  \
-					template_start, template_end
+        
+                if args.verbose == "high": 
+                        print "@@ location: ", location 
                 
-			print "@@ start / end times C Line 781",  \
-					start_time, end_time
-		
-			print "@@ g_template start / end times: ",  \
-			    frmt(g_template_start), frmt(g_template_end)
+                        print "@@ template start / end times: ",  \
+                                        template_start, template_end
                 
-			print "@@ g_start / g_end times C Line 784", \
-			    frmt(g_start_time), frmt(g_end_time)
-		
-			print "@@ "+ ("-"*40)
-    		
-			sys.stdout.flush()
-		#sys.exit()
+                        print "@@ start / end times C Line 781",  \
+                                        start_time, end_time
+                
+                        print "@@ g_template start / end times: ",  \
+                            frmt(g_template_start), frmt(g_template_end)
+                
+                        print "@@ g_start / g_end times C Line 784", \
+                            frmt(g_start_time), frmt(g_end_time)
+                
+                        print "@@ "+ ("-"*40)
+                
+                        sys.stdout.flush()
+                #sys.exit()
 
-		# Scale global times to minutes .....
-		g_start_time = int(g_start_time / 60)
-		g_end_time = int(g_end_time / 60)
-		g_template_start = int(g_template_start / 60)
-		g_template_end = int(g_template_end / 60)
+                # Scale global times to minutes .....
+                g_start_time = int(g_start_time / 60)
+                g_end_time = int(g_end_time / 60)
+                g_template_start = int(g_template_start / 60)
+                g_template_end = int(g_template_end / 60)
 
 
                 events_hash.update({
@@ -803,7 +803,7 @@ GROUP "/" {
                     'g_s10minwin': g_start_time / 10,
                     'g_s15minwin': g_start_time / 15,
                     })
-			
+                        
 
                 events_hash.update({'exp_start_time': tracking_id_hash['exp_start_time'
                                    ], 'pass': passcheck})
@@ -843,8 +843,8 @@ GROUP "/" {
                 if args.verbose == "high":
                     print 'LAST aligning....'
                 init_last_threads(oper, args, connection_pool[dbname] \
-				, fastqhash, basename, basenameid \
-				, dbname, dbcheckhash, ref_fasta_hash)
+                                , fastqhash, basename, basenameid \
+                                , dbname, dbcheckhash, ref_fasta_hash)
                 if args.verbose == "high":
                     print '... finished last aligning.'
             if args.bwa_align is True:

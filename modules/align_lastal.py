@@ -4,7 +4,7 @@
 # File Name: align_lastal.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Tue Mar 22 12:24:56 2016
+# Last Modified: Fri, Aug 26, 2016 12:25:44 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -18,7 +18,7 @@ class last_threader(threading.Thread):
 
     def __init__(
         self,
-	oper,
+        oper,
         args,
         seqid,
         fastqdata,
@@ -26,10 +26,10 @@ class last_threader(threading.Thread):
         basenameid,
         dbname,
         db,
-	ref_fasta_hash,
+        ref_fasta_hash,
         ):
         threading.Thread.__init__(self)
-	self.oper = oper
+        self.oper = oper
         self.seqid = seqid
         self.fastqdata = fastqdata
         self.basename = basename
@@ -37,11 +37,11 @@ class last_threader(threading.Thread):
         self.dbname = dbname
         self.db = db
         self.args = args
-	self.ref_fasta_hash = ref_fasta_hash
+        self.ref_fasta_hash = ref_fasta_hash
 
     def run(self):
         do_last_align(
-	    self.oper,
+            self.oper,
             self.args,
             self.seqid,
             self.fastqdata,
@@ -49,7 +49,7 @@ class last_threader(threading.Thread):
             self.basenameid,
             self.dbname,
             self.db,
-	    self.ref_fasta_hash
+            self.ref_fasta_hash
             )
 
 
@@ -71,7 +71,7 @@ def init_last_threads(
         db = connections[d]
         fastqdata = fastqhash[seqid]
         background = last_threader(
-	    oper,
+            oper,
             args,
             seqid,
             #dbcheckhash,
@@ -80,7 +80,7 @@ def init_last_threads(
             basenameid,
             dbname,
             db,
-	    ref_fasta_hash,
+            ref_fasta_hash,
             )
         background.start()
         backgrounds.append(background)

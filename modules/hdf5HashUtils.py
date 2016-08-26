@@ -2,7 +2,7 @@
 # File Name: hdf5HashUtils.py
 # Purpose:
 # Creation Date: 05-11-2015
-# Last Modified: Tue Mar 22 14:27:00 2016
+# Last Modified: Fri, Aug 26, 2016 12:25:45 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits: 
@@ -11,7 +11,8 @@
 import time
 
 def frmt(tm):
-          return time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(tm)))
+          return time.strftime('%Y-%m-%d %H:%M:%S'
+                        , time.gmtime(int(tm)))
 
 
 

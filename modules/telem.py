@@ -4,7 +4,7 @@
 # File Name: telem.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Mon, Nov 09, 2015  3:11:53 PM
+# Last Modified: Fri, Aug 26, 2016 12:25:47 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:

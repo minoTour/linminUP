@@ -4,7 +4,7 @@
 # File Name: cigar.py
 # Purpose:
 # Creation Date: 2015
-# Last Modified: Thu, Nov 05, 2015 12:28:09 PM
+# Last Modified: Fri, Aug 26, 2016 12:25:44 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:

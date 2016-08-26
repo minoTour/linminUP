@@ -18,14 +18,14 @@ def terminateMinup(args, dbcheckhash, oper, minup_version):
 
     # Tell minup to terminate
     if oper == "windows":
-    	# -- sending minup pid a Ctrl-C signal 
-    	# -- this also cleanly closes subprocesses and threads ....
-    	ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid) # 0 => Ctrl-C
+        # -- sending minup pid a Ctrl-C signal 
+        # -- this also cleanly closes subprocesses and threads ....
+        ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid) # 0 => Ctrl-C
     else:
-	process = psutil.Process(pid)
-	for proc in process.children(recursive=True):
+        process = psutil.Process(pid)
+        for proc in process.children(recursive=True):
                 proc.kill()
-	process.kill()
+        process.kill()
 
 
     print 'finished.'
@@ -39,11 +39,14 @@ def terminateSubProcesses(args, dbcheckhash, oper, minup_version):
     pid = os.getpid() 
     process = psutil.Process(pid)
     for proc in process.children(recursive=True):
-      	if oper == "windows":
-	  pid_ = proc.as_dict(attrs=['pid'])['pid']
-	  # 0 => Ctrl-C
-      	  ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )  
-    	else: proc.kill()
+        if oper == "windows":
+          pid_ = proc.as_dict(attrs=['pid'])['pid']
+          # 0 => Ctrl-C
+          ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )  
+        else: proc.kill()
+
+
+    
 
 
 def terminateMinControl(args, dbcheckhash, oper, minup_version):
@@ -56,11 +59,11 @@ def terminateMinControl(args, dbcheckhash, oper, minup_version):
      if proc.name() == "mincontrol.exe":
         proc.kill()
     '''
-      	if oper == "windows":
-	  pid_ = proc.as_dict(attrs=['pid'])['pid']
-	  # 0 => Ctrl-C
-      	  ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )  
-    	else: proc.kill()
+        if oper == "windows":
+          pid_ = proc.as_dict(attrs=['pid'])['pid']
+          # 0 => Ctrl-C
+          ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )  
+        else: proc.kill()
     '''
 
 
@@ -69,7 +72,7 @@ def exitGracefully(args, dbcheckhash, minup_version):
 
     sys.stdout.flush()
   # if dbname is not None:
-	#                #print "dbname", dbname
+        #                #print "dbname", dbname
 
     for name in dbcheckhash['dbname'].keys():
         dba = MySQLdb.connect(host=args.dbhost, user=args.dbusername,
@@ -84,10 +87,10 @@ def exitGracefully(args, dbcheckhash, minup_version):
         dba.commit()
 
         try: runindex = dbcheckhash['runindex'][name] # MS .. 
-	except: 
-		print "exitGracefully(): line 26, dbcheckhash, key error: " + name
-		sys.stdout.flush()
-		return() # #sys.exit(1)
+        except: 
+                print "exitGracefully(): line 26, dbcheckhash, key error: " + name
+                sys.stdout.flush()
+                return() # #sys.exit(1)
 
         finish_time = time.strftime('%Y-%m-%d %H:%M:%S')
         comment_string = 'minUp version %s finished' % minup_version

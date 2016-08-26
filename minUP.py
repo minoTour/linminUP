@@ -6,7 +6,7 @@
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
 # Creation Date: 2014 - 2016
-# Last Modified: Thu, Jun  2, 2016  2:25:43 PM
+# Last Modified: Fri, Aug 26, 2016 12:25:43 PM
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -35,8 +35,6 @@ from processRefFasta import process_ref_fasta
 from telem import *
 
 from sql import okSQLname
-
-
 
 # ---------------------------------------------------------------------------
 # main
@@ -448,10 +446,10 @@ if __name__ == '__main__':
 
     # MS ...
     parser.add_argument('-ver'
-	, '--version'
-	, action='version'
-      	, version=('%(prog)s version={version}').format(version=__version__)
-	) 
+    , '--version'
+    , action='version'
+          , version=('%(prog)s version={version}').format(version=__version__)
+    ) 
 
 #-------------------------------------------------------------------------------
 
@@ -463,9 +461,9 @@ if __name__ == '__main__':
 
     # MS ...
     if args.indexToRefDir is True:
-    	ref_dir = os.path.sep.join(args.ref_fasta.split(os.path.sep)[:-1])
-    	bwa_index_dir = ref_dir + '/bwa.indexes/'
-    	last_index_dir = ref_dir + '/last.indexes/'
+        ref_dir = os.path.sep.join(args.ref_fasta.split(os.path.sep)[:-1])
+        bwa_index_dir = ref_dir + '/bwa.indexes/'
+        last_index_dir = ref_dir + '/last.indexes/'
 
 
 
@@ -482,7 +480,7 @@ if __name__ == '__main__':
     # Check inputs are OK...
     if not okSQLname(args.custom_name): # MS
         print 'Error: Invalid SQL name characters in custom_name : %s\nExiting ...' % (args.custom_name)
-	sys.stdout.flush()
+        sys.stdout.flush()
         sys.exit(1)
 
 
@@ -518,7 +516,7 @@ if __name__ == '__main__':
     except Exception, err:
 
         print >> sys.stderr, "Can't connect to MySQL: %s" % err
-	sys.stdout.flush()
+        sys.stdout.flush()
         sys.exit(1)
 
                 # if args.version == True: # ML
@@ -530,17 +528,17 @@ if __name__ == '__main__':
 
     if args.ref_fasta is not False and args.batch_fasta is not False:
         print 'Both --align-ref-fasta (-f) and --align-batch-fasta (-b) were set. Select only one and try again.'
-	sys.stdout.flush()
+        sys.stdout.flush()
         sys.exit(1)
 
     if args.last_align is not False and args.bwa_align is not False:
         print 'Both --last-align-true (-last) and --bwa-align-true (-bwa) were set. Select only one and try again.'
-	sys.stdout.flush()
+        sys.stdout.flush()
         sys.exit(1)
 
-    if args.ref_fasta is not False:
+    if args.bwa_align is True and args.ref_fasta is not False:
         process_ref_fasta(args, valid_ref_dir \
-			, bwa_index_dir, last_index_dir  \
+            , bwa_index_dir, last_index_dir  \
                         , args.ref_fasta, ref_fasta_hash)
 
     global bwaclassrunner
@@ -563,9 +561,9 @@ if __name__ == '__main__':
 
     print 'monitor started.'
     try:
-	check_read_args = connection_pool, minup_version, \
-		comments, ref_fasta_hash, dbcheckhash, \
-		logfolder, cursor
+        check_read_args = connection_pool, minup_version, \
+        comments, ref_fasta_hash, dbcheckhash, \
+        logfolder, cursor
         observer = Observer()
         event_handler = MyHandler(dbcheckhash, oper, db, args, xml_file_dict, check_read_args, minup_version,bwaclassrunner)
         observer.schedule(event_handler, path=args.watchdir, recursive=True)
@@ -577,11 +575,11 @@ if __name__ == '__main__':
         print 'stopping monitor....'
         observer.stop()
         terminateMinup(args, dbcheckhash, oper, minup_version)
-	
-	print "finished."
-        observer.join()
-	sys.stdout.flush()
-	sys.exit(1)
+    
+    print "finished."
+    observer.join()
+    sys.stdout.flush()
+    sys.exit(1)
 
 
 

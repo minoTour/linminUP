@@ -4,7 +4,7 @@
 # File Name: gui.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Fri, Apr 29, 2016 12:56:02 PM
+# Last Modified: Fri, Aug 26, 2016 12:25:43 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -19,6 +19,7 @@ import subprocess
 import ctypes
 import time
 import psutil
+import platform
 
 import datetime
 dateTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
@@ -27,7 +28,11 @@ dateTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
 #sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
+ext=(sys.argv[0]).split('.')[1]
+
 # ------------------------------------------------------------------------------
+
+oper = "windows"
 
 fh = open("ver.txt", "r")
 ver = fh.readline()
@@ -46,10 +51,10 @@ def run(cmd):
     exit_code = 0
     print 'Run started ....'
     p = subprocess.Popen(cmd, shell=False, # True,
-			 stdin=subprocess.PIPE,
+             stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
-			#,bufsize=0)
+            #,bufsize=0)
 
     pid = p.pid
     outF.write("PID: " + str(pid))
@@ -62,8 +67,8 @@ def run(cmd):
         #err = p.stderr.read()
         #sys.stdout.write(err)
 
-	outF.write(out)
-	sys.stdout.flush()
+    outF.write(out)
+    sys.stdout.flush()
 
 
     outF.close()
@@ -246,12 +251,21 @@ def fixAlignerOpts(aligner, (k, v)):
     advanced=1,
     language='english',
     show_config=True,
-    default_size=(1000, 1000),
+    default_size=(1000, 600),
     required_cols=1,
     optional_cols=2,
     dump_build_config=0,
     )
 def main():
+    global oper
+
+    oper = platform.system()
+    if oper == 'Windows':  # MS
+        oper = 'windows'
+    else:
+        oper = 'linux'  # MS
+    print oper  # MS
+
 
     print 'minUP GUI'
     desc = \
@@ -283,15 +297,22 @@ def main():
         ps.append(('-' + lut[k], toStr(vs[k])))
 
     ps = map(fixAligner, ps)
-    aligner = vs['Aligner_to_Use']
+    aligner = 'bwa' # vs['Aligner_to_Use']
     ps = map(lambda o: fixAlignerOpts(aligner, o), ps)
     ps = sorted(filter(isActive, ps))
     params = ' '.join(map(showParam, ps))
 
   # cmd = 'ls /a'
   # cmd = 'c:\Python27\python.exe .\minup.v0.63.py ' +params
-
-    cmd = '.\\minUP.exe ' + params  # + ' 2>&1'
+    cmd = ""
+    if oper == "linux":
+        cmd = 'python minUP.py ' +params
+    else:
+        if ext != "py": 
+            cmd = '.\\minUP.exe ' + params  # + ' 2>&1'
+        else: 
+            cmd = 'c:\Python27\python.exe .\minUP.py ' +params
+        print cmd 
     print cmd
 
     '''
@@ -308,9 +329,9 @@ if __name__ == '__main__':
     if KeyboardInterrupt:
         kill(pid)
 
-	#time.sleep(3)
-	#current_process = psutil.Process(os.getpid())
-	#for child in current_process.children(recursive=True):
-	#	child.kill()
+    #time.sleep(3)
+    #current_process = psutil.Process(os.getpid())
+    #for child in current_process.children(recursive=True):
+    #    child.kill()
     
 

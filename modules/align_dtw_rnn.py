@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # --------------------------------------------------
-# File Name: align_dtw.py
+# File Name: align_dtw_rnn.py
 # Purpose:
 # Creation Date: 2015
 # Last Modified: Fri, Aug 26, 2016 12:25:44 PM
