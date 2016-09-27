@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # --------------------------------------------------
-# File Name: align_dtw_rnn.py
+# File Name: align_dtw.py
 # Purpose:
 # Creation Date: 2015
-# Last Modified: Sun, Sep 25, 2016 11:17:17 AM
+# Last Modified: Sat, Sep 24, 2016  9:19:55 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:

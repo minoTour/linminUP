@@ -6,25 +6,25 @@ import psutil
 import ctypes
 
 
-def terminateMinup(args, dbcheckhash, oper, minup_version):
+def terminate_minup(args, dbcheckhash, oper, minup_version):
     sys.stdout.flush()
 
     # Sign off any mySQL connections ...
-    exitGracefully(args, dbcheckhash, minup_version) 
+    exit_gracefully(args, dbcheckhash, minup_version)
 
     print "terminating sub-processes...."
 
-    pid = os.getpid() 
+    pid = os.getpid()
 
     # Tell minup to terminate
     if oper == "windows":
-        # -- sending minup pid a Ctrl-C signal 
+        # -- sending minup pid a Ctrl-C signal
         # -- this also cleanly closes subprocesses and threads ....
         ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid) # 0 => Ctrl-C
     else:
         process = psutil.Process(pid)
         for proc in process.children(recursive=True):
-                proc.kill()
+            proc.kill()
         process.kill()
 
 
@@ -32,43 +32,43 @@ def terminateMinup(args, dbcheckhash, oper, minup_version):
     sys.stdout.flush()
     sys.exit(1)
 
-def terminateSubProcesses(args, dbcheckhash, oper, minup_version):
+def terminate_subprocesses(args, dbcheckhash, oper, minup_version):
     print "terminating sub-processes...."
     sys.stdout.flush()
 
-    pid = os.getpid() 
+    pid = os.getpid()
     process = psutil.Process(pid)
     for proc in process.children(recursive=True):
         if oper == "windows":
-          pid_ = proc.as_dict(attrs=['pid'])['pid']
-          # 0 => Ctrl-C
-          ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )  
+            pid_ = proc.as_dict(attrs=['pid'])['pid']
+            # 0 => Ctrl-C
+            ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_)
         else: proc.kill()
 
 
-    
 
 
-def terminateMinControl(args, dbcheckhash, oper, minup_version):
+
+def terminate_mincontrol(args, dbcheckhash, oper, minup_version):
     print "terminating sub-processes...."
     sys.stdout.flush()
 
-    pid = os.getpid() 
+    pid = os.getpid()
     process = psutil.Process(pid)
     for proc in process.children(recursive=True):
-     if proc.name() == "mincontrol.exe":
-        proc.kill()
+        if proc.name() == "mincontrol.exe":
+            proc.kill()
     '''
         if oper == "windows":
           pid_ = proc.as_dict(attrs=['pid'])['pid']
           # 0 => Ctrl-C
-          ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )  
+          ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid_ )
         else: proc.kill()
     '''
 
 
 
-def exitGracefully(args, dbcheckhash, minup_version):
+def exit_gracefully(args, dbcheckhash, minup_version):
 
     sys.stdout.flush()
   # if dbname is not None:
@@ -86,29 +86,30 @@ def exitGracefully(args, dbcheckhash, minup_version):
         cur.execute(sql)
         dba.commit()
 
-        try: runindex = dbcheckhash['runindex'][name] # MS .. 
-        except: 
-                print "exitGracefully(): line 26, dbcheckhash, key error: " + name
-                sys.stdout.flush()
-                return() # #sys.exit(1)
+        try:
+            runindex = dbcheckhash['runindex'][name] # MS ..
+        except:
+            print "exit_gracefully(): line 26, dbcheckhash, key error: " + name
+            sys.stdout.flush()
+            return() # #sys.exit(1)
 
         finish_time = time.strftime('%Y-%m-%d %H:%M:%S')
         comment_string = 'minUp version %s finished' % minup_version
-        sql = \
-            "INSERT INTO Gru.comments (runindex,runname,user_name,comment,name,date) VALUES (%s,'%s','%s','%s','%s','%s') " \
+        sql = "INSERT INTO Gru.comments (runindex,runname,user_name,\
+                    comment,name,date) VALUES (%s,'%s','%s','%s','%s','%s') " \
             % (
-            runindex,
-            name,
-            args.minotourusername,
-            comment_string,
-            args.dbusername,
-            finish_time,
+                runindex,
+                name,
+                args.minotourusername,
+                comment_string,
+                args.dbusername,
+                finish_time,
             )
         cur.execute(sql)
         dba.commit()
 
         with open(dbcheckhash['logfile'][name], 'a') as logfilehandle:
-            logfilehandle.write('minup finished at:\t%s:\tset to inactive gracefully%s'
+            logfilehandle.write('minup finished at:\t%s:\tset to inactive gracefully%s' \
                                  % (finish_time, os.linesep))
             logfilehandle.close()
         dba.close()

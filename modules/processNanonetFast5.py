@@ -4,7 +4,7 @@
 # File Name: processNanonetFast5.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Fri, Aug 26, 2016 12:25:47 PM
+# Last Modified: Sun, Sep 25, 2016 11:17:19 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -20,7 +20,7 @@ from StringIO import StringIO
 
 #from align_bwa import *
 from align_lastal import *
-from hdf5HashUtils import *
+from hdf5_hash_utils import *
 
 from sql import upload_model_data
 from telem import init_tel_threads2
@@ -33,18 +33,18 @@ from hdf2SQL import explore
 from processFast5Utils import *
 
 #--------------------------------------------------------------------------------
-def process_nanonet_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, cursor, fastqhash):
+def process_nanonet_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, dbname, cursor, fastqhash, dbcheckhash):
 # Process Fasta basecall data ....
 
     events_hash = {}
 
-    if basename is '': retuurn ()
+    if basename is '': return ()
 
     basecalldir = "/Analyses/Basecall_RNN_1D_000/"
 
 
 
-    if args.verbose == "high": 
+    if args.verbose == "high":
         print "basecalldir", basecalldir
         debug()
 
@@ -120,7 +120,7 @@ def process_nanonet_readtypes(args, read_type, basename, basenameid, basecalldir
                         'sampling_rate': sampling_rate
                         }
 
-                events_hash = calcTimingWindows(events_hash, start_time, end_time
+                events_hash = calc_timing_windows(events_hash, start_time, end_time
                                                     , g_start_time, g_end_time)
 
                 mysql_load_from_hashes(args, db, cursor,
@@ -161,7 +161,7 @@ def process_nanonet_readtypes(args, read_type, basename, basenameid, basecalldir
                 'qual',
                 ]
             '''
-            
+
 
             #if location + 'Events' in hdf and location + 'Model' in hdf:
             if location + 'Events' in hdf and location + 'Fastq' in hdf:
@@ -190,7 +190,7 @@ def process_nanonet_readtypes(args, read_type, basename, basenameid, basecalldir
                         'sequence': sequence,
                         'qual': qual,
                         'seqlen': seqlen,
-                        'start_time': start_time, 
+                        'start_time': start_time,
                         'exp_start_time': float(tracking_id_hash['exp_start_time' ]),
                         'pass': passcheck,
                         'sampling_rate': sampling_rate,
@@ -210,7 +210,7 @@ def process_nanonet_readtypes(args, read_type, basename, basenameid, basecalldir
 
 #--------------------------------------------------------------------------------
 
-def getNanonetBasenameData(args, read_type, hdf):
+def get_nanonet_basename_data(args, read_type, hdf):
     for element in hdf['/Raw/Reads']:
 
         read_id_fields = [

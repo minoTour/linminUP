@@ -4,7 +4,7 @@
 # File Name: gui.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Fri, Aug 26, 2016 12:25:43 PM
+# Last Modified: Sun, Sep 25, 2016 11:17:17 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -32,7 +32,7 @@ ext=(sys.argv[0]).split('.')[1]
 
 # ------------------------------------------------------------------------------
 
-oper = "windows"
+OPER = "windows"
 
 fh = open("ver.txt", "r")
 ver = fh.readline()
@@ -257,14 +257,14 @@ def fixAlignerOpts(aligner, (k, v)):
     dump_build_config=0,
     )
 def main():
-    global oper
+    global OPER
 
-    oper = platform.system()
-    if oper == 'Windows':  # MS
-        oper = 'windows'
+    OPER = platform.system()
+    if OPER == 'Windows':  # MS
+        OPER = 'windows'
     else:
-        oper = 'linux'  # MS
-    print oper  # MS
+        OPER = 'linux'  # MS
+    print OPER  # MS
 
 
     print 'minUP GUI'
@@ -305,7 +305,7 @@ def main():
   # cmd = 'ls /a'
   # cmd = 'c:\Python27\python.exe .\minup.v0.63.py ' +params
     cmd = ""
-    if oper == "linux":
+    if OPER == "linux":
         cmd = 'python minUP.py ' +params
     else:
         if ext != "py": 
