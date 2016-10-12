@@ -4,7 +4,7 @@
 # File Name: processFast5.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Sun, Sep 25, 2016 11:17:19 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:25 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -19,11 +19,11 @@ import hashlib
 from StringIO import StringIO
 
 from align_bwa import *
-from align_lastal import *
+#from align_lastal import *
 from hdf5_hash_utils import *
 
 from sql import upload_model_data
-from telem import init_tel_threads2
+#from telem import init_tel_threads2
 from checkRead import check_read_type, getBasecalltype
 
 from debug import debug
@@ -48,6 +48,10 @@ def do_alignments(read_type, args, oper, dbname, dbcheckhash, ref_fasta_hash,fas
         #if 1:
         # sanity check for the quality schors in the hdf5 file.
         # this will not exist if it's malformed.
+            '''
+
+            # DEPRECATIN LAST MS 11.10.16
+
             if args.last_align is True:
                 if args.verbose == "high":
                     print 'LAST aligning....'
@@ -56,6 +60,7 @@ def do_alignments(read_type, args, oper, dbname, dbcheckhash, ref_fasta_hash,fas
                                 , dbname, dbcheckhash, ref_fasta_hash)
                 if args.verbose == "high":
                     print '... finished last aligning.'
+            '''
             if args.bwa_align is True:
                 if args.verbose == "high":
                     print 'BWA aligning....'
@@ -92,6 +97,10 @@ def process_model_data(args, basecalldirs, basenameid, hdf, db, cursor, dbname, 
     basecalldir, basecalldir1, basecalldir2 = basecalldirs
 
     # ------------ Do model details -------------------
+
+    '''
+
+    # DEPRECATING TELEM MS 11.10.16
 
     if args.telem is True:
         if dbname not in dbcheckhash['modelcheck']:
@@ -146,6 +155,7 @@ def process_model_data(args, basecalldirs, basenameid, hdf, db, cursor, dbname, 
 
                 cursor.execute(sql)
                 db.commit()
+    '''
 
 #-------------------------------------------------------------------------------
 def process_barcode_data(args, hdf, db, cursor,basenameid):
@@ -296,10 +306,10 @@ def process_fast5(
     read_type = check_read_type(args, filepath,hdf)
 
     passcheck = 0
-    if '/pass/' in filepath:
-        passcheck = 1
-    if '\\pass\\' in filepath:
-        passcheck = 1
+    if '/pass/' in filepath:    passcheck = 1
+    if '\\pass\\' in filepath:  passcheck = 1
+    if '/skip/' in filepath:    passcheck = -1
+    if '\\skip\\' in filepath:  passcheck = -1
 
     # MS ... Auto create tables from hdf file groups ....
     if args.verbose is True: print "Importing HDF to mySQL...."
@@ -318,20 +328,29 @@ def process_fast5(
             print "minKNOW v1.0 File...."
             debug()
 
-        process_minKNOW_v1_0_fast5( read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, dbcheckhash, filepath, hdf, dbname, cursor,bwaclassrunner)
+        process_minKNOW_v1_0_fast5( 
+                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, 
+                dbcheckhash, filepath, hdf, dbname, cursor,bwaclassrunner
+                )
 
     if read_type == 4:
         if args.verbose == "high":
             print "Nanonet File...."
 
-        process_nanonet_fast5( read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, dbcheckhash, filepath, hdf, dbname, cursor,bwaclassrunner)
+        process_nanonet_fast5(
+                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, 
+                dbcheckhash, filepath, hdf, dbname, cursor,bwaclassrunner
+                )
 
 
     if read_type in [1,2,3]:
         if args.verbose == "high":
             print "Metrichor File...."
             debug()
-        process_metrichor_basecalled_fast5( read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, dbcheckhash, filepath, hdf, dbname, cursor, bwaclassrunner)
+        process_metrichor_basecalled_fast5( 
+                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, 
+                dbcheckhash, filepath, hdf, dbname, cursor, bwaclassrunner
+                )
         #processFast5( read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, dbcheckhash, filepath, hdf, dbname, cursor, bwaclassrunner)
 
     hdf.close()
@@ -365,7 +384,7 @@ def process_nanonet_fast5(
         debug()
 
     # GET BASENAME AND CONFIGDATA ...
-    basecallindexpos, basename, basecalldirs, configdata, read_info_hash  = \
+    basecallindexpos, basecalldirs, configdata, read_info_hash  = \
                 getBasenameData(args, read_type, hdf)
 
 
@@ -407,8 +426,11 @@ def process_nanonet_fast5(
 
     # PROCESS TELEM DATA ....
     tel_data_hash = {}
+    '''
+    # DEPRECATING TELEM MS 11.10.16
     if args.telem is True:
         init_tel_threads2(connection_pool[dbname], tel_data_hash)
+    '''
 
 #-------------------------------------------------------------------------------
 
@@ -441,8 +463,10 @@ def process_metrichor_basecalled_fast5(
     # ## find the right basecall_2D location, get configuaration genral data, and define the basename.
 
     # GET BASENAME AND CONFIGDATA ...
-    basecallindexpos, basename, basecalldirs, configdata, read_info_hash =  \
-                getBasenameData(args, read_type, hdf)
+    basename = '.'.join(os.path.split(filepath)[-1].split('.')[:-1]) # MS
+
+    basecallindexpos, basecalldirs, configdata, read_info_hash =  \
+        getBasenameData(args, read_type, hdf)
 
 
     # PROCESS TRACKING ID DATA ...
@@ -478,8 +502,11 @@ def process_metrichor_basecalled_fast5(
 
     # PROCESS TELEM DATA ....
     tel_data_hash = {}
+    '''
+    # DEPRECATING TELEM MS 11.10.16
     if args.telem is True:
         init_tel_threads2(connection_pool[dbname], tel_data_hash)
+    '''
 
 #--------------------------------------------------------------------------------
 
@@ -507,7 +534,7 @@ def  process_minKNOW_v1_0_fast5( \
         debug()
 
     # GET BASENAME AND CONFIGDATA ...
-    basecallindexpos, basename, basecalldirs, configdata, read_info_hash = \
+    basecallindexpos, basecalldirs, configdata, read_info_hash = \
                 getBasenameData(args, read_type, hdf)
 
     # PROCESS TRACKING ID DATA ...
@@ -516,9 +543,6 @@ def  process_minKNOW_v1_0_fast5( \
     basenameid, tracking_id_hash = \
         process_tracking_data(args, filepath, basename, \
         checksum,  passcheck, hdf, db, cursor)
-
-
-
 
 
     # PROCESS CONFIG GENERAL DATA ....
@@ -531,8 +555,8 @@ def  process_minKNOW_v1_0_fast5( \
     # PROCESS BASECALLED SUMMARY DATA ....
     # # get all the basecall summary split hairpin data
     if basename != '':
-        process_basecalledSummary_data(args, read_type
-            , basename, basenameid , basecalldirs , basecallindexpos, passcheck, tracking_id_hash, general_hash, hdf, db,cursor)
+        process_basecalledSummary_data(args, read_type , basename, basenameid , 
+                basecalldirs , basecallindexpos, passcheck, tracking_id_hash, general_hash, hdf, db,cursor)
 
     # PROCESS BARCODE DATA ...
     process_barcode_data(args, hdf, db, cursor,basenameid)
@@ -542,15 +566,21 @@ def  process_minKNOW_v1_0_fast5( \
 
     # PROCESS READ TYPES ....
     #process_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, cursor)
-    process_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, cursor,fastqhash, dbname, dbcheckhash)
+    process_readtypes(args, read_type, basename, basenameid, basecalldirs, 
+                tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, cursor,fastqhash, dbname, dbcheckhash)
 
     # DO ALIGNMENTS ....
     #do_alignments(read_type, args, dbname, ref_fasta_hash)
     do_alignments(read_type, args, oper, dbname, dbcheckhash, ref_fasta_hash,fastqhash,bwaclassrunner,connection_pool,basename,basenameid)
 
+    '''
+
+    # DEPRECATING TELEM MS 11.10.16
+
     # PROCESS TELEM DATA ....
     tel_data_hash = {}
     if args.telem is True:
         init_tel_threads2(connection_pool[dbname], tel_data_hash)
+    '''
 
 #-------------------------------------------------------------------------------

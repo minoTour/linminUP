@@ -4,7 +4,7 @@
 # File Name: sql.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Sun, Sep 25, 2016 11:17:20 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -1012,6 +1012,9 @@ def upload_2dalignment_data(
     # return sql
 
 # ---------------------------------------------------------------------------
+'''
+
+# DEPRECATION TELEM MS 11.101.6
 
 def upload_telem_data(
     basenameid,
@@ -1108,6 +1111,8 @@ def upload_telem_data(
         % (readtype, stringvals)
     cursor.execute(sql)
     db.commit()
+
+'''
 
 
 # ---------------------------------------------------------------------------

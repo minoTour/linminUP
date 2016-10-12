@@ -4,7 +4,7 @@
 # File Name: processMinKnowV1.0Fast5.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Sun, Sep 25, 2016 11:17:19 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -19,11 +19,11 @@ import hashlib
 from StringIO import StringIO
 
 from align_bwa import *
-from align_lastal import *
+#from align_lastal import *
 from hdf5_hash_utils import *
 
 from sql import upload_model_data
-from telem import init_tel_threads2
+#from telem import init_tel_threads2
 from checkRead import check_read_type, getBasecalltype
 
 from debug import debug
@@ -117,6 +117,10 @@ def process_integratedRNN_readtypes(args, read_type, basename, basenameid, basec
 
                 mysql_load_from_hashes(args, db, cursor, readtype, events_hash)
 
+                '''
+
+                # DEPRECATING TELEM MS 11.10.16 
+
                 if args.telem is True:
                     alignment = hdf[location + 'Alignment'][()]
                     if args.verbose == "high":
@@ -130,6 +134,7 @@ def process_integratedRNN_readtypes(args, read_type, basename, basenameid, basec
 
                     # upload_2dalignment_data(basenameid,channel,alignment,db)
                     # tel_sql_list.append(t_sql)
+                '''
 
             complement_and_template_fields = []
             '''
@@ -197,6 +202,8 @@ def process_integratedRNN_readtypes(args, read_type, basename, basenameid, basec
 def getIntegratedRNNBasenameData(args, read_type, hdf):
     for element in hdf['/Raw/Reads']:
 
+        basecallindexpos=0 # MS 10.10.16
+
         read_id_fields = [
             'duration',
             'read_number',
@@ -223,7 +230,7 @@ def getIntegratedRNNBasenameData(args, read_type, hdf):
         print configdata
         debug()
 
-    return '',[string,string,string],configdata, read_info_hash
+    return basecallindexpos, [string,string,string],configdata, read_info_hash
 
 
 #--------------------------------------------------------------------------------

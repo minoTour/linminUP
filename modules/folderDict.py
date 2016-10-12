@@ -4,7 +4,7 @@
 # File Name: folderDict.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Sun, Sep 25, 2016 11:17:18 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:25 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -116,7 +116,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
 
               # TODO check w ML  ....
 
-                if args.standalone is False:
+                if 0: # args.standalone is False:
                     if 'downloads' in path and args.preproc is False \
                             or args.preproc is True and \
                             ('downloads' in path or 'uploaded' in path) :

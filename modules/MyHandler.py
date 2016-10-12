@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Sun, Sep 25, 2016 11:17:19 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:25 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -26,7 +26,7 @@ from watchdog.events import FileSystemEventHandler
 
 from checkRead import check_read, check_read_type
 
-from align_dtw import mp_worker
+#from align_dtw import mp_worker
 from folderDict import file_dict_of_folder, moveFile
 from processRefFasta import process_ref_fasta_raw
 from processFast5 import process_fast5
@@ -98,6 +98,7 @@ class MyHandler(FileSystemEventHandler):
         self.rawcount = dict()
         self.rawprocessed = dict()
         self.p = multiprocessing.Pool(args.procs)
+        # self.p = multiprocessing.Pool(multiprocessing.cpu_count())
         self.kmerhashT = dict()
         self.kmerhashC = dict()
         self.args = args
@@ -141,9 +142,15 @@ class MyHandler(FileSystemEventHandler):
             # print type(seqlen)
 
             if args.verbose == "high": print seqlen
+
+
             shortestSeq = np.min(seqlen.values())
             if args.verbose == "high": print shortestSeq
             if args.verbose == "high": print args.largerRef
+
+            '''
+
+            # DEPRECARTINE LARGE REF MS 11.10.16
 
             if not args.largerRef and shortestSeq > 10 ** 8:
                 if args.verbose == "high": print "Length of references is >10^8: processing may be *EXTREMELY* slow. To overide rerun using the '-largerRef' option"  # MS
@@ -155,6 +162,7 @@ class MyHandler(FileSystemEventHandler):
             else:
 
                 if args.verbose == "high": print 'Length of references is <10^7: processing should be ok .... continuing .... '  # MS
+            '''
 
                                                 # model_file = "model.txt"
                                                 # model_kmer_means=process_model_file(model_file)
@@ -193,6 +201,10 @@ class MyHandler(FileSystemEventHandler):
         if args.verbose == "high":
             print 'Read Warped'
 
+    '''
+
+    # DEPRECATING PRE ALIGN MS 11.10.16...
+
     def apply_async_with_callback(
         self,
         filename,
@@ -223,6 +235,7 @@ class MyHandler(FileSystemEventHandler):
 
         if args.verbose == "high": print x
         #print 'Call complete'
+    '''
 
     def processfiles(self):
         args = self.args
@@ -475,6 +488,9 @@ class MyHandler(FileSystemEventHandler):
                     self.file_type
                     )
 
+            '''
+            # DEPRECATING PRE ALIGN MS 11.10.16...
+
             # analyser.apply_async_with_callback(fast5file,rawbasename_id,self.db_name)
 
             if args.prealign is True:
@@ -484,6 +500,7 @@ class MyHandler(FileSystemEventHandler):
                 if args.verbose == "high":
                         print x #.get()
                         print "... finished Prealign.", fast5file
+            '''
 
     # ..... END DO_FILE_PROCESSING()
 
@@ -496,7 +513,7 @@ class MyHandler(FileSystemEventHandler):
                 and 'muxscan' not in event.src_path \
                 and event.src_path.endswith('.fast5'):
                 self.creates[event.src_path] = time.time()
-        elif args.standalone is True:
+        elif 1: # args.standalone is True:
             if 'muxscan' not in event.src_path \
                 and event.src_path.endswith('.fast5'):
                 self.creates[event.src_path] = time.time()

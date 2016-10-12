@@ -4,7 +4,7 @@
 # File Name: processMetrichorFast5.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Sun, Sep 25, 2016 11:17:19 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -19,11 +19,11 @@ import hashlib
 from StringIO import StringIO
 
 from align_bwa import *
-from align_lastal import *
+#from align_lastal import *
 from hdf5_hash_utils import *
 
 from sql import upload_model_data
-from telem import init_tel_threads2
+#from telem import init_tel_threads2
 from checkRead import getBasecalltype
 
 from debug import debug
@@ -142,6 +142,8 @@ def process_metrichor_readtypes(args, read_type, basename, basenameid, basecalld
                                             readtype, events_hash)
 
 
+                '''
+                # DEPRECATING telem MS 11.10.16
                 if args.telem is True:
                     alignment = hdf[location + 'Alignment'][()]
 
@@ -151,6 +153,7 @@ def process_metrichor_readtypes(args, read_type, basename, basenameid, basecalld
 
                     # upload_2dalignment_data(basenameid,channel,alignment,db)
                     # tel_sql_list.append(t_sql)
+                '''
             #-------------------------------------------------
 
             complement_and_template_fields = [
@@ -263,12 +266,13 @@ def getMetrichorBasenameData(args, read_type, hdf):
         basename = configdata.attrs['basename']
 
     except:
-        print "process_metrichor_basecalled_fast5(): WARNING: Basecalled file without basecall data... " # , basename
-        return -1, '',[],None, {}
+        print "process_metrichor_basecalled_fast5(): WARNING: Basecalled file without basecall data... " 
+        return -1,[],None, {}
 
-    result = (basecalldir, basecalldir1, basecalldir2)
+    result = basecalldir, basecalldir1, basecalldir2
 
-    return basecallindexpos, basename, result,  configdata , {}
+    return basecallindexpos, result,  configdata , {}
+
 
 
 #--------------------------------------------------------------------------------

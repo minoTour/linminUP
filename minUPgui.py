@@ -4,7 +4,7 @@
 # File Name: gui.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Sun, Sep 25, 2016 11:17:17 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -20,6 +20,7 @@ import ctypes
 import time
 import psutil
 import platform
+import urllib
 
 import datetime
 dateTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
@@ -41,6 +42,36 @@ fh.close()
 pid = 0 # os.getpid() # MS -- !!! this breaks ctrl-c !!!
 
 
+def toFloat(s):
+    a,b = s[:-1].split('_')
+    s_ = '.'.join([a,b])
+    a,v,d,m,y = s_.split('.')
+    s__ = ''.join([a,v,'.',y,m,d])
+    return float(s__)
+
+ver_txt = ver
+ver_txt_  = toFloat(ver_txt)
+
+# Check online for new version ....
+try:
+        link = "https://raw.githubusercontent.com/minoTour/linminUP/master/ver.txt"
+        f = urllib.urlopen(link)
+        current_ver = f.read()
+        
+
+        current_ver_ = toFloat(current_ver)
+
+        if ver_txt_ < current_ver_:
+            print "You are using minUP version %s\nThe latest version is %s\nPlease download the latest version from MINOTOUR" % (ver_txt, current_ver)
+            sys.exit()
+except:
+        pass
+
+
+
+
+
+
 def run(cmd):
     global pid
 
@@ -50,7 +81,7 @@ def run(cmd):
 
     exit_code = 0
     print 'Run started ....'
-    p = subprocess.Popen(cmd, shell=False, # True,
+    p = subprocess.Popen(cmd, shell=True,
              stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
@@ -92,11 +123,13 @@ def kill(pid):
 # Read params.csv
 
 f = 'params.csv'
-h = open(f, 'r')
+h = open(f, 'rU')
 xs = []
 for line in h:
     if len(line) > 1:
-        xs.append(line[:-1].split(','))
+        line = line.rstrip('\n')
+        line = line.rstrip('\r')
+        xs.append(line.split(','))
 h.close()
 
 settings = {}
@@ -113,7 +146,7 @@ lut = dict([(x[4], x[2]) for x in xs[1:]])
 
 def mkWidget(parser, xs, settings):
     (
-        omit,
+        include,
         grpLabel,
         shrt,
         lng,
@@ -132,7 +165,7 @@ def mkWidget(parser, xs, settings):
     except:
         v = dflt
 
-    if omit == '0':
+    if include == 'Y':
         if typ == 'dir':
             parser.add_argument(
                 '-' + shrt,
@@ -250,7 +283,7 @@ def fixAlignerOpts(aligner, (k, v)):
     program_name='minUP '+ver,
     advanced=1,
     language='english',
-    show_config=True,
+    #show_config=True,
     default_size=(1000, 600),
     required_cols=1,
     optional_cols=2,

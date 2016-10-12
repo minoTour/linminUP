@@ -5,7 +5,7 @@
 # File Name: hdf2SQL.py
 # Purpose:
 # Creation Date: 08-06-2016
-# Last Modified: Sun, Sep 25, 2016 11:17:18 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:25 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2016 The Author(s) All Rights Reserved
 # Credits:
@@ -134,7 +134,7 @@ def h5_obj_to_table(cur, conn, obj, attr_hash, metadata_sql_list):
 
 def explore(cur, conn, obj, i, metadata_sql_list):
     if i > 0:
-        att_hash = dict()
+        att_hash = {}
         att_hash['basenameid'] = '1'
         for k in obj.attrs.keys():
             att_hash[k] = obj.attrs[k]

@@ -4,7 +4,7 @@
 # File Name: checkRead.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Sun, Sep 25, 2016 11:17:18 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -293,6 +293,9 @@ def check_read(
 
         # ---------------------------------------------------------------------------
 
+
+        '''
+        # DEPRECATIN TELEM MS 11.10.16
         if args.telem is True:
             for i in xrange(0, 10):
                 temptable = 'caller_basecalled_template_%d' % i
@@ -304,6 +307,7 @@ def check_read(
                 create_2d_alignment_table(twod_aligntable, cursor)
             create_model_list_table('model_list', cursor)
             create_model_data_table('model_data', cursor)
+        '''
 
         # ---------------------------------------------------------------------------
         if args.preproc is True:
@@ -361,8 +365,11 @@ def check_read(
 
             # dbcheckhash["mafoutdict"][dbname]=open(dbname+"."+process+".align.maf","w")
 
+            '''
+            # DEPRECATIN TELEM MS 11.10.16
             if args.telem is True:
                 create_ref_kmer_table('ref_sequence_kmer', cursor)
+            '''
 
 
             if args.prealign is True:
@@ -391,10 +398,13 @@ def check_read(
                     'ref_total_len': reflength,
                     })
                 ref_fasta_hash[dbname]['refid'][refname] = refid
+                '''
+                # DEPRECATIN TELEM MS 11.10.16
                 if args.telem is True:
                     kmers = ref_fasta_hash[dbname]['kmer'][refname]
                     load_ref_kmer_hash(args, db, 'ref_sequence_kmer', kmers,
                             refid, cursor)
+                '''
 
         # ---------------------------------------------------------------------------
         # -------- See if theres any ENA XML stuff to add.
@@ -748,8 +758,12 @@ def check_read(
                                 os.linesep))
             logfilehandle.write('watch directory:\t%s%s'
                                 % (args.watchdir, os.linesep))
+            
+            '''
+            # DEPRECATIN TELEM MS 11.10.16
             logfilehandle.write('upload telemetry:\t%s%s'
                                 % (args.telem, os.linesep))
+            '''
             logfilehandle.write('Reference Sequences:' + os.linesep)
             if dbname in ref_fasta_hash:
                 for refname in ref_fasta_hash[dbname]['seq_len'].iterkeys():
@@ -787,7 +801,7 @@ def check_read(
                 time.sleep(2)
                 if oper is 'linux':
                     cmd = \
-                        'python mincontrol.py -h -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
+                        'python mincontrol.py -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
                         % (
                         args.dbhost,
                         args.dbusername,
@@ -832,9 +846,13 @@ def check_read(
         # # connection_pool for this db
 
         connection_pool[dbname] = list()
+        '''
+        # DEPRECATIN LAST TELEM MS 11.10.16
         if args.last_align is True \
             or args.bwa_align is True \
             or args.telem is True:
+        '''
+        if args.bwa_align is True :
             try:
                 db_a = MySQLdb.connect(host=args.dbhost,
                         user=args.dbusername, passwd=args.dbpass,

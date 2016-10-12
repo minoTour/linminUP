@@ -1,50 +1,50 @@
-Omit?,Group,Short,Long,Short_Desc,Store,Type,Target,Required,Default,Options,Details
-0,0._Folders,w,watchdir,Watch_Directory,,dir,watchdir,TRUE,None,,The path to the folder containing the downloads directory with fast5 reads to analyse  e.g. C:\data\minion\downloads (for windows.
-1,0._Folders,m,minuppath,minUP.exe Folder,,dir,minup,TRUE,dist\dist,,The path to the folder containing the minUP.exe command line executable application.
-0,1._Login_Details,u,minotourusername,minoTour_Username,store,str,minotourusername,TRUE,None,,The MinoTour username with permissions to upload data.
-0,1._Login_Details,dbh,mysqlhost,mySQL_Host,store,str,dbhost,TRUE,localhost,,The location of the MySQL database. default is localhost.
-0,1._Login_Details,dbp,mysqlport,mySQL_Port,,int,dbport,TRUE,3306,,The MySQL port number  else the default port 3306 is used.
-0,1._Login_Details,dbu,mysqlusername,mySQL_Username,store,str,dbusername,TRUE,None,,The MySQL username with create & write privileges on MinoTour.
-0,1._Login_Details,pw,mysqlpassword,mySQL_Password,store,str,dbpass,TRUE,None,,The password for the MySQL username with permission to upload to MinoTour.
+Include?,Group,Short,Long,Short_Desc,Store,Type,Target,Required,Default,Options,Details
+Y,0._Folders,w,watchdir,Watch_Directory,,dir,watchdir,TRUE,None,,The path to the folder containing the downloads directory with fast5 reads to analyse  e.g. C:\data\minion\downloads (for windows.
+N,0._Folders,m,minuppath,minUP.exe Folder,,dir,minup,TRUE,dist\dist,,The path to the folder containing the minUP.exe command line executable application.
+Y,1._Login_Details,u,minotourusername,minoTour_Username,store,str,minotourusername,TRUE,None,,The MinoTour username with permissions to upload data.
+Y,1._Login_Details,dbh,mysqlhost,mySQL_Host,store,str,dbhost,TRUE,localhost,,The location of the MySQL database. default is localhost.
+Y,1._Login_Details,dbp,mysqlport,mySQL_Port,,int,dbport,TRUE,3306,,The MySQL port number  else the default port 3306 is used.
+Y,1._Login_Details,dbu,mysqlusername,mySQL_Username,store,str,dbusername,TRUE,None,,The MySQL username with create & write privileges on MinoTour.
+Y,1._Login_Details,pw,mysqlpassword,mySQL_Password,store,str,dbpass,TRUE,None,,The password for the MySQL username with permission to upload to MinoTour.
 
 
-1,2._Run_Description,c,commenttrue,Add_Comment?,store_true,bool,add_comment,FALSE,FALSE,,Add a comment to the comments field for this run. Follow the prompt once minup starts. 
-0,2._Run_Description,cs,comment_string,Comment,store_true,str,added_comment,FALSE,FALSE,,Add this comment to the comments field for this run. 
-0,2._Run_Description,name,namecustom,Custom_Name,store,str,custom_name,FALSE,None,,Provide a modifier to the database name. This allows you to upload the same dataset to minoTour more than once. The additional string should be as short as possible.
-0,2._Run_Description,o,flowcellowner,Flow_cell_Owner,store,str,flowcell_owner,FALSE,minionowner,,The name of the minion owner. minionowner is the default.
-0,2._Run_Description,r,runnumber,Run_Number,store,str,run_num,FALSE,0,,The run number of the flowcell. The default value is 0. 
+N,2._Run_Description,c,commenttrue,Add_Comment?,store_true,bool,add_comment,FALSE,FALSE,,Add a comment to the comments field for this run. Follow the prompt once minup starts. 
+Y,2._Run_Description,cs,comment_string,Comment,store_true,str,added_comment,FALSE,FALSE,,Add this comment to the comments field for this run. 
+Y,2._Run_Description,name,namecustom,Custom_Name,store,str,custom_name,FALSE,None,,Provide a modifier to the database name. This allows you to upload the same dataset to minoTour more than once. The additional string should be as short as possible.
+Y,2._Run_Description,o,flowcellowner,Flow_cell_Owner,store,str,flowcell_owner,FALSE,minionowner,,The name of the minion owner. minionowner is the default.
+Y,2._Run_Description,r,runnumber,Run_Number,store,str,run_num,FALSE,0,,The run number of the flowcell. The default value is 0. 
 
 
-0,3._Read_Alignment,b,alignbatchfasta,Fasta_Batch_Align?,store_true,bool,batch_fasta,FALSE,FALSE,,Align reads in batch processing mode. Assumes the watchdir 'w' is pointed at a directory with one or more 'downloads' folders below it somewhere. Each 'downloads' folder can have a subfolder named 'reference' containing the fasta file's to align the fast5 reads in the corresponding 'downloads' folder too.
-0,3._Read_Alignment,f,alignreffasta,Fasta_Reference_Sequence,,file,ref_fasta,FALSE,None,,The reference fasta file to align reads against. Using this option enables read alignment provided LastAl and LastDB are in the path. Leaving this entry blank will upload the data without any alignment. To use multiple reference fasta files input them as one text string separated by commas (no white spaces.
-0,6._Read_Alignment,bwa,aling-bwa,Align_Reads_using BWA?,store_true,bool,preall,TRUE,TRUE,,Align reads using BWA?.
-1,3._Read_Alignment,a,aligner,Aligner_to_Use,,dropdown,aligner,FALSE,none,none;bwa;last,Algorithm to use for aligning reads.
-1,3._Read_Alignment,a1,aligner1,,,mutExGrp,aligner1,FALSE,bwa,none;bwa;lastal,Algorithm to use for aligning reads.
-1,3._Read_Alignment,last,lastaligntrue,Use_Lastal?,store_true,bool,last_align,FALSE,FALSE,,Align reads with LAST.
-1,3._Read_Alignment,bwa,bwaaligntrue,Use_BWA?,store_true,bool,bwa_align,FALSE,FALSE,,Align reads with BWA.
-1,3._Read_Alignment,lastopts,lastalignoptions,Lastal_Options,,str,last_options,FALSE,s2T0Q0a1,,LAST options: Enter a comma separated list of LAST options without spaces or  characters e.g. s2 T0 Q0 a1
-1,3._Read_Alignment,bwaopts,bwaalignoptions,BWA_Options,,str,bwa_options,FALSE,FALSE,,BWA options: Enter a comma separated list of BWA options without spaces or  characters e.g. k12 T0
-0,3._Read_Alignment,opts,alignoptions,Alignment_Options,,str,options,FALSE,FALSE,,Aligner options: Enter a comma separated list of aligner options without spaces or characters.
+Y,3._Read_Alignment,b,alignbatchfasta,Fasta_Batch_Align?,store_true,bool,batch_fasta,FALSE,FALSE,,Align reads in batch processing mode. Assumes the watchdir 'w' is pointed at a directory with one or more 'downloads' folders below it somewhere. Each 'downloads' folder can have a subfolder named 'reference' containing the fasta file's to align the fast5 reads in the corresponding 'downloads' folder too.
+Y,3._Read_Alignment,f,alignreffasta,Fasta_Reference_Sequence,,file,ref_fasta,FALSE,None,,The reference fasta file to align reads against. Leaving this entry blank will upload the data without any alignment. To use multiple reference fasta files input them as one text string separated by commas (no white spaces.
+Y,6._Read_Alignment,bwa,aling-bwa,Align_Reads_using BWA?,store_true,bool,preall,TRUE,TRUE,,Align reads using BWA?.
+N,3._Read_Alignment,a,aligner,Aligner_to_Use,,dropdown,aligner,FALSE,none,none;bwa;last,Algorithm to use for aligning reads.
+N,3._Read_Alignment,a1,aligner1,,,mutExGrp,aligner1,FALSE,bwa,none;bwa;lastal,Algorithm to use for aligning reads.
+N,3._Read_Alignment,last,lastaligntrue,Use_Lastal?,store_true,bool,last_align,FALSE,FALSE,,Align reads with LAST.
+N,3._Read_Alignment,bwa,bwaaligntrue,Use_BWA?,store_true,bool,bwa_align,FALSE,FALSE,,Align reads with BWA.
+N,3._Read_Alignment,lastopts,lastalignoptions,Lastal_Options,,str,last_options,FALSE,s2T0Q0a1,,LAST options: Enter a comma separated list of LAST options without spaces or  characters e.g. s2 T0 Q0 a1
+N,3._Read_Alignment,bwaopts,bwaalignoptions,BWA_Options,,str,bwa_options,FALSE,FALSE,,BWA options: Enter a comma separated list of BWA options without spaces or  characters e.g. k12 T0
+Y,3._Read_Alignment,opts,alignoptions,Alignment_Options,,str,options,FALSE,FALSE,,Aligner options: Enter a comma separated list of aligner options without spaces or characters.
 
-0,4._Remote_Control,pin,securitypin,Security_Pin,,str,pin,FALSE,FALSE,,PIN number for remote control.
-0,4._Remote_Control,ip,ipaddress,IP_Address,,str,ip_address,FALSE,FALSE,,Used for remote control with option pin. Provide IP address of the computer running minKNOW. The default is the IP address of this computer.
-0,4._Remote_Control,s,minotoursharingusernames,minoTour_Sharing_Usernames,,str,view_users,FALSE,FALSE,,A comma separated list (with no whitespaces of other MinoTour users who will also be able to view the data.
+N,4._Remote_Control,pin,securitypin,Security_Pin,,str,pin,FALSE,FALSE,,PIN number for remote control.
+N,4._Remote_Control,ip,ipaddress,IP_Address,,str,ip_address,FALSE,FALSE,,Used for remote control with option pin. Provide IP address of the computer running minKNOW. The default is the IP address of this computer.
+Y,4._Remote_Control,s,minotoursharingusernames,minoTour_Sharing_Usernames,,str,view_users,FALSE,FALSE,,A comma separated list (with no whitespaces of other MinoTour users who will also be able to view the data.
 
 
-0,5._Other_Options,t,insertteltrue,Include_Telemetry?,store_true,bool,telem,FALSE,FALSE,,Store all the telemetry data from the read files online. This feature is currently in development.
-0,5._Other_Options,d,dropdbtrue,Drop_Database?,store_true,bool,drop_db,FALSE,FALSE,,Drop existing database if it already exists.
-0,5._Other_Options,v,verbosetrue,Verbose_Output?,,dropdown,verbose,FALSE,none,none;low;high,Print detailed messages while processing files.
-0,5._Other_Options,largerRef,larger-reference,Force_processing_on_larger_references?,store_true,bool,largerRef,FALSE,FALSE,,VERY slow on larger genomes.
-1,5._Other_Options,res,resume-upload,Resume_Upload?,store_true,bool,resume,FALSE,FALSE,,Add files to a partially uploaded database
+N,5._Other_Options,t,insertteltrue,Include_Telemetry?,store_true,bool,telem,FALSE,FALSE,,Store all the telemetry data from the read files online. This feature is currently in development.
+Y,5._Other_Options,d,dropdbtrue,Drop_Database?,store_true,bool,drop_db,FALSE,FALSE,,Drop existing database if it already exists.
+Y,5._Other_Options,v,verbosetrue,Verbose_Output?,,dropdown,verbose,FALSE,none,none;low;high,Print detailed messages while processing files.
+N,5._Other_Options,largerRef,larger-reference,Force_processing_on_larger_references?,store_true,bool,largerRef,FALSE,FALSE,,VERY slow on larger genomes.
+N,5._Other_Options,res,resume-upload,Resume_Upload?,store_true,bool,resume,FALSE,FALSE,,Add files to a partially uploaded database
 
-0,6._Processor_Options,procs,proc_num,Number_of_Processors,,int,procs,FALSE,-1,,The number of processors to run minUP on.
-0,6._Processor_Options,n,aligningthreads,Number_of_Threads,,str,threads,FALSE,3,,The number of threads to use for aligning.
-0,6._Processor_Options,pre,insertpretrue,Process_Pre-Basecalled_Reads?,store_true,bool,preproc,FALSE,FALSE,,Process  raw reads prior to basecalling by metrichor.
-0,6._Processor_Options,prealign,alignpretrue,Align_Pre-Basecalled_Reads?,store_true,bool,preall,FALSE,FALSE,,Align raw reads prior to basecalling by metrichor.
-0,6._Processor_Options,customup,custom-upload,Stop minUP when cached has remained zero for more than 30 seconds,store_true,bool,customup,FALSE,FALSE,,Stop minUP when cached has remained zero for more than 30 seconds.
-0,6._Processor_Options,qryStartEnd,prealign-query-start-end-only,Pre-align using only a window at start and end of the query squiggle?,store_true,bool,qryStartEnd,FALSE,FALSE,, False: pre-align using the whole query squiggle.
-1,6._Processor_Options,qScale,scale-query,Scale query by max value in ref.,store_true,bool,qScale,FALSE,FALSE,,Scale query by max value in ref.Scale query by max value in ref.
-0,6._Processor_Options,useHdfTimes,use-hdf5_file-timestamps,Sort read files using HDF timestamps,store_true,bool,hdfTimes,FALSE,FALSE,,Sort read files using hdt file timestamps rather than file modified times.'
-0,6._Processor_Options,indexToRefDir,store-indexes-in-ref-folder,Store indexes in Ref Folder,store_true,bool,indexToRefDir,FALSE,FALSE,,Store the bwa/last index files in the reference genome folder'
-0,6._Processor_Options,standalone,standalone-mode,Run without using metrichor download/uploaded folders.,store_true,bool,standalone,FALSE,FALSE,,Run without using metrichor download/uploaded folders.
-0,6._Processor_Options,debug,debug-mode,Stop if read is problematic,store,bool,debug,FALSE,FALSE,,Stop if read is problematic
+Y,6._Processor_Options,procs,proc_num,Number_of_Processors,,int,procs,FALSE,-1,,The number of processors to run minUP on.
+N,6._Processor_Options,n,aligningthreads,Number_of_Threads,,str,threads,FALSE,3,,The number of threads to use for aligning.
+Y,6._Processor_Options,pre,insertpretrue,Process_Pre-Basecalled_Reads?,store_true,bool,preproc,FALSE,FALSE,,Process  raw reads prior to basecalling by metrichor.
+N,6._Processor_Options,prealign,alignpretrue,Align_Pre-Basecalled_Reads?,store_true,bool,preall,FALSE,FALSE,,Align raw reads prior to basecalling by metrichor.
+Y,6._Processor_Options,customup,custom-upload,Stop minUP when cached has remained zero for more than 30 seconds,store_true,bool,customup,FALSE,FALSE,,Stop minUP when cached has remained zero for more than 30 seconds.
+N,6._Processor_Options,qryStartEnd,prealign-query-start-end-only,Pre-align using only a window at start and end of the query squiggle?,store_true,bool,qryStartEnd,FALSE,FALSE,, False: pre-align using the whole query squiggle.
+N,6._Processor_Options,qScale,scale-query,Scale query by max value in ref.,store_true,bool,qScale,FALSE,FALSE,,Scale query by max value in ref.Scale query by max value in ref.
+Y,6._Processor_Options,useHdfTimes,use-hdf5_file-timestamps,Sort read files using HDF timestamps,store_true,bool,hdfTimes,FALSE,FALSE,,Sort read files using hdt file timestamps rather than file modified times.'
+Y,6._Processor_Options,indexToRefDir,store-indexes-in-ref-folder,Store indexes in Ref Folder,store_true,bool,indexToRefDir,FALSE,FALSE,,Store the aligner index files in the reference genome folder'
+N,6._Processor_Options,standalone,standalone-mode,Run without using metrichor download/uploaded folders.,store_true,bool,standalone,FALSE,FALSE,,Run without using metrichor download/uploaded folders.
+Y,6._Processor_Options,debug,debug-mode,Stop if read is problematic,store,bool,debug,FALSE,FALSE,,Stop if read is problematic

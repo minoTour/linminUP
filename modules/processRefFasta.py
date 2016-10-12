@@ -4,7 +4,7 @@
 # File Name: processRefFasta.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Sun, Sep 25, 2016 11:17:19 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -152,10 +152,15 @@ def process_ref_fasta(
 
         # ## do kmer
 
+        '''
+
+        # DEPRECATING TELEM MS 11.10.16
+
         if args.telem is True:
             recomp = record.seq.reverse_complement()
             km = kmer_count_fasta(record.seq, recomp, 5)
             refdict['kmer'][record.id] = km
+        '''
     bar.finish()
 
     if args.last_align is True:

@@ -11,6 +11,7 @@ import threading
 import MySQLdb
 import configargparse
 import urllib2
+import urlparse
 import json
 from ws4py.client.threadedclient import WebSocketClient
 from thrift import Thrift

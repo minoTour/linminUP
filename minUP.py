@@ -6,7 +6,7 @@
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
 # Creation Date: 2014 - 2016
-# Last Modified: Sun, Sep 25, 2016 11:17:16 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -32,13 +32,21 @@ sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)  # MS
 sys.path.append('modules')
 from exit_gracefully import terminate_minup
 from processRefFasta import process_ref_fasta
-from telem import *
+#from telem import *
 
 from sql import okSQLname
 
-# ---------------------------------------------------------------------------
-# main
+import urllib
 
+# ---------------------------------------------------------------------------
+def toFloat(s):
+    a,b = s[:-1].split('_')
+    s_ = '.'.join([a,b])
+    a,v,d,m,y = s_.split('.')
+    s__ = ''.join([a,v,'.',y,m,d])
+    return float(s__)
+
+# main
 if __name__ == '__main__':
 
     multiprocessing.freeze_support()  # MS
@@ -46,9 +54,31 @@ if __name__ == '__main__':
     manager = multiprocessing.Manager()
 
     global MINUP_VERSION
+
     fh = open("ver.txt", "r")
     ver_txt = fh.readline()
     fh.close()
+
+    ver_txt_  = toFloat(ver_txt)
+
+    # Check online for new version ....
+    try:
+        link = "https://raw.githubusercontent.com/minoTour/linminUP/master/ver.txt"
+        f = urllib.urlopen(link)
+        current_ver = f.read()
+        
+
+        current_ver_ = toFloat(current_ver)
+
+        if ver_txt_ < current_ver_:
+            print "You are using minUP version %s\nThe latest version is %s\nPlease download the latest version from MINOTOUR" % (ver_txt, current_ver)
+            sys.exit()
+    except:
+        pass
+
+
+
+
     MINUP_VERSION = re.sub("[^.0-9]", "", ver_txt.split('_')[0])
     __version__ = MINUP_VERSION
 
@@ -292,7 +322,8 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
         '-t',
         '--insert-tel-true',
         action='store_true',
-        help='Store all the telemetry data from the read files online. This feature is currently in development.',
+        #'help='Store all the telemetry data from the read files online. This feature is currently in development.',
+        help="DEPRECATED",
         default=False,
         dest='telem',
     )
@@ -354,7 +385,8 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
         '-largerRef',
         '--larger-reference',
         action='store_true',
-        help='Force processng on large reference genomes.',
+        #help='Force processng on large reference genomes.',
+        help='DEPRECATED',
         default=False,
         dest='largerRef',
     )
@@ -373,7 +405,8 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
         '-qScale',
         '--scale-query',
         action='store_true',
-        help='Scale query by max value in ref.',
+        #help='Scale query by max value in ref.',
+        help='DEPRECATED',
         default=False,
         dest='qScale',
     )
@@ -382,7 +415,8 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
         '-qryStartEnd',
         '--prealign-query-start-end-only',
         action='store_true',
-        help='Pre-align using only a window at start and end of the query squiggle? False: pre-align using the whole query squiggle.',
+        #help='Pre-align using only a window at start and end of the query squiggle? False: pre-align using the whole query squiggle.',
+        help="DEPRECATED",
         default=False,
         dest='qryStartEnd',
     )
@@ -418,10 +452,12 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
         '-standalone',
         '--standalone-mode',
         action='store_true',
-        help='Run without using metrichor download/guploaed folders.',
+        #help='Run without using metrichor download/guploaed folders.',
+        help="DEPRECATED",
         default=False,
         dest='standalone',
     )
+    
 
 
     # parser.add('-ver', '--version', action='store_true', help="Report the current version of minUP.", default=False, dest='version') # ML

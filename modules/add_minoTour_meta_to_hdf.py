@@ -5,7 +5,7 @@
 # File Name: add_minoTour_meta_to_hdf.py
 # Purpose:
 # Creation Date: 08-06-2016
-# Last Modified: Sun, Sep 25, 2016 11:17:17 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2016 The Author(s) All Rights Reserved
 # Credits:
@@ -32,6 +32,7 @@ def add_metadata_to_hdf(args, metadata_file, fast5file):
 
         mainGroup = "/minoTour_meta"
         try:
+            del hdf["/minoTour_meta/*"]
             del hdf["/minoTour_meta"]
         except:
             if args.verbose == "high":

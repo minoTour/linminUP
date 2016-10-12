@@ -4,7 +4,7 @@
 # File Name: align_bwa.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Sun, Sep 25, 2016 11:17:17 AM
+# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -127,8 +127,8 @@ def do_bwa_align2(args,
 
     read = ""
     bwaindex = ""
-    cursor = ""
-    db = ""
+    cursor = None # ""
+    db = None # ""
     for seqid in mydicttopass:
         cursor = mydicttopass[seqid]["db"].cursor()
         db = mydicttopass[seqid]["db"]
