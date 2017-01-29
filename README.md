@@ -98,142 +98,276 @@ A run command for mincontrol.py to connect to minotour.nottingham.ac.uk is (agai
 The command line options are described below:
 
   -h, --help            show this help message and exit
+  
   -w WATCHDIR, --watch-dir WATCHDIR
+  
                         The path to the folder containing the downloads
+                        
                         directory with fast5 reads to analyse - e.g.
+                        
                         C:\data\minion\downloads (for windows).
+                        
   -downloads DOWNLOADS, --downloads-dir DOWNLOADS
+  
                         The path to the folder containing the downloads
+                        
                         directory with fast5 reads to analyse - e.g.
+                        
                         C:\data\minion\downloads (for windows).
+                        
   -uploaded UPLOADED, --uploaded-dir UPLOADED
+  
                         The path to the folder containing the uploaded
+                        
                         directory with fast5 reads to analyse - e.g.
+                        
                         C:\data\minion\downloads (for windows).
+                        
   -dbh DBHOST, --mysql-host DBHOST
+  
                         The location of the MySQL database. default is
+                        
                         'localhost'.
+                        
   -dbu DBUSERNAME, --mysql-username DBUSERNAME
+  
                         The MySQL username with create & write privileges on
+                        
                         MinoTour.
+                        
   -dbp DBPORT, --mysql-port DBPORT
+  
                         The MySQL port number, else the default port '3306' is
+                        
                         used.
+                        
   -pw DBPASS, --mysql-password DBPASS
+  
                         The password for the MySQL username with permission to
+                        
                         upload to MinoTour.
+                        
   -f REF_FASTA, --align-ref-fasta REF_FASTA
+  
                         The reference fasta file to align reads against. Using
+                        
                         this option enables read alignment provided LastAl and
+                        
                         LastDB are in the path. Leaving this entry blank will
+                        
                         upload the data without any alignment. To use multiple
+                        
                         reference fasta files input them as one text string
+                        
                         seperated by commas (no white spaces)
+                        
   -b, --align-batch-fasta
+  
                         Align reads in batch processing mode. Assumes the
+                        
                         watch-dir (-w) is pointed at a directory with one or
+                        
                         more "downloads" folders below it somewhere. Each
+                        
                         "downloads" folder can have a subfolder named
+                        
                         "reference" containing the fasta file(s) to align the
+                        
                         fast5 reads in the corresponding "downloads" folder to
+                        
   -procs PROCS, --proc_num PROCS
+  
                         The number of processors to run this on.
+                        
   -u MINOTOURUSERNAME, --minotour-username MINOTOURUSERNAME
+  
                         The MinoTour username with permissions to upload data.
+                        
   -s VIEW_USERS, --minotour-sharing-usernames VIEW_USERS
+  
                         A comma seperated list (with no whitespaces) of other
+                        
                         MinoTour users who will also be able to view the data.
+                        
   -o FLOWCELL_OWNER, --flowcell-owner FLOWCELL_OWNER
+  
                         The name of the minion owner. 'minionowner' is the
+                        
                         default
+                        
   -r RUN_NUM, --run-number RUN_NUM
+  
                         The run number of the flowcell. The default value is
+                        
                         0.
+                        
   -c, --commment-true   Add a comment to the comments field for this run.
+  
                         Follow the prompt once minup starts .
+                        
   -last, --last-align-true
+  
                         align reads with LAST
+                        
   -bwa, --bwa-align-true
+  
                         align reads with BWA
+                        
   -bwa-opts BWA_OPTIONS, --bwa-align-options BWA_OPTIONS
+  
                         BWA options: Enter a comma-seperated list of BWA
+                        
                         options without spaces or '-' characters e.g. k12,T0
+                        
   -last-opts LAST_OPTIONS, --last-align-options LAST_OPTIONS
+  
                         LAST options: Enter a comma-seperated list of LAST
+                        
                         options without spaces or '-' characters e.g.
+                        
                         s2,T0,Q0,a1
+                        
   -pin PIN, --security-pin PIN
+  
                         pin number for remote control
+                        
   -ip IP_ADDRESS, --ip-address IP_ADDRESS
+  
                         Used for remote control with option '-pin'. Provide IP
+                        
                         address of the computer running minKNOW. The default
+                        
                         is the IP address of this computer
+                        
   -t, --insert-tel-true
+  
                         DEPRECATED
+                        
   -pre, --insert-pre-true
+  
                         Process raw reads prior to basecalling by metrichor.
+                        
   -prealign, --align-pre-true
+  
                         Align raw reads prior to basecalling by metrichor.
+                        
   -d, --drop-db-true    Drop existing database if it already exists.
+  
   -v VERBOSE, --verbose-true VERBOSE
+  
                         Print detailed messages while processing files.
+                        
   -name CUSTOM_NAME, --name-custom CUSTOM_NAME
+  
                         Provide a modifier to the database name. This allows
+                        
                         you to upload the same dataset to minoTour more than
+                        
                         once. The additional string should be as short as
+                        
                         possible.
+                        
   -cs ADDED_COMMENT [ADDED_COMMENT ...], --commment-string ADDED_COMMENT [ADDED_COMMENT ...]
+  
                         Add given string to the comments field for this run
-  -largerRef, --larger-reference
+                        
+  -largerRef, --larger-reference 
+ 
                         DEPRECATED
+                        
   -customup, --custom-upload
+  
                         Stop minUP when cached has remained zero for more than
+                        
                         30 seconds.
+                        
   -qScale, --scale-query
+  
                         DEPRECATED
+                        
   -qryStartEnd, --prealign-query-start-end-only
+  
                         DEPRECATED
+                        
   -useHdfTimes, --use-hdf5_file-timestamps
+  
                         Sort read files using hdt file timestamps rather than
+                        
                         file modified times.
+                        
   -indexToRefDir, --store-indexes-in-ref-folder
+  
                         Store the bwa/glast index files in the reference
+                        
                         genome folder
+                        
   -debug, --disable-MyHandler-try-except
+  
                         Disable MyHandler try excep
+                        
   -standalone, --standalone-mode
+  
                         DEPRECATED
+                        
   -abs ALIGNERBLOCKSIZE, --aligner_block_size ALIGNERBLOCKSIZE
+  
                         Number of reads to align on each call to the aligner
+                        
   -ver, --version       show program's version number and exit
+  
 
 
 # mincontrol.py Command Line Options
 
   -h, --help            show this help message and exit
+  
   -ws WSHOST, --websocket-host WSHOST
+  
                         The location of the minotour server being connected
+                        
                         to.
+                        
   -dbh DBHOST, --mysql-host DBHOST
+  
                         The location of the MySQL database. default is
+                        
                         'localhost'.
+                        
   -dbu DBUSERNAME, --mysql-username DBUSERNAME
+  
                         The MySQL username with create & write privileges on
+                        
                         MinoTour.
+                        
   -dbp DBPORT, --mysql-port DBPORT
+  
                         The MySQL port number, else the default port '3306' is
+                        
                         used.
+                        
   -pw DBPASS, --mysql-password DBPASS
+  
                         The password for the MySQL username with permission to
+                        
                         upload to MinoTour.
+                        
   -pin PIN, --security-pin PIN
+  
                         This is a security feature to prevent unauthorised
+                        
                         remote control of a minION device. You need to provide
+                        
                         a four digit pin number which must be entered on the
+                        
                         website to remotely control the minION.
+                        
   -ip IP, --ip-address IP
+  
                         The IP address of the minKNOW machine.
+                        
   -v, --verbose         Display debugging information.
+  
+
 
 
 # INSTALLATION
