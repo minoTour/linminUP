@@ -2,7 +2,7 @@
 # File Name: setup_0.63.py
 # Purpose:
 # Creation Date: 20-11-2015
-# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:50 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits: 
@@ -15,33 +15,31 @@ from distutils.core import setup
 import py2exe
 import sys
 
+
 sys.path.append('modules')
 
 setup(console=['getmodels.py'
         , 'minUPgui.py'
         , 'mincontrol.py'
-        , 'minUP.py'],
+        , 'minUP.py'
+        ],
     options = {'py2exe': 
-    { #'compressed': True
-    #, 'bundle_files': 1
-    'includes': 
+    { 'includes': 
             [ 'h5py.*'
-        #, 'pycuda.*'
-        , "psutil.*"
+            , "psutil.*"
+            , 'urlparse.*'
             , 'cython.*'
-            #, 'scipy.linalg.cython_blas'
-            #, 'scipy.linalg.cython_lapack'
-            #, 'scipy.sparse.csgraph._validation'
-            #, 'mlpy.*'
+            , 'appdirs.*'
+            , 'packaging.*'
+            , 'twisted.*'
         ]
     , 'dll_excludes': 
-        ['MSVCP90.dll'
+        [ 'MSVCP90.dll'
         , 'libgobject-2.0-0.dll'
-                , 'libglib-2.0-0.dll'
+        , 'libglib-2.0-0.dll'
         , 'libgthread-2.0-0.dll'
-        # 'nvcuda.dll'
         ]
-        , 'excludes': 
+     , 'excludes': 
         [ 'IPython.*'
         , 'tcl.*'
         , 'Tkinter.*'
@@ -49,12 +47,4 @@ setup(console=['getmodels.py'
         ]
     }})  
 
-
-exit()
-
-'''
-"sklearn.*"
-"scipy.special.*"
-"scipy.special._ufuncs_cxx"
-'''
 

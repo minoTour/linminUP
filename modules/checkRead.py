@@ -4,7 +4,7 @@
 # File Name: checkRead.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:50 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -26,9 +26,14 @@ from exit_gracefully import terminate_minup, terminate_subprocesses , terminate_
 #from processFast5 import getBasecalltype
 from progressbar import *
 from pbar import *
-from socket import socket
+#from socket import socket
+
+#from startMinControl import startMincontrol
 
 from debug import debug
+
+import MySQLdb
+from db import cursor_execute
 
 def getBasecalltype(args, filetype):
     if filetype == -1: basecalltype = 'Unrecognised'
@@ -76,6 +81,7 @@ def check_read(
     hdf,
     cursor,
     oper,
+    ip
     ):
 
     global runindex
@@ -133,7 +139,7 @@ def check_read(
                 print 'switching to database: ', dbname
                 sys.stdout.flush()
             sql = 'USE %s' % dbname
-            cursor.execute(sql)
+            args,db,cursor = cursor_execute(args,db,cursor,sql)
 
             # ---------------------------------------------------------------------------
 
@@ -162,7 +168,7 @@ def check_read(
             if args.verbose == "high": print sql; debug()
 
             db.escape_string(sql)
-            cursor.execute(sql)
+            args,db,cursor = cursor_execute(args,db,cursor,sql)
             db.commit()
 
             # ---------------------------------------------------------------------------
@@ -193,7 +199,7 @@ def check_read(
 
         # print sql
 
-        cursor.execute(sql)
+        args,db,cursor = cursor_execute(args,db,cursor,sql)
         if cursor.fetchone():
             if args.verbose == "high":
                 print 'database exists!'
@@ -206,7 +212,7 @@ def check_read(
 
                 # print sql
 
-                cursor.execute(sql)
+                args,db,cursor = cursor_execute(args,db,cursor,sql)
                 db.commit()
                 if args.verbose == "high":
                     print 'database dropped.'
@@ -225,6 +231,9 @@ def check_read(
                         'not in batch mode so exiting ...'
                     sys.stdout.flush()
                     terminate_minup(args, dbcheckhash, oper, minup_version)
+                
+            #terminate_minup(args, dbcheckhash, oper, minup_version)
+            #sys.exit()
 
         if args.drop_db is True:
             print 'Deleting exisiting run from Gru now ...'
@@ -235,33 +244,22 @@ def check_read(
 
             # print sql
 
-            cursor.execute(sql)
+            args,db,cursor = cursor_execute(args,db,cursor,sql)
             db.commit()
             sql = "DELETE FROM Gru.minIONruns WHERE runname = \'%s\'" \
                 % dbname
 
             # print sql
 
-            cursor.execute(sql)
+            args,db,cursor = cursor_execute(args,db,cursor,sql)
             db.commit()
             print '.... Run deleted.'
             sys.stdout.flush()
 
-        # -------- mincontrol --------
-        # # get the IP address of the host
-
-        ip = '127.0.0.1'
-        try:
-            ip = socket.gethostbyname(socket.gethostname())
-        except Exception, err:
-            err_string = 'Error obtaining upload IP adress'
-            #print >> sys.stderr, err_string
-            print err_string
-
         # ---------------------------------------------------------------------------
         # -------- This bit adds columns to Gru.minIONruns --------
 
-        modify_gru(cursor, db)
+        modify_gru(args,db,cursor)
 
         # ---------------------------------------------------------------------------
 
@@ -279,17 +277,23 @@ def check_read(
 
 
         sql = 'CREATE DATABASE %s' % dbname
-        cursor.execute(sql)
+        args,db,cursor = cursor_execute(args,db,cursor,sql)
         sql = 'USE %s' % dbname
-        cursor.execute(sql)
+        args,db,cursor = cursor_execute(args,db,cursor,sql)
 
         # Create Tables ....
-        create_general_table('config_general', cursor)
-        create_trackingid_table('tracking_id', cursor)
-        create_basecall_summary_info('basecall_summary', cursor)
-        create_events_model_fastq_table('basecalled_template', cursor)
-        create_events_model_fastq_table('basecalled_complement', cursor)
-        create_basecalled2d_fastq_table('basecalled_2d', cursor)
+        create_general_table('config_general', args, db, cursor)
+        create_trackingid_table('tracking_id', args, db, cursor)
+        create_basecall_summary_info('basecall_summary', args, db, cursor)
+        create_events_model_fastq_table('basecalled_template', args, db, cursor)
+        create_events_model_fastq_table('basecalled_complement', args, db, cursor)
+        create_basecalled2d_fastq_table('basecalled_2d', args, db, cursor)
+
+        if args.pin is not False:
+            create_mincontrol_interaction_table('interaction', args, db, cursor)
+            create_mincontrol_messages_table('messages', args, db, cursor)
+            create_mincontrol_barcode_control_table('barcode_control',
+                    args,db,cursor)
 
         # ---------------------------------------------------------------------------
 
@@ -302,17 +306,17 @@ def check_read(
                 comptable = 'caller_basecalled_complement_%d' % i
                 twod_aligntable = 'caller_basecalled_2d_alignment_%d' \
                     % i
-                create_caller_table_noindex(temptable, cursor)
-                create_caller_table_noindex(comptable, cursor)
-                create_2d_alignment_table(twod_aligntable, cursor)
-            create_model_list_table('model_list', cursor)
-            create_model_data_table('model_data', cursor)
+                create_caller_table_noindex(temptable, args, db, cursor)
+                create_caller_table_noindex(comptable, args, db, cursor)
+                create_2d_alignment_table(twod_aligntable, args, db, cursor)
+            create_model_list_table('model_list', args, db, cursor)
+            create_model_data_table('model_data', args, db, cursor)
         '''
 
         # ---------------------------------------------------------------------------
         if args.preproc is True:
-                create_pretrackingid_table('pre_tracking_id', cursor)  # make another table
-                create_pre_general_table('pre_config_general', cursor)  # pre config general table
+                create_pretrackingid_table('pre_tracking_id', args, db, cursor)  # make another table
+                create_pre_general_table('pre_config_general', args, db, cursor)  # pre config general table
 
         # -------- Assign the correct reference fasta for this dbname if applicable
 
@@ -333,54 +337,54 @@ def check_read(
         # ---------------------------------------------------------------------------
 
         if dbname in ref_fasta_hash:  # great, we assigned the reference fasta to this dbname
-            create_reference_table('reference_seq_info', cursor)
+            create_reference_table('reference_seq_info', args, db, cursor)
             create_5_3_prime_align_tables('last_align_basecalled_template'
-                    , cursor)
+                    , args, db, cursor)
             create_5_3_prime_align_tables('last_align_basecalled_complement'
-                    , cursor)
+                    , args, db, cursor)
             create_5_3_prime_align_tables('last_align_basecalled_2d',
-                    cursor)
+                    args,db, cursor)
 
 
             if args.last_align is True:
 
-                # create_align_table('last_align_basecalled_template', cursor)
-                # create_align_table('last_align_basecalled_complement', cursor)
-                # create_align_table('last_align_basecalled_2d', cursor)
+                # create_align_table('last_align_basecalled_template', args, db, cursor)
+                # create_align_table('last_align_basecalled_complement', args, db, cursor)
+                # create_align_table('last_align_basecalled_2d', args, db, cursor)
 
                 create_align_table_maf('last_align_maf_basecalled_template'
-                        , cursor)
+                        , args, db, cursor)
                 create_align_table_maf('last_align_maf_basecalled_complement'
-                        , cursor)
+                        , args, db, cursor)
                 create_align_table_maf('last_align_maf_basecalled_2d',
-                        cursor)
+                        args, db, cursor)
 
             if args.bwa_align is True:
                 create_align_table_sam('align_sam_basecalled_template',
-                        cursor)
+                        args, db, cursor)
                 create_align_table_sam('align_sam_basecalled_complement'
-                        , cursor)
+                        , args, db, cursor)
                 create_align_table_sam('align_sam_basecalled_2d',
-                        cursor)
+                        args, db, cursor)
 
             # dbcheckhash["mafoutdict"][dbname]=open(dbname+"."+process+".align.maf","w")
 
             '''
             # DEPRECATIN TELEM MS 11.10.16
             if args.telem is True:
-                create_ref_kmer_table('ref_sequence_kmer', cursor)
+                create_ref_kmer_table('ref_sequence_kmer', args, db, cursor)
             '''
 
 
             if args.prealign is True:
-                create_pre_align_table('pre_align_template', cursor)
-                create_pre_align_table('pre_align_complement', cursor)
-                create_pre_align_table('pre_align_2d', cursor)
+                create_pre_align_table('pre_align_template', args, db, cursor)
+                create_pre_align_table('pre_align_complement', args, db, cursor)
+                create_pre_align_table('pre_align_2d', args, db, cursor)
                 create_align_table_raw('last_align_raw_template',
-                        cursor)
+                        args,db,cursor)
                 create_align_table_raw('last_align_raw_complement',
-                        cursor)
-                create_align_table_raw('last_align_raw_2d', cursor)
+                        args,db,cursor)
+                create_align_table_raw('last_align_raw_2d', args, db, cursor)
 
             for refname in ref_fasta_hash[dbname]['seq_len'].iterkeys():
 
@@ -403,7 +407,7 @@ def check_read(
                 if args.telem is True:
                     kmers = ref_fasta_hash[dbname]['kmer'][refname]
                     load_ref_kmer_hash(args, db, 'ref_sequence_kmer', kmers,
-                            refid, cursor)
+                            refid, args, db, cursor)
                 '''
 
         # ---------------------------------------------------------------------------
@@ -422,7 +426,7 @@ def check_read(
             if common_path.endswith('downloads'):
                 print 'found XML data for:', dbname
                 sys.stdout.flush()
-                create_xml_table('XML', cursor)
+                create_xml_table('XML', args, db, cursor)
 
                 # ---------------------------------------------------------------------------
                 downloadsPath = xml_file_dict[xml_to_downloads_path]
@@ -674,7 +678,7 @@ def check_read(
         sys.stdout.flush()
 
         db.escape_string(sql)
-        cursor.execute(sql)
+        args,db,cursor = cursor_execute(args,db,cursor,sql)
         db.commit()
         runindex = cursor.lastrowid
         dbcheckhash['runindex'][dbname] = runindex
@@ -701,7 +705,7 @@ def check_read(
 
             # print sql
 
-            cursor.execute(sql)
+            args,db,cursor = cursor_execute(args,db,cursor,sql)
             if 0 < cursor.rowcount:
                 sql = \
                     'INSERT INTO Gru.userrun (user_id, runindex) VALUES ((SELECT user_id FROM Gru.users WHERE user_name =\'%s\') , (SELECT runindex FROM Gru.minIONruns WHERE runname = "%s") )' \
@@ -710,7 +714,7 @@ def check_read(
                 if args.verbose == "high": print sql; debug()
                 # print sql
 
-                cursor.execute(sql)
+                args,db,cursor = cursor_execute(args,db,cursor,sql)
                 db.commit()
             else:
                 print 'The MinoTour username "%s" does not exist. Please create it or remove it from the input arguments' \
@@ -720,7 +724,7 @@ def check_read(
 
         # # Create comment table if it doesn't exist
 
-        create_comment_table_if_not_exists('Gru.comments', cursor)
+        create_comment_table_if_not_exists('Gru.comments', args, db, cursor)
 
         # # Add first comment to table
 
@@ -779,68 +783,10 @@ def check_read(
                                 os.linesep))
             logfilehandle.write('Errors:' + os.linesep)
             logfilehandle.close()
-        if args.pin is not False:
-            if args.verbose == "high":
-                print 'starting mincontrol'
-                sys.stdout.flush()
-            control_ip = ip
-            if args.ip_address is not False:
-                control_ip = args.ip_address
 
-            # print "IP", control_ip
-            # else the IP is the address of this machine
+        #startMincontrol(args, dbname, cursor, dbcheckhash,\
+        #             minup_version, oper)
 
-            create_mincontrol_interaction_table('interaction', cursor)
-            create_mincontrol_messages_table('messages', cursor)
-            create_mincontrol_barcode_control_table('barcode_control',
-                    cursor)
-
-            try:
-                # MS to be tested ...
-                terminate_mincontrol(args, dbcheckhash, oper, minup_version)
-                time.sleep(2)
-                if oper is 'linux':
-                    cmd = \
-                        'python mincontrol.py -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
-                        % (
-                        args.dbhost,
-                        args.dbusername,
-                        args.dbport,
-                        args.dbpass,
-                        dbname,
-                        args.pin,
-                        control_ip,
-                        )
-
-                    if args.verbose == "high": print "CMD", cmd
-
-                    subprocess.Popen(cmd, stdout=None, stderr=None,
-                            stdin=None, shell=True)
-                if oper is 'windows':
-                    cmd = \
-                        '.\mincontrol.exe -dbh %s -dbu %s -dbp %d -pw %s -db %s -pin %s -ip %s' \
-                        % (
-                        args.dbhost,
-                        args.dbusername,
-                        args.dbport,
-                        args.dbpass,
-                        dbname,
-                        args.pin,
-                        control_ip,
-                        )
-
-                    if args.verbose == "high": print "CMD", cmd
-
-                    subprocess.Popen(cmd, stdout=None, stderr=None,
-                            stdin=None, shell=True)  # , creationflags=subprocess.CREATE_NEW_CONSOLE)
-            except Exception, err:
-                err_string = 'Error starting mincontrol: %s ' % err
-                print >> sys.stderr, err_string
-                sys.stdout.flush()
-                with open(dbcheckhash['logfile'][dbname], 'a') as \
-                    logfilehandle:
-                    logfilehandle.write(err_string + os.linesep)
-                    logfilehandle.close()
 
 
         # # connection_pool for this db
@@ -867,7 +813,7 @@ def check_read(
                         port=args.dbport, db=dbname)
                 connection_pool[dbname].append(db_c)
             except Exception, err:
-
+                err_string = 'Error bwa_align: %s ' % err
                 print >> sys.stderr, \
                     "Can't setup MySQL connection pool: %s" % err
                 sys.stdout.flush()
@@ -914,7 +860,7 @@ def check_read(
 
 
         if barcoded is True:
-            create_barcode_table('barcode_assignment', cursor)  # and create the table
+            create_barcode_table('barcode_assignment', args, db, cursor)  # and create the table
             dbcheckhash['barcoded'][dbname] = True
 
 
@@ -941,7 +887,7 @@ def check_read(
             # print sql
             if args.verbose == "high": print sql; debug()
 
-            cursor.execute(sql)
+            args,db,cursor = cursor_execute(args,db,cursor,sql)
             db.commit()
             dbcheckhash['barcode_info'][dbname] = True
 
@@ -1015,7 +961,7 @@ def check_read_type(args, filepath, hdf):
 
 #---------------------------------------------------------------------------
 
-def load_ref_kmer_hash(args, db, tablename, kmers, refid, cursor):
+def load_ref_kmer_hash(args, db, cursor, tablename, kmers, refid):
         sql="INSERT INTO %s (kmer, refid, count, total, freq) VALUES " % (tablename)
         totalkmercount = sum(kmers.itervalues())
         for kmer, count in kmers.iteritems():
@@ -1027,7 +973,7 @@ def load_ref_kmer_hash(args, db, tablename, kmers, refid, cursor):
         sql=sql[:-1]
         #print sql
         if args.verbose == "high": print sql; debug()
-        cursor.execute(sql)
+        args,db,cursor = cursor_execute(args,db,cursor,sql)
         db.commit()
 
 #---------------------------------------------------------------------------

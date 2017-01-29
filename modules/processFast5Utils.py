@@ -5,7 +5,7 @@
 # File Name:
 # Purpose:
 # Creation Date: 02-08-2016
-# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:52 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2016 The Author(s) All Rights Reserved
 # Credits:
@@ -21,22 +21,26 @@ import sys
 
 def get_main_timings(hsh, location, hdf):
 
-    sampling_rate = float(hsh['sampling_rate']) *60
+    sampling_rate = float(hsh['sampling_rate']) 
     exp_start_time = float(hsh['exp_start_time'])
 
     try: read_id = hsh['read_id']
     except: read_id = -1
 
     if read_id > -1 and location+"/Events" in hdf:
-        #hdf5object = hdf[location]
-        #start_time = float(hdf5object.attrs['start_time']) / sampling_rate
         events_table = hdf[location + "/Events"]
-        start_time = float(events_table[0][1]) #/  sampling_rate # 60.
-        end_time = float(events_table[-1][-2]) #/ sampling_rate # 60.
+        starts = map(float, events_table['start']) #/ sampling_rate
+
+        start_time = starts[0] / sampling_rate
+        end_time = starts[-1] / sampling_rate
+
+        #start_time = float(events_table[0][1]) #/  sampling_rate # 60.
+        #etnd_time = float(events_table[-1][-2]) #/ sampling_rate # 60.
     else:
-        start_time = float(hsh['start_time']) #/ sampling_rate
-        duration = float(hsh['duration']) #/ sampling_rate
+        start_time = float(hsh['start_time']) #* sampling_rate
+        duration = float(hsh['duration']) #* sampling_rate
         end_time = start_time + duration
+
 
     g_start_time = exp_start_time + int(start_time)  *60
     g_end_time = exp_start_time + int(end_time)  *60

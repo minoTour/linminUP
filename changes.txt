@@ -1,0 +1,370 @@
+--------------------------------------------------------------------------------
+
+0.70_29.01.17
+
+* Updated mincontrol to version 0.3
+
+--------------------------------------------------------------------------------
+
+0.70_25.01.17
+
+* modified mincontrol to post data only every 30 seconds.
+* Fixed hdfTimes sorting bug on evenets['start'] lookup
+
+
+--------------------------------------------------------------------------------
+
+0.70_24.01.17
+
+* Fixes for get_main_timings() start_time/sampling_rate in config_general
+* 
+
+--------------------------------------------------------------------------------
+
+0.70_23.01.17
+
+* Implemented "cursor_execute(args,db,cursor,sql)" function in db.py to replace calls to cursor.execute() -- so as to reconnect to mySQL if connection dropped.
+* Wired in relevant function arguments ...(args,dc,cursor) throughout all calls to cursor_execute()
+* Attempt to use db class was unsucessful -- probably due to connection-pool complexity.
+* Adopted ML NYork startMincontrol.py script -- seems to be largely same as existing one.
+
+
+--------------------------------------------------------------------------------
+
+0.70_18.01.17
+
+* Added alignerBlockSize options to minUP cmd line and gui
+* Added optinal args.downloads and args.uploaded to minUP cmd line
+* Added args.downloaded = args.watchdir and args.uploaded = 'uploaded' to minUP.py
+* Set changed all instances of 'downloads' and 'uploaded' in MyHandler.py to args.dwwnloads and args.uploaded
+--------------------------------------------------------------------------------
+
+0.70_05.01.17
+
+* Fixed gui for "pin" option
+
+--------------------------------------------------------------------------------
+
+0.70_21.12.16
+
+* Wholesale re-structuring of mT_align.py 
+* Rename mT_align.py to mT_coverage.py
+* Created separate module startMincontrol invoked from checkreads line 778
+* Moved startMNincontrol invokation to MyHandler line 260
+
+
+--------------------------------------------------------------------------------
+0.68_16.12.16
+
+* Checking with ver7 and fixes for on_moved etc
+* New mincontrol
+* Fixes for minUPgui on OSX etc.
+
+--------------------------------------------------------------------------------
+0.68_23.11.16
+
+* Building mincontrolv4 with autobahn
+* Fixed py2exe zope build problems by adding empty __init__.py to site-packages/zope/
+
+--------------------------------------------------------------------------------
+0.68_21.11.16
+
+# New mincontrolv3.py
+
+--------------------------------------------------------------------------------
+0.68_16.11.16
+
+* Changes for new mincontrolv3.py
+
+--------------------------------------------------------------------------------
+0.68_18.10.16
+
+* Incermented version to 0.68
+
+--------------------------------------------------------------------------------
+0.67_17.10.16
+
+* Fixes to depricate pre_align tables
+
+--------------------------------------------------------------------------------
+0.67_14.10.16
+
+* Fixed terminate minup codes for minUPgui on nix systems
+* Fixed minUPgui for nix ctrl-c to minUP
+
+--------------------------------------------------------------------------------
+0.67_11.10.16
+
+* Fixed minUPgui for nix
+* Fixed munUP ver.txt online checking for offline users
+* Deprecated 
+    -procs
+    -n
+    -prealign
+    -qryStartEnd
+    -qScale
+    -standalone
+    -largeRef
+    -telem 
+
+
+--------------------------------------------------------------------------------
+0.67_10.10.16
+
+* Incremnented version to 0.67
+* Fixes for basename from filenames for intergrated and nanonet basecallingfats5 files.
+
+
+--------------------------------------------------------------------------------
+0.66_24.09.16
+
+* Fixed metricoore basecalled_templat qual scores bug
+
+--------------------------------------------------------------------------------
+0.66_24.09.16
+
+* Many bug fixes for handling invalid hdf files
+* Move file under debug flag control
+* Python stylisitc changes etc.
+
+--------------------------------------------------------------------------------
+0.65_26.09.16
+
+* Fixed python script tab-space issues for uploads to gdrive
+* Fixed dat and bwa issues for new file types
+* Fixed prealign for r7 file types
+* Testing on r7 and three types of r9 files.
+* Fixed window size of minUPgui
+ 
+--------------------------------------------------------------------------------
+0.65_19.09.16
+
+* Fixes for local base called nanonet and integrated RNN (minknow 1.0) files
+
+--------------------------------------------------------------------------------
+0.65_18.08.16
+
+* fixes for metrichor r9 basecalled files
+
+--------------------------------------------------------------------------------
+0.65_25.07.16
+
+* Wholesale refactoring of processFast5.py
+8 Now handles r9 metrichore, minKnow wil nanonet and mikKnow w intergrated rrnn fat5 file types
+
+--------------------------------------------------------------------------------
+0.65_20.07.16
+
+* Fixes for hdf5 filetype classification in checkreads
+* Fixes for minKnow v1.0 file processing
+
+--------------------------------------------------------------------------------
+0.65_19.07.16
+
+* Fixes for minKnow v 1.0
+* Fixes for failed r9 metrichore basecalled files
+
+--------------------------------------------------------------------------------
+0.65_18.07.16
+
+* Fixed processFast5.py line 73 to handle fioles with no minotour_meta groups.
+
+--------------------------------------------------------------------------------
+0.65_04.07.16
+
+* Changes to MyHandler to handle custom"minotour_meta" data insertion onto hdf files
+* Currently disabled: Codes to upload custam "minotour_meta" hdf data into mysql tables. See: processFast5.py line 71
+
+--------------------------------------------------------------------------------
+0.65_02.06.16
+
+* Post LC2016
+* r9 fast5 file handling
+* nanonet local basecalling fast5 file handling
+* minotour_barcodes files handling 
+* Lots of other changes 
+
+--------------------------------------------------------------------------------
+0.65_18,05.16
+
+* Changes to sql.py "NOT NULL" removed for "shift, scale etc"
+* Changes to toGdrive to do d2u CLRF fixes.
+
+--------------------------------------------------------------------------------
+0.64b_13,05.16a
+
+* Uses Matts new bwaClass() (based on blinkstick examples) 
+* to bundle up reads sets for bwa and avoid thread blocking
+ 
+--------------------------------------------------------------------------------
+0.64b_13,05.16
+
+* Fixes for move failed hdf files
+* Fixes for RR9 fast5 file format (no models)
+
+--------------------------------------------------------------------------------
+0.64b_29.04.16
+
+* Fixes to moving problem files from RU9
+
+--------------------------------------------------------------------------------
+0.64b_30.03.16
+
+* Fixed problems with raw proccessing
+* Tested on abgt, ebola and drop_1D readsets
+
+
+--------------------------------------------------------------------------------
+0.64b_24.03.16
+
+* Added standalone flag and supporting code to folderDict and MyHandler
+* Major cleanup of unecessary syntax in folderDict.py
+
+* Added 1minwin etc timings to fields in sql.py
+* Added 1minwin etc timings fields insert statements enad supporting codes to processFast5Raw.py 
+
+* Fixed move corrupt fast5 filew to bugged folder so as to continue run 
+* Fixed gui I/O buffering probelms.
+* Added progress bars 
+
+--------------------------------------------------------------------------------
+0.64b_22.03.16b
+
+* Fixed broken preBC reader for abgt names w periods in them
+* Fixed move corruipt files to bugged for winodows and linux
+* Added 1minwin,....g_15minwin min to sql and processFist5Raw for preBC files
+* Checked on ebola/agbt_day1, agbt_problem reads and dros-1D reads
+* Added terminateMinup and terminateSubprocesses for restarts by mincntrol
+
+--------------------------------------------------------------------------------
+0.64b_18.03.16b
+
+* Further fixes to 2d data upload etc.
+
+--------------------------------------------------------------------------------
+0.64b_18.03.16
+
+* Fixes to MHS code for old read problems.
+
+--------------------------------------------------------------------------------
+16.03.16 0.64a
+
+* Heart surgery (MHS) to checkReads and processFast5 to work with 1D reads
+* Seems *A LOT* quicker
+
+--------------------------------------------------------------------------------
+14.03.16 0.64b
+
+* Changes to fix 1minwin start, end times and g_1minwin etc for start,end plut exp_start times.
+
+--------------------------------------------------------------------------------
+11.03.16 0.64b
+
+* As v0.64b
+* Added s1minwin etc to sql.py and processFast5.py
+* Fixed var.txt bug in minUP.py
+
+--------------------------------------------------------------------------------
+09.03.16 0.64b
+
+* As v0.64a
+* And including sort reads using hdf_timestamps using read END time
+--------------------------------------------------------------------------------
+09.03.16 0.64a
+
+* Build as v0.64 
+* bwa/last index dir chenged to be refdir 
+* Added flag indexToRefDir to control above
+* And including sort reads using hdf_timestamps using read START time
+--------------------------------------------------------------------------------
+09.03.16 0.63
+
+* Build as v0.63 including linux kill(pid) 
+* bwa/last index dir chenged to be watchdir 
+* Not including sort reads using hdf_timestamps
+--------------------------------------------------------------------------------
+08.03.16
+
+* Added code to filderDict.py to sort initial reads based on hdfs time stams.
+* Added self.hdf.close() to MyHandler except condition.
+* Improved kill(pid) in exitGracefully.py
+ 
+--------------------------------------------------------------------------------
+04.03.16
+
+* Changes to MyHandler line 37-50 to trap and move corrupt reads...
+
+--------------------------------------------------------------------------------
+16.02.16
+
+* Trap illegal sql characters in nanes
+Added okSQLnames() to checkRead.py line 29
+
+* Ctrl-C Problems
+Fixed in gui.py by changing "pid = os.getpid()" to "pid = 0"
+
+
+* Search using just start end of read
+Fixed changeing align_dtw.py line 113 "re <= rs_" to "re >= rs_"
+
+
+--------------------------------------------------------------------------------
+04.02.16
+
+
+* Query Scale Factor
+Commented out qScale in align_dtw.py line 51
+
+* Exit on Ctrl-C
+MyHandler.py
+gui.py
+minup.v0.62a.py 
+Fixes to Keyboardinrterrup handling
+Changes exitGracefully to terminateSubProcesses
+
+* Threads not exiting
+MyHandler.py line 69 Added t.clear 
+
+* Search using just start end of read
+Renamed squiggle_search2 calls to squiggle_align and added logic to handle squiggle_search3 in align_dtw.py
+Added options and logic for squiggle_search3()
+align_dtw.py
+minup.v0.62a.py 
+
+* Offsets
+Added offset default 50 to align_dtw.py
+
+* CustomUP
+Moved customup logic from line 327 to line 199 in MyHandler.py
+
+* Add debug flag/info to checkReads.py
+Fixed via MyHandler line 218-300 try-except statement indenting ??
+
+--------------------------------------------------------------------------------
+04.02.16-Florida
+
+* mincontrol line 188 channel_states etc.
+* MyHandler line 341 muxscan edits for demo only ...
+
+--------------------------------------------------------------------------------
+
+03.02.16
+
+* Multi-user handling
+622 mulit_user bug fix in checkReads.py
+
+* CustomUP
+Added customup/timeout flag to minup
+
+* Upload pre-called reads
+Added -per and -prealign flags to minup, MyHandler etc.
+
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+
+

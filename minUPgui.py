@@ -4,7 +4,7 @@
 # File Name: gui.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:49 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -18,7 +18,6 @@ import json
 import subprocess
 import ctypes
 import time
-import psutil
 import platform
 import urllib
 
@@ -26,10 +25,37 @@ import datetime
 dateTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
 # Unbuffered IO
-#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-#sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
 ext=(sys.argv[0]).split('.')[1]
+
+def terminate_minup(oper):
+    print oper
+    sys.stdout.flush()
+
+    print "gui terminating minup and sub-processes...."
+
+    pid = os.getpid()
+
+    # Tell minup to terminate
+    if oper == "windows":
+        # -- sending minup pid a Ctrl-C signal
+        # -- this also cleanly closes subprocesses and threads ....
+        # 0 means  Ctrl-C 
+        ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid) 
+    else:
+        import psutil
+
+        process = psutil.Process(pid)
+        for proc in process.children(recursive=True):
+            proc.kill()
+        process.kill()
+
+    print 'finished.'
+    sys.stdout.flush()
+    sys.exit(1)
+
 
 # ------------------------------------------------------------------------------
 
@@ -37,13 +63,13 @@ OPER = "windows"
 
 fh = open("ver.txt", "r")
 ver = fh.readline()
-fh.close() 
+fh.close()
 
 pid = 0 # os.getpid() # MS -- !!! this breaks ctrl-c !!!
-
+#pid=os.getpid()
 
 def toFloat(s):
-    a,b = s[:-1].split('_')
+    a,b = (s[:-1].split('_'))[:2]
     s_ = '.'.join([a,b])
     a,v,d,m,y = s_.split('.')
     s__ = ''.join([a,v,'.',y,m,d])
@@ -57,7 +83,6 @@ try:
         link = "https://raw.githubusercontent.com/minoTour/linminUP/master/ver.txt"
         f = urllib.urlopen(link)
         current_ver = f.read()
-        
 
         current_ver_ = toFloat(current_ver)
 
@@ -70,19 +95,17 @@ except:
 
 
 
-
-
 def run(cmd):
     global pid
 
     outF = open('log','w')
     outF.write(cmd+"\n")
-    
+
 
     exit_code = 0
     print 'Run started ....'
     p = subprocess.Popen(cmd, shell=True,
-             stdin=subprocess.PIPE,
+                         stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
             #,bufsize=0)
@@ -108,7 +131,7 @@ def run(cmd):
     print 'Done!'
     time.sleep(1)
 
-    
+
 
     sys.exit(1)  # Run stopped error...
 
@@ -254,6 +277,7 @@ def isActive((k, v)):
 
 
 def showParam((k, v)):
+    print k,v
     if v == 'True':
         return k
     else:
@@ -298,73 +322,80 @@ def main():
     else:
         OPER = 'linux'  # MS
     print OPER  # MS
-
-
     print 'minUP GUI'
     desc = \
         'A program to analyse minION fast5 files in real-time or post-run.'
     print desc
 
-    parser = GooeyParser(description=desc)
-    for x in xs[1:]:
-        if len(x) > 1:
-            mkWidget(parser, x, settings)
-
-  # This is updated every time to update the values of the variables...
-
     try:
-        vs = vars(parser.parse_args())
-        with open('settings.json', 'w') as f:
+        parser = GooeyParser(description=desc)
+        for x in xs[1:]:
+            if len(x) > 1:
+                mkWidget(parser, x, settings)
 
-          # print json.dumps(vs, indent=4, sort_keys=True)
+      # This is updated every time to update the values of the variables...
 
-            f.write(json.dumps(vs, indent=4, sort_keys=True))
-    except:
-        return ()
+        try:
+            vs = vars(parser.parse_args())
+            with open('settings.json', 'w') as f:
 
-  # Build a dict of the var:vals
+              # print json.dumps(vs, indent=4, sort_keys=True)
 
-    print '------------------'
-    ps = []
-    for k in vs:
-        ps.append(('-' + lut[k], toStr(vs[k])))
+                f.write(json.dumps(vs, indent=4, sort_keys=True))
+        except:
+            #terminate_minup(OPER)
+            return ()
+      # Build a dict of the var:vals
 
-    ps = map(fixAligner, ps)
-    aligner = 'bwa' # vs['Aligner_to_Use']
-    ps = map(lambda o: fixAlignerOpts(aligner, o), ps)
-    ps = sorted(filter(isActive, ps))
-    params = ' '.join(map(showParam, ps))
+        print '------------------'
+        ps = []
+        for k in vs:
+            ps.append(('-' + lut[k], toStr(vs[k])))
 
-  # cmd = 'ls /a'
-  # cmd = 'c:\Python27\python.exe .\minup.v0.63.py ' +params
-    cmd = ""
-    if OPER == "linux":
-        cmd = 'python minUP.py ' +params
-    else:
-        if ext != "py": 
-            cmd = '.\\minUP.exe ' + params  # + ' 2>&1'
-        else: 
-            cmd = 'c:\Python27\python.exe .\minUP.py ' +params
-        print cmd 
-    print cmd
+        ps = map(fixAligner, ps)
+        aligner = 'bwa' # vs['Aligner_to_Use']
+        ps = map(lambda o: fixAlignerOpts(aligner, o), ps)
+        ps = sorted(filter(isActive, ps))
+        ps.append(('-dbu', 'minion'))
+        print ps
+        
+        params = ' '.join(map(showParam, ps))
 
-    '''
-    fl = open("cmd.sh", 'w')
-    fl.write(cmd)
-    fl.close()
-    '''
-    run(cmd)
+      # cmd = 'ls /a'
+      # cmd = 'c:\Python27\python.exe .\minup.v0.63.py ' +params
+        cmd = ""
+        if OPER == "linux":
+            cmd = 'python -u minUP.py ' +params
+        else:
+            if ext != "py":
+                cmd = '.\\minUP.exe ' + params  # + ' 2>&1'
+            else:
+                cmd = 'c:\Python27\python.exe -u .\minUP.py ' +params
+            print cmd
+        print cmd
+
+        '''
+        fl = open("cmd.sh", 'w')
+        fl.write(cmd)
+        fl.close()
+        '''
+        run(cmd)
+    except (KeyboardInterrupt, SystemExit):
+        #kill(pid)
+        print "Terminating Test"
+        terminate_minup(OPER)
 
 # ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     main()
+    print "OK"
     if KeyboardInterrupt:
-        kill(pid)
+        #kill(pid)
+        terminate_minup(OPER)
 
     #time.sleep(3)
     #current_process = psutil.Process(os.getpid())
     #for child in current_process.children(recursive=True):
     #    child.kill()
-    
 

@@ -4,7 +4,7 @@
 # File Name: folderDict.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed, Oct 12, 2016 11:30:25 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:51 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -45,8 +45,9 @@ def moveFile(args, fast5file):
 def getHDFtime(args, f):
     try:
         with h5py.File(f) as hdf:
-
+            
             expStartTime = hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time']
+            sample_rate = hdf['UniqueGlobalKey/channel_id'].attrs['sampling_rate']
 
             reads = 'Analyses/EventDetection_000/Reads/'
 
@@ -59,10 +60,10 @@ def getHDFtime(args, f):
                 # -2.64b ...
                 # We take "End time" to be Start time of final event  ...
                 #endTime = hdf[ reads + read + "/Events"][-1][-2]
-                endTime = hdf[reads + read + "/Events"].attrs['start'][-1]
-
-                readTime = endTime
-
+                endTime = hdf[reads + read + "/Events"]['start'][-1]
+                #print endTime
+                readTime = endTime/sample_rate
+            #print expStartTime
             timestamp = int(expStartTime) + int(readTime)
             hdf.close()
     except:
@@ -125,7 +126,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
                                 os.stat(os.path.join(path, f)).st_mtime
                         xml_file_dict = file_dict_of_folder_(args \
                                   , xml_file_dict, path, ref_list_dict, f)
-  
+
                 elif 'downloads' in path and args.preproc is False \
                       or args.preproc is True:
                           if 'muxscan' not in f and f.endswith('.fast5'):
@@ -184,7 +185,7 @@ def file_dict_of_folder(args, xml_file_dict, path):
 
 def file_dict_of_folder_(args, xml_file_dict, path, ref_list_dict, f):
 
-  
+
 
     if args.batch_fasta is True:
         if 'reference' in path:
@@ -311,6 +312,3 @@ def file_dict_of_folder_(args, xml_file_dict, path, ref_list_dict, f):
                 print >> sys.stderr, err_string
                 #continue
     return xml_file_dict
-
-
-

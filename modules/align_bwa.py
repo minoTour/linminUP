@@ -4,7 +4,7 @@
 # File Name: align_bwa.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:50 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -20,6 +20,7 @@ from cigar import translate_cigar_mdflag_to_ref
 #from progressbar import *
 #from pbar import *
 from debug import debug
+
 
 # ---------------------------------------------------------------------------
 '''
@@ -127,8 +128,8 @@ def do_bwa_align2(args,
 
     read = ""
     bwaindex = ""
-    cursor = None # ""
     db = None # ""
+    cursor = None # ""
     for seqid in mydicttopass:
         cursor = mydicttopass[seqid]["db"].cursor()
         db = mydicttopass[seqid]["db"]

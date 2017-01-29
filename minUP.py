@@ -6,7 +6,7 @@
 # Purpose: minup: a program to process & upload MinION fast5 files
 #               in to the minoTour website in real-time or post-run.
 # Creation Date: 2014 - 2016
-# Last Modified: Wed, Oct 12, 2016 11:30:24 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:49 PM
 # Author(s): written & designed by
 #               Martin J. Blythe, Fei Sang, Mike Stout & Matt W. Loose
 #               The DeepSeq Team, University of Nottingham, UK
@@ -150,6 +150,26 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
         dest='watchdir'
     )
 
+    parser.add( 
+        '-downloads', 
+        '--downloads-dir',
+        type=str,
+        required=False,
+        default='downloads',
+        help='The path to the folder containing the downloads directory with fast5 reads to analyse - e.g. C:\\data\\minion\\downloads (for windows).',
+        dest='downloads'
+    )
+
+    parser.add( 
+        '-uploaded', 
+        '--uploaded-dir',
+        type=str,
+        required=False,
+        default='uploaded',
+        help='The path to the folder containing the uploaded directory with fast5 reads to analyse - e.g. C:\\data\\minion\\downloads (for windows).',
+        dest='uploaded'
+    )
+
 
     parser.add(
         '-dbh',
@@ -166,7 +186,7 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
         '--mysql-username',
         type=str,
         dest='dbusername',
-        required=True,
+        required=False,
         default=None,
         help='The MySQL username with create & write privileges on MinoTour.',
     )
@@ -452,10 +472,19 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
         '-standalone',
         '--standalone-mode',
         action='store_true',
-        #help='Run without using metrichor download/guploaed folders.',
         help="DEPRECATED",
         default=False,
         dest='standalone',
+    )
+    
+    parser.add( # MS ...
+        '-abs',
+        '--aligner_block_size',
+        type=int,
+        dest='alignerBlockSize',
+        required=False,
+        default=100,
+        help="Number of reads to align on each call to the aligner",
     )
     
 
@@ -473,6 +502,12 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
 #-------------------------------------------------------------------------------
 
     args = parser.parse_args()
+
+    # Set to mySql userrname to minotour username -- rquested by ML 17.1.17...
+    args.dbusername = args.minotourusername
+
+    # MS 20.1.17 to handle user defined downloads locations
+    args.downloads = args.watchdir
 
     if args.verbose == 'high':
         print args
@@ -564,7 +599,7 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
     bwaclassrunner = None
     if args.bwa_align is not False:
         from bwaClass import BwaClass
-        bwaclassrunner = BwaClass(100, 10)
+        bwaclassrunner = BwaClass(args.alignerBlockSize, 10)
 
     comments['default'] = 'No Comment'
     if args.added_comment is not '':  # MS

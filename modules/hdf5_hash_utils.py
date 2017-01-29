@@ -3,13 +3,16 @@
 # File Name: hdf5_hash_utils.py
 # Purpose:
 # Creation Date: 05-11-2015
-# Last Modified: Wed, Oct 12, 2016 11:30:25 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:51 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
 # --------------------------------------------------
 
 import time
+
+from db import cursor_execute
+
 
 def frmt(date_time):
     """ Format time stamp """
@@ -19,7 +22,7 @@ def frmt(date_time):
 
 def mysql_load_from_hashes(
         args,
-        dbase,
+        db,
         cursor,
         tablename,
         data_hash,
@@ -39,8 +42,7 @@ def mysql_load_from_hashes(
     if args.verbose == "high":
         print sql
 
-    cursor.execute(sql)
-    dbase.commit()
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
     ids = cursor.lastrowid
     return ids
 

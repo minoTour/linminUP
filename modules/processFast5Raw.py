@@ -4,7 +4,7 @@
 # File Name: processFast5Raw.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:52 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -14,8 +14,6 @@ import os, sys
 import hashlib
 
 from hdf5_hash_utils import *
-
-#from align_dtw import *
 
 
 def process_fast5_raw(

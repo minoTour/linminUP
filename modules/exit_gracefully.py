@@ -12,7 +12,7 @@ def terminate_minup(args, dbcheckhash, oper, minup_version):
     # Sign off any mySQL connections ...
     exit_gracefully(args, dbcheckhash, minup_version)
 
-    print "terminating sub-processes...."
+    print "terminating minup and sub-processes...."
 
     pid = os.getpid()
 
@@ -50,7 +50,7 @@ def terminate_subprocesses(args, dbcheckhash, oper, minup_version):
 
 
 def terminate_mincontrol(args, dbcheckhash, oper, minup_version):
-    print "terminating sub-processes...."
+    print "terminating mincontrol and sub-processes...."
     sys.stdout.flush()
 
     pid = os.getpid()
@@ -86,6 +86,20 @@ def exit_gracefully(args, dbcheckhash, minup_version):
         cur.execute(sql)
         dba.commit()
 
+        print 'cleaning up running scheduler jobs'
+        #NEED TO CHECK WHICH SCHEMA WE ARE USING HERE
+        sql = \
+            'select EVENT_NAME from INFORMATION_SCHEMA.EVENTS where event_schema = "%s";' \
+            %name
+        cur.execute(sql)
+        dba.commit()
+        rows = cur.fetchall()
+        #print rows
+        for row in rows:
+            sql = 'drop event if exists %s' %(row[0])
+            cur.execute(sql)
+            dba.commit()
+
         try:
             runindex = dbcheckhash['runindex'][name] # MS ..
         except:
@@ -114,7 +128,3 @@ def exit_gracefully(args, dbcheckhash, minup_version):
             logfilehandle.close()
         dba.close()
     sys.stdout.flush()
-
-
-
-

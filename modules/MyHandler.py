@@ -3,7 +3,7 @@
 # File Name: MyHandler.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed, Oct 12, 2016 11:30:25 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:51 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -26,7 +26,6 @@ from watchdog.events import FileSystemEventHandler
 
 from checkRead import check_read, check_read_type
 
-#from align_dtw import mp_worker
 from folderDict import file_dict_of_folder, moveFile
 from processRefFasta import process_ref_fasta_raw
 from processFast5 import process_fast5
@@ -43,18 +42,20 @@ from debug import debug
 
 #from debug import debug
 
+from startMinControl import startMincontrol
+
 
 def readFast5File(args, fast5file):
-    try: 
+    try:
         hdf = h5py.File(fast5file, 'r')
         hdf5object = hdf["/"]
         value = hdf5object.attrs["file_version"]
-        if args.verbose == "high": 
+        if args.verbose == "high":
             print "file_version:", value
         return hdf
-    except: 
+    except:
         # re ML email 06.09.16...
-        # invalid HDF ...` 
+        # invalid HDF ...`
         if args.debug is True:
             moveFile(args, fast5file)
 
@@ -255,6 +256,10 @@ class MyHandler(FileSystemEventHandler):
                                 # if args.timeout_true is not None:
                                 #               timeout=args.timeout_true
 
+        ip = startMincontrol(args, cursor, dbcheckhash,\
+                     minup_version, oper)
+
+
         while self.running:
             ts = time.time()
             if args.preproc is True:
@@ -320,7 +325,7 @@ class MyHandler(FileSystemEventHandler):
 
             metadata_sql_list = []
             for (fast5file, createtime) in self.sortedFiles:
-                
+
                 '''
                 #if args.verbose is False and args.debug is False:
                         #bar.update(i) # self.processed)
@@ -328,7 +333,7 @@ class MyHandler(FileSystemEventHandler):
                 '''
                 if args.verbose in ["high", "low"]:
                         print "Processing: ", fast5file
-
+                        print int(createtime), time.time()
 
                 # tn=time.time()
 
@@ -355,7 +360,7 @@ class MyHandler(FileSystemEventHandler):
 
 
                       if args.debug is True:
-                        try: self.do_file_processing(fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor, metadata_sql_list)
+                        try: self.do_file_processing(fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor, metadata_sql_list, ip)
                         except Exception, err:
                             #if self.hdf: # CI
                             #    self.hdf.close() # CI
@@ -379,9 +384,9 @@ class MyHandler(FileSystemEventHandler):
 
                             #return ()
 
-                      else: self.do_file_processing(fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor, metadata_sql_list)
+                      else: self.do_file_processing(fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor, metadata_sql_list, ip)
                       everyten += 1
-                      if everyten == 10:
+                      if everyten == 25:
                             tm = time.time()
                             if ts + 5 < tm:  # just to stop it printing two status messages one after the other.
                                 if args.preproc is True:
@@ -405,7 +410,7 @@ class MyHandler(FileSystemEventHandler):
     # ..... END PROCESSFILE()
 
 
-    def do_file_processing(self, fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor, metadata_sql_list):
+    def do_file_processing(self, fast5file, db, connection_pool, minup_version, comments, ref_fasta_hash, dbcheckhash, logfolder, cursor, metadata_sql_list, ip):
           args = self.args
           db = self.db
           oper = self.oper
@@ -427,7 +432,7 @@ class MyHandler(FileSystemEventHandler):
           if args.verbose == "high":
                 print "self.file_type: ", self.file_type
           sys.stdout.flush()
-          if self.file_type == -1: 
+          if self.file_type == -1:
             return -1
           if self.file_type > 0 : # BASECALLED FILE ...
             self.db_name = check_read(
@@ -444,6 +449,7 @@ class MyHandler(FileSystemEventHandler):
                     self.hdf,
                     cursor,
                     oper,
+                    ip
                     )
             process_fast5(
                     oper,
@@ -476,6 +482,7 @@ class MyHandler(FileSystemEventHandler):
                     self.hdf,
                     cursor,
                     oper,
+                    ip
                     )
             self.rawcount[fast5file] = time.time()
             rawbasename_id = process_fast5_raw(
@@ -509,19 +516,37 @@ class MyHandler(FileSystemEventHandler):
     def on_created(self, event):
         args = self.args
         if args.preproc is True:
-            if ('uploaded' in event.src_path or 'downloads' in event.src_path)  \
+            if (args.uploaded in event.src_path or args.downloads in event.src_path)  \
                 and 'muxscan' not in event.src_path \
                 and event.src_path.endswith('.fast5'):
                 self.creates[event.src_path] = time.time()
-        elif 1: # args.standalone is True:
+        elif args.preproc is True: # 1: # args.standalone is True:
             if 'muxscan' not in event.src_path \
                 and event.src_path.endswith('.fast5'):
                 self.creates[event.src_path] = time.time()
         else:
-            if 'downloads' in event.src_path \
+            if args.downloads in event.src_path \
                 and 'muxscan' not in event.src_path \
                 and event.src_path.endswith('.fast5'):
                 self.creates[event.src_path] = time.time()
+
+    # From ML 21.11.16 ....
+    def on_moved(self, event):
+        #print "Moved File"
+        args = self.args
+        if args.preproc is True:
+            #print "preproc is TRUE"
+            if (args.uploaded in event.dest_path or args.downloads in event.dest_path)  \
+                and 'muxscan' not in event.dest_path \
+                and event.dest_path.endswith('.fast5'):
+                self.creates[event.dest_path] = time.time()
+            elif 'muxscan' not in event.dest_path \
+                and event.dest_path.endswith('.fast5'):
+                self.creates[event.dest_path] = time.time()
+        else:
+            if 'muxscan' not in event.dest_path \
+                and event.dest_path.endswith('.fast5'):
+                self.creates[event.dest_path] = time.time()
 
 
     '''
@@ -530,14 +555,14 @@ class MyHandler(FileSystemEventHandler):
         args = self.args
         if args.preproc is True:
             # MS 20.09.16
-            if (('uploaded' in event.src_path or 'downloads' in event.src_path) \
+            if ((args.uploaded in event.src_path or args.downloads in event.src_path) \
                     or (args.standalone is True)) \
                 and 'muxscan' not in event.src_path \
                 and event.src_path.endswith('.fast5'):
                 self.creates[event.src_path] = time.time()
         else:
             # MS 20.09.16
-            if (('downloads' in event.src_path) \
+            if ((args.downloads in event.src_path) \
                     or (args.standalone is True)) \
                 and 'muxscan' not in event.src_path \
                 and event.src_path.endswith('.fast5'):

@@ -4,7 +4,7 @@ N,0._Folders,m,minuppath,minUP.exe Folder,,dir,minup,TRUE,dist\dist,,The path to
 Y,1._Login_Details,u,minotourusername,minoTour_Username,store,str,minotourusername,TRUE,None,,The MinoTour username with permissions to upload data.
 Y,1._Login_Details,dbh,mysqlhost,mySQL_Host,store,str,dbhost,TRUE,localhost,,The location of the MySQL database. default is localhost.
 Y,1._Login_Details,dbp,mysqlport,mySQL_Port,,int,dbport,TRUE,3306,,The MySQL port number  else the default port 3306 is used.
-Y,1._Login_Details,dbu,mysqlusername,mySQL_Username,store,str,dbusername,TRUE,None,,The MySQL username with create & write privileges on MinoTour.
+N,1._Login_Details,dbu,mysqlusername,mySQL_Username,store,str,dbusername,TRUE,None,,The MySQL username with create & write privileges on MinoTour.
 Y,1._Login_Details,pw,mysqlpassword,mySQL_Password,store,str,dbpass,TRUE,None,,The password for the MySQL username with permission to upload to MinoTour.
 
 
@@ -26,8 +26,8 @@ N,3._Read_Alignment,lastopts,lastalignoptions,Lastal_Options,,str,last_options,F
 N,3._Read_Alignment,bwaopts,bwaalignoptions,BWA_Options,,str,bwa_options,FALSE,FALSE,,BWA options: Enter a comma separated list of BWA options without spaces or  characters e.g. k12 T0
 Y,3._Read_Alignment,opts,alignoptions,Alignment_Options,,str,options,FALSE,FALSE,,Aligner options: Enter a comma separated list of aligner options without spaces or characters.
 
-N,4._Remote_Control,pin,securitypin,Security_Pin,,str,pin,FALSE,FALSE,,PIN number for remote control.
-N,4._Remote_Control,ip,ipaddress,IP_Address,,str,ip_address,FALSE,FALSE,,Used for remote control with option pin. Provide IP address of the computer running minKNOW. The default is the IP address of this computer.
+Y,4._Remote_Control,pin,securitypin,Security_Pin,,str,pin,FALSE,FALSE,,PIN number for remote control.
+Y,4._Remote_Control,ip,ipaddress,IP_Address,,str,ip_address,FALSE,FALSE,,Used for remote control with option pin. Provide IP address of the computer running minKNOW. The default is the IP address of this computer.
 Y,4._Remote_Control,s,minotoursharingusernames,minoTour_Sharing_Usernames,,str,view_users,FALSE,FALSE,,A comma separated list (with no whitespaces of other MinoTour users who will also be able to view the data.
 
 
@@ -39,12 +39,13 @@ N,5._Other_Options,res,resume-upload,Resume_Upload?,store_true,bool,resume,FALSE
 
 Y,6._Processor_Options,procs,proc_num,Number_of_Processors,,int,procs,FALSE,-1,,The number of processors to run minUP on.
 N,6._Processor_Options,n,aligningthreads,Number_of_Threads,,str,threads,FALSE,3,,The number of threads to use for aligning.
-Y,6._Processor_Options,pre,insertpretrue,Process_Pre-Basecalled_Reads?,store_true,bool,preproc,FALSE,FALSE,,Process  raw reads prior to basecalling by metrichor.
+N,6._Processor_Options,pre,insertpretrue,Process_Pre-Basecalled_Reads?,store_true,bool,preproc,FALSE,FALSE,,Process  raw reads prior to basecalling by metrichor.
 N,6._Processor_Options,prealign,alignpretrue,Align_Pre-Basecalled_Reads?,store_true,bool,preall,FALSE,FALSE,,Align raw reads prior to basecalling by metrichor.
 Y,6._Processor_Options,customup,custom-upload,Stop minUP when cached has remained zero for more than 30 seconds,store_true,bool,customup,FALSE,FALSE,,Stop minUP when cached has remained zero for more than 30 seconds.
 N,6._Processor_Options,qryStartEnd,prealign-query-start-end-only,Pre-align using only a window at start and end of the query squiggle?,store_true,bool,qryStartEnd,FALSE,FALSE,, False: pre-align using the whole query squiggle.
 N,6._Processor_Options,qScale,scale-query,Scale query by max value in ref.,store_true,bool,qScale,FALSE,FALSE,,Scale query by max value in ref.Scale query by max value in ref.
 Y,6._Processor_Options,useHdfTimes,use-hdf5_file-timestamps,Sort read files using HDF timestamps,store_true,bool,hdfTimes,FALSE,FALSE,,Sort read files using hdt file timestamps rather than file modified times.'
 Y,6._Processor_Options,indexToRefDir,store-indexes-in-ref-folder,Store indexes in Ref Folder,store_true,bool,indexToRefDir,FALSE,FALSE,,Store the aligner index files in the reference genome folder'
+Y,1._Login_Details,abs,aligner-block-size,Aligner_Block_Size,,int,alignerBlockSize,TRUE,100,,Number of reads to align on each call to the aligner
 N,6._Processor_Options,standalone,standalone-mode,Run without using metrichor download/uploaded folders.,store_true,bool,standalone,FALSE,FALSE,,Run without using metrichor download/uploaded folders.
 Y,6._Processor_Options,debug,debug-mode,Stop if read is problematic,store,bool,debug,FALSE,FALSE,,Stop if read is problematic

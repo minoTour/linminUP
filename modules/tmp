@@ -1,0 +1,11 @@
+        # -------- mincontrol --------
+        # # get the IP address of the host
+
+        ip = '127.0.0.1'
+        try:
+            ip = socket.gethostbyname(socket.gethostname())
+        except Exception, err:
+            err_string = 'Error obtaining upload IP adress'
+            #print >> sys.stderr, err_string
+            print err_string
+

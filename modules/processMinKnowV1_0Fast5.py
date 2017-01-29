@@ -4,7 +4,7 @@
 # File Name: processMinKnowV1.0Fast5.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:52 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -88,7 +88,9 @@ def process_integratedRNN_readtypes(args, read_type, basename, basenameid, basec
                  'seq': sequence}
 
             sampling_rate = float(tracking_id_hash['sampling_rate'] )
-            duration = float(general_hash['duration']) / 60.
+
+            # Duration is in mlliseconds.
+            duration = float(general_hash['duration']) / sampling_rate   # 60.
             exp_start_time = float(tracking_id_hash['exp_start_time'] )
 
 
@@ -169,7 +171,7 @@ def process_integratedRNN_readtypes(args, read_type, basename, basenameid, basec
 
                 # #Logging the start time of a template read to pass to the 2d read in order to speed up mysql processing
                 exp_start_time = float(tracking_id_hash['exp_start_time' ])
-                duration = float(read_info_hash['duration' ]) / 60.
+                duration = float(read_info_hash['duration' ]) / sampling_rate # 60.
 
                 start_time = float(read_info_hash['start_time'] ) /sampling_rate
 

@@ -4,7 +4,7 @@
 # File Name: sql.py
 # Purpose:
 # Creation Date: 04-11-2015
-# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:53 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -12,8 +12,10 @@
 
 import sys
 import time
-import MySQLdb
 from warnings import filterwarnings
+
+from db import cursor_execute
+
 
 def okSQLname(s): # MS
        return "." not in s and "-" not in s
@@ -21,7 +23,7 @@ def okSQLname(s): # MS
 
 # ---------------------------------------------------------------------------
 
-def create_align_table_sam(tablename, cursor):
+def create_align_table_sam(tablename, args, db, cursor):
     fields = (  # --------- now add extra columns as needed
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'basename_id INT(7) NOT NULL, INDEX (basename_id)',
@@ -46,12 +48,12 @@ def create_align_table_sam(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_barcode_table(tablename, cursor):
+def create_barcode_table(tablename, args, db, cursor):
     fields = (
         'basename_id INT(10), PRIMARY KEY(basename_id)',
         'pos0_start INT(5) ',
@@ -69,12 +71,12 @@ def create_barcode_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_xml_table(tablename, cursor):
+def create_xml_table(tablename, args, db, cursor):
     fields = \
         ('xmlindex INT(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY(xmlindex)'
          , 'type VARCHAR(20) NOT NULL',
@@ -86,12 +88,12 @@ def create_xml_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_comment_table_if_not_exists(tablename, cursor):
+def create_comment_table_if_not_exists(tablename, args, db, cursor):
     fields = (
         'comment_id INT(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY(comment_id)'
             ,
@@ -107,12 +109,12 @@ def create_comment_table_if_not_exists(tablename, cursor):
         'CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB DEFAULT CHARSET=utf8' \
         % (tablename, colheaders)
     filterwarnings('ignore', "Table 'comments' already exists")
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_pre_general_table(tablename, cursor):
+def create_pre_general_table(tablename, args, db, cursor):
     fields = (  # PLSP57501_17062014lambda_3216_1_ch101_file10_strand
                 # = 2
                 # = 1
@@ -173,14 +175,14 @@ def create_pre_general_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
     # return fields
 
 # ---------------------------------------------------------------------------
 
-def create_general_table(tablename, cursor):
+def create_general_table(tablename, args, db, cursor):
     fields = (  # PLSP57501_17062014lambda_3216_1_ch101_file10_strand
                 #  = basecall_2d_workflow.py"config_general"
                 # = Basecall_2D_000
@@ -259,14 +261,14 @@ def create_general_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
     # return fields
 
 # ---------------------------------------------------------------------------
 
-def create_trackingid_table(tablename, cursor):
+def create_trackingid_table(tablename, args, db, cursor):
     fields = (  # PLSP57501_17062014lambda_3216_1_ch101_file10_strand
                 # PLSP57501_17062014lambda_3216_1_ch101_file10_strand
                 #  = 48133
@@ -311,14 +313,14 @@ def create_trackingid_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
     # return fields
 
 # ---------------------------------------------------------------------------
 
-def create_pretrackingid_table(tablename, cursor):
+def create_pretrackingid_table(tablename, args, db, cursor):
     fields = (  # PLSP57501_17062014lambda_3216_1_ch101_file10_strand
                 # PLSP57501_17062014lambda_3216_1_ch101_file10_strand
                 # 'asic_id INT(20) NOT NULL', #  = 48133
@@ -360,14 +362,14 @@ def create_pretrackingid_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
     # return fields
 
 # ---------------------------------------------------------------------------
 
-def create_reference_table(tablename, cursor):
+def create_reference_table(tablename, args, db, cursor):
     fields = ('refid INT(3) NOT NULL AUTO_INCREMENT, PRIMARY KEY(refid)'
               , 'refname VARCHAR(50), UNIQUE INDEX (refname)',
               'reflen INT(7), INDEX (reflen)',
@@ -379,12 +381,12 @@ def create_reference_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_basecalled2d_fastq_table(tablename, cursor):
+def create_basecalled2d_fastq_table(tablename, args, db, cursor):
     fields = (  # ['basename','VARCHAR(300) PRIMARY KEY'], # PLSP57501_17062014lambda_3216_1_ch101_file10_strand
                 # PLSP57501_17062014lambda_3216_1_ch101_file10_strand.whatever
                 # = 2347.2034000000003
@@ -439,14 +441,106 @@ def create_basecalled2d_fastq_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    #### Create a tmp table to hold trigger data.
+    fields = (
+	'1minwin INT NOT NULL',
+    'exp_start_time INT NOT NULL',
+	'bases INT',
+	'maxlen INT',
+	'minlen INT',
+    'average_length INT',
+    'readcount INT',
+	'passcount INT default 0',
+    'cumuduration INT default 0 ',
+    'cumulength INT default 0',
+    'distchan INT  default 0',
+    'PRIMARY KEY (1minwin,exp_start_time)',
+        )
+    colheaders = ','.join(fields)
+    tablename2 = tablename + "_1minwin_sum"
+    sql = 'CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB' %(tablename2,colheaders)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    ## Create a short running event
+    eventname = tablename2 + "_event"
+    sql = ' create event %s \
+            on schedule every 15 second \
+	    starts current_timestamp \
+	    ends current_timestamp + interval 1 week\
+            do \
+            insert into \
+            %s(1minwin,exp_start_time,readcount,bases,maxlen,minlen,average_length) \
+            select 1minwin,exp_start_time,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length FROM %s group by 2,1 order by 2,1 desc limit 30 \
+            ON DUPLICATE KEY UPDATE  readcount=VALUES(readcount),bases=VALUES(bases), maxlen=VALUES(maxlen), minlen=VALUES(minlen),average_length=VALUES(average_length)' %(eventname,tablename2,tablename)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    ## Create a short running event
+    eventname = tablename2 + "_eventpass"
+    sql = ' create event %s \
+            on schedule every 15 second \
+	    starts current_timestamp \
+	    ends current_timestamp + interval 1 week\
+            do \
+            insert into \
+            %s(1minwin,exp_start_time,passcount) \
+            select 1minwin,exp_start_time,count(*) as passcount FROM %s where pass = 1 group by 2,1 order by 2,1 desc limit 30 \
+            ON DUPLICATE KEY UPDATE passcount=VALUES(passcount)' %(eventname,tablename2,tablename)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    ## Create a long running event
+    eventname = tablename2 + "_eventL"
+    sql = ' create event %s \
+            on schedule every 1 hour \
+	    starts current_timestamp \
+	    ends current_timestamp + interval 1 week\
+            do \
+            insert into \
+            %s(1minwin,exp_start_time,readcount,bases,maxlen,minlen,average_length) \
+            select 1minwin,exp_start_time,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length FROM %s group by 2,1 order by 2,1 desc \
+            ON DUPLICATE KEY UPDATE  readcount=VALUES(readcount),bases=VALUES(bases), maxlen=VALUES(maxlen), minlen=VALUES(minlen),average_length=VALUES(average_length)' %(eventname,tablename2,tablename)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    eventname = tablename2 + "_eventpassL"
+    sql = ' create event %s \
+            on schedule every 1 hour \
+	    starts current_timestamp \
+	    ends current_timestamp + interval 1 week\
+            do \
+            insert into \
+            %s(1minwin,exp_start_time,passcount) \
+            select 1minwin,exp_start_time,count(*) as passcount FROM %s where pass = 1 group by 2,1 order by 2,1 desc\
+            ON DUPLICATE KEY UPDATE  passcount=VALUES(passcount)' %(eventname,tablename2,tablename)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    eventname = tablename2 + "_conf"
+    sql = ' create event %s \
+            on schedule every 15 second \
+            starts current_timestamp \
+            ends current_timestamp + interval 1 week\
+                do \
+                insert into \
+                %s(1minwin,exp_start_time,distchan) \
+                select 1minwin,exp_start_time,count(distinct channel) as distchan from config_general group by 2,1 order by 2,1 desc limit 30\
+                ON DUPLICATE KEY UPDATE distchan=VALUES(distchan)' %(eventname,tablename2)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    #### Big Clean Up Every 4 Hours
+
 
 
 # ---------------------------------------------------------------------------
 
 # ['ID', 'INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)'],
 
-def create_events_model_fastq_table(tablename, cursor):
+def create_events_model_fastq_table(tablename, args, db, cursor):
     fields = (  # 'basename VARCHAR(300), PRIMARY KEY', # PLSP57501_17062014lambda_3216_1_ch101_file10_strand
                 # PLSP57501_17062014lambda_3216_1_ch101_file10_strand.whatever
                 # = 51.80799999999954
@@ -516,14 +610,116 @@ def create_events_model_fastq_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    #### Create a tmp table to hold trigger data.
+    fields = (
+	'1minwin INT NOT NULL',
+    'exp_start_time INT NOT NULL',
+	'bases INT',
+	'maxlen INT',
+	'minlen INT',
+    'average_length INT',
+    'readcount INT',
+	'passcount INT default 0',
+    'cumuduration INT default 0 ',
+    'cumulength INT default 0',
+    'distchan INT  default 0',
+    'PRIMARY KEY (1minwin,exp_start_time)',
+        )
+    colheaders = ','.join(fields)
+    tablename2 = tablename + "_1minwin_sum"
+    sql = 'CREATE TABLE IF NOT EXISTS %s (%s) ENGINE=InnoDB' %(tablename2,colheaders)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    ## Create a short running event
+    eventname = tablename2 + "_event"
+    sql = ' create event %s \
+            on schedule every 15 second \
+	    starts current_timestamp \
+	    ends current_timestamp + interval 1 week\
+            do \
+            insert into \
+            %s(1minwin,exp_start_time,readcount,bases,maxlen,minlen,average_length,cumuduration,cumulength) \
+            select 1minwin,exp_start_time,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length, sum(duration) as cumuduration, sum(seqlen) as cumuseqlen FROM %s group by 2,1 order by 2,1 desc limit 30 \
+            ON DUPLICATE KEY UPDATE  readcount=VALUES(readcount),bases=VALUES(bases), maxlen=VALUES(maxlen), minlen=VALUES(minlen),average_length=VALUES(average_length),cumuduration=VALUES(cumuduration),cumulength=VALUES(cumulength)' %(eventname,tablename2,tablename)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    ## Create a short running event
+    eventname = tablename2 + "_eventpass"
+    sql = ' create event %s \
+            on schedule every 15 second \
+	    starts current_timestamp \
+	    ends current_timestamp + interval 1 week\
+            do \
+            insert into \
+            %s(1minwin,exp_start_time,passcount) \
+            select 1minwin,exp_start_time,count(*) as passcount FROM %s where pass = 1 group by 2,1 order by 2,1 desc limit 30 \
+            ON DUPLICATE KEY UPDATE passcount=VALUES(passcount)' %(eventname,tablename2,tablename)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    ## Create a long running event
+    eventname = tablename2 + "_eventL"
+    sql = ' create event %s \
+            on schedule every 1 hour \
+	    starts current_timestamp \
+	    ends current_timestamp + interval 1 week\
+            do \
+            insert into \
+            %s(1minwin,exp_start_time,readcount,bases,maxlen,minlen,average_length,cumuduration,cumulength) \
+            select 1minwin,exp_start_time,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length, sum(duration) as cumuduration, sum(seqlen) as cumulength FROM %s group by 2,1 order by 2,1 desc \
+            ON DUPLICATE KEY UPDATE  readcount=VALUES(readcount),bases=VALUES(bases), maxlen=VALUES(maxlen), minlen=VALUES(minlen),average_length=VALUES(average_length),cumuduration=VALUES(cumuduration),cumulength=VALUES(cumulength)' %(eventname,tablename2,tablename)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    eventname = tablename2 + "_eventpassL"
+    sql = ' create event %s \
+            on schedule every 1 hour \
+	    starts current_timestamp \
+	    ends current_timestamp + interval 1 week\
+            do \
+            insert into \
+            %s(1minwin,exp_start_time,passcount) \
+            select 1minwin,exp_start_time,count(*) as passcount FROM %s where pass = 1 group by 2,1 order by 2,1 desc  \
+            ON DUPLICATE KEY UPDATE  passcount=VALUES(passcount)' %(eventname,tablename2,tablename)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    eventname = tablename2 + "_conf"
+    sql = ' create event %s \
+            on schedule every 15 second \
+            starts current_timestamp \
+            ends current_timestamp + interval 1 week\
+                do \
+                insert into \
+                %s(1minwin,exp_start_time,distchan) \
+                select 1minwin,exp_start_time,count(distinct channel) as distchan from config_general group by 2,1 order by 2,1 desc limit 30\
+                ON DUPLICATE KEY UPDATE distchan=VALUES(distchan)' %(eventname,tablename2)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
+
+    eventname = tablename2 + "_confL"
+    sql = ' create event %s \
+            on schedule every 1 hour \
+            starts current_timestamp \
+            ends current_timestamp + interval 1 week\
+                do \
+                insert into \
+                %s(1minwin,exp_start_time,distchan) \
+                select 1minwin,exp_start_time,count(distinct channel) as distchan from config_general group by 2,1 order by 2,1 desc \
+                ON DUPLICATE KEY UPDATE distchan=VALUES(distchan)' %(eventname,tablename2)
+    #print sql
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
 # ['ID', 'INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)'],
 
-def create_align_table(tablename, cursor):
+def create_align_table(tablename, args, db, cursor):
     fields = (  # index
                 # index
                 # index
@@ -551,12 +747,12 @@ def create_align_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_align_table_raw(tablename, cursor):
+def create_align_table_raw(tablename, args, db, cursor):
     fields = (  # index
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'basename_id INT(7), INDEX (basename_id)',
@@ -577,12 +773,12 @@ def create_align_table_raw(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_align_table_maf(tablename, cursor):
+def create_align_table_maf(tablename, args, db, cursor):
     fields = (  # index
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'basename_id INT(7), INDEX (basename_id)',
@@ -605,12 +801,12 @@ def create_align_table_maf(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_pre_align_table(tablename, cursor):
+def create_pre_align_table(tablename, args, db, cursor):
     fields = (  # index
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'basename_id INT(7), INDEX (basename_id)',
@@ -629,12 +825,12 @@ def create_pre_align_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_caller_table(tablename, cursor):
+def create_caller_table(tablename, args, db, cursor):
     fields = (
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'basename_id INT(7) NOT NULL, INDEX (basename_id)',
@@ -659,13 +855,13 @@ def create_caller_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 # This removes indexes (performace improvement?
 
-def create_caller_table_noindex(tablename, cursor):
+def create_caller_table_noindex(tablename, args, db, cursor):
     fields = (
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'basename_id INT(7) NOT NULL',
@@ -690,12 +886,12 @@ def create_caller_table_noindex(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_2d_alignment_table(tablename, cursor):
+def create_2d_alignment_table(tablename, args, db, cursor):
     fields = ('ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
               'basename_id INT(7) NOT NULL, INDEX (basename_id)',
               'template INT(5) NOT NULL', 'complement INT(5) NOT NULL',
@@ -705,12 +901,12 @@ def create_2d_alignment_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_basecall_summary_info(tablename, cursor):
+def create_basecall_summary_info(tablename, args, db, cursor):
     fields = (  # = 1403015537
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'basename_id INT(7) NOT NULL, INDEX (basename_id)',
@@ -788,12 +984,12 @@ def create_basecall_summary_info(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_basic_read_info(tablename, cursor):
+def create_basic_read_info(tablename, args, db, cursor):
     fields = (
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'basename_id INT(7) NOT NULL, INDEX (basename_id)',
@@ -836,12 +1032,12 @@ def create_basic_read_info(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_5_3_prime_align_tables(align_table_in, cursor):
+def create_5_3_prime_align_tables(align_table_in, args, db, cursor):
 
     three_prime_table = align_table_in + '_3prime'
     five_prime_table = align_table_in + '_5prime'
@@ -870,15 +1066,15 @@ def create_5_3_prime_align_tables(align_table_in, cursor):
     colheaders = ','.join(fields)
     sql = 'CREATE TABLE %s (%s) ENGINE=InnoDB' % (three_prime_table,
             colheaders)
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
     sql = 'CREATE TABLE %s (%s) ENGINE=InnoDB' % (five_prime_table,
             colheaders)
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_ref_kmer_table(tablename, cursor):
+def create_ref_kmer_table(tablename, args, db, cursor):
     fields = (
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'kmer VARCHAR(10) NOT NULL, INDEX (kmer)',
@@ -892,12 +1088,12 @@ def create_ref_kmer_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_model_list_table(tablename, cursor):
+def create_model_list_table(tablename, args, db, cursor):
     fields = ('basename_id INT(7), PRIMARY KEY(basename_id)',
               'template_model VARCHAR(200), INDEX (template_model)',
               'complement_model VARCHAR(200), INDEX (complement_model)')  # 'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
@@ -906,12 +1102,12 @@ def create_model_list_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_model_data_table(tablename, cursor):
+def create_model_data_table(tablename, args, db, cursor):
     fields = (
         'ID INT(10) NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID)',
         'model VARCHAR(200) NOT NULL, INDEX (model)',
@@ -928,12 +1124,12 @@ def create_model_data_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_mincontrol_interaction_table(tablename, cursor):
+def create_mincontrol_interaction_table(tablename, args, db, cursor):
     fields = (
         'job_index INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (job_index)'
             ,
@@ -948,12 +1144,12 @@ def create_mincontrol_interaction_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_mincontrol_messages_table(tablename, cursor):
+def create_mincontrol_messages_table(tablename, args, db, cursor):
     fields = (
         'message_index INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (message_index)'
             ,
@@ -968,12 +1164,12 @@ def create_mincontrol_messages_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
 
-def create_mincontrol_barcode_control_table(tablename, cursor):
+def create_mincontrol_barcode_control_table(tablename, args, db, cursor):
     fields = \
         ('job_index INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (job_index)'
          , 'barcodeid MEDIUMTEXT NOT NULL', 'complete INT NOT NULL')
@@ -982,7 +1178,7 @@ def create_mincontrol_barcode_control_table(tablename, cursor):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
 
 
 # ---------------------------------------------------------------------------
@@ -991,7 +1187,9 @@ def upload_2dalignment_data(
     basenameid,
     channel,
     alignment,
+    args,
     db,
+    cursor,
     ):
     cursor = db.cursor()
     sqlarray = list()
@@ -1005,7 +1203,7 @@ def upload_2dalignment_data(
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
     db.commit()
 
 
@@ -1109,7 +1307,7 @@ def upload_telem_data(
     sql = \
         'INSERT INTO caller_%s (basename_id,mean,start,stdv,length,model_state,model_level,move,p_model_state,mp_state,p_mp_state,p_A,p_C,p_G,p_T,raw_index) VALUES %s;' \
         % (readtype, stringvals)
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
     db.commit()
 
 '''
@@ -1122,8 +1320,9 @@ def upload_model_data(
     model_name,
     model_location,
     hdf,
-    cursor,
+    args,
     db,
+    cursor,
     ):
     table = hdf[model_location][()]
     sqlarray = list()
@@ -1146,13 +1345,13 @@ def upload_model_data(
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
     db.commit()
 
 
 # ---------------------------------------------------------------------------
 
-def modify_gru(cursor, db):
+def modify_gru(args, db, cursor):
 
     # -------- This bit adds columns to Gru.minIONruns ####
     # # Add column 'mt_ctrl_flag' to Gru.minIONruns table if it doesn't exist
@@ -1162,7 +1361,7 @@ def modify_gru(cursor, db):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
     if cursor.rowcount == 0:
 
         # print "adding mt_ctrl_flag to Gru.minIONruns"
@@ -1172,7 +1371,7 @@ def modify_gru(cursor, db):
 
         # print sql
 
-        cursor.execute(sql)
+        args,db,cursor = cursor_execute(args,db,cursor,sql)
         db.commit()
 
     # # Add column 'watch_dir' to Gru.minIONruns table if it doesn't exist
@@ -1182,7 +1381,7 @@ def modify_gru(cursor, db):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
     if cursor.rowcount == 0:
 
         # print "adding 'watch_dir' to Gru.minIONruns"
@@ -1191,7 +1390,7 @@ def modify_gru(cursor, db):
 
         # print sql
 
-        cursor.execute(sql)
+        args,db,cursor = cursor_execute(args,db,cursor,sql)
         db.commit()
 
     # # Add column 'host_ip' to Gru.minIONruns table if it doesn't exist
@@ -1201,7 +1400,7 @@ def modify_gru(cursor, db):
 
     # print sql
 
-    cursor.execute(sql)
+    args,db,cursor = cursor_execute(args,db,cursor,sql)
     if cursor.rowcount == 0:
 
         # print "adding mt_ctrl_flag to Gru.minIONruns"
@@ -1210,7 +1409,7 @@ def modify_gru(cursor, db):
 
         # print sql
 
-        cursor.execute(sql)
+        args,db,cursor = cursor_execute(args,db,cursor,sql)
         db.commit()
 
 

@@ -4,7 +4,7 @@
 # File Name: processMetrichorFast5.py
 # Purpose:
 # Creation Date: 2014 - 2015
-# Last Modified: Wed, Oct 12, 2016 11:30:26 AM
+# Last Modified: Wed, Jan 25, 2017  2:40:52 PM
 # Author(s): The DeepSEQ Team, University of Nottingham UK
 # Copyright 2015 The Author(s) All Rights Reserved
 # Credits:
@@ -198,7 +198,8 @@ def process_metrichor_readtypes(args, read_type, basename, basenameid, basecalld
                         'pass': passcheck,
                         'sampling_rate': sampling_rate
                         })
-
+    
+                #print "events_hash"
                 events_hash, timings = get_main_timings(events_hash, location, hdf)
 
                 if readtype == 'basecalled_template':
@@ -240,6 +241,11 @@ def getMetrichorBasenameData(args, read_type, hdf):
             % (basecalltype, x)
         basecalldirconfig = string
 
+        if args.verbose == "high":
+            print "read_type is",read_type
+            print string,basecalltype
+
+
         if string in hdf:
             basecallindexpos=x #ml
             basecalldir = '/Analyses/%s_00%s/' % (basecalltype, x)
@@ -261,12 +267,40 @@ def getMetrichorBasenameData(args, read_type, hdf):
                     print basecalldir1
                     print basecalldir2
                     debug()
+
+        ### Hard code fix for old reads... test read type 1
+        string = '/Analyses/%s_00%s/Configuration/general' \
+            % ("Basecall_2D", x)
+        basecalldirconfig = string
+        #print "read_type is",read_type
+        #print string,basecalltype
+        if string in hdf:
+            basecallindexpos=x #ml
+            basecalldir = '/Analyses/%s_00%s/' % ("Basecall_2D", x)
+
+            #if read_type==1:
+            basecalldir1 = '/Analyses/Basecall_2D_00%s/' % \
+                                (basecallindexpos)
+
+            basecalldir2 = '/Analyses/Basecall_2D_00%s/' % \
+                                (basecallindexpos)
+            break
+
+            if args.verbose == "high":
+                    print string
+                    print basecalldir
+                    print basecalldir1
+                    print basecalldir2
+                    debug()
+
+
+
     try:
         configdata = hdf[basecalldirconfig]
         basename = configdata.attrs['basename']
 
     except:
-        print "process_metrichor_basecalled_fast5(): WARNING: Basecalled file without basecall data... " 
+        print "process_metrichor_basecalled_fast5(): WARNING: Basecalled file without basecall data... "
         return -1,[],None, {}
 
     result = basecalldir, basecalldir1, basecalldir2
@@ -471,6 +505,10 @@ def process_metrichor_configGeneral_data(args, configdata, basename, basenameid,
                 value = str(hdf5object.attrs[x])
                 general_hash.update({x: value})
 
+        #print "general_hash"
+        sampling_rate = float(tracking_id_hash['sampling_rate']) #* 60.
+
+
         # Specific to catch read_id as different class:
 
         for x in 'read_id':
@@ -488,11 +526,13 @@ def process_metrichor_configGeneral_data(args, configdata, basename, basenameid,
 
         general_hash.update({'exp_start_time': exp_start_time})
 
-        general_hash['sampling_rate'] = \
-           float(tracking_id_hash['sampling_rate']) * 60.
+        general_hash['sampling_rate'] = sampling_rate
+        #print 'sampling_rate',  sampling_rate
+        start_time = float(hdf5object.attrs['start_time']) #/ sampling_rate
+        general_hash['start_time'] = start_time
+        #print "start_time", general_hash['start_time']
 
-
-        general_hash, timings = get_main_timings(general_hash, location, hdf)
+        general_hash, _ = get_main_timings(general_hash, location, hdf)
 
     # ## load general_hash into mysql
 
