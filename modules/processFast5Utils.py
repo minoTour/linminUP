@@ -21,7 +21,7 @@ import sys
 
 def get_main_timings(hsh, location, hdf):
 
-    sampling_rate = float(hsh['sampling_rate']) 
+    sampling_rate = float(hsh['sampling_rate'])
     exp_start_time = float(hsh['exp_start_time'])
 
     try: read_id = hsh['read_id']
@@ -42,8 +42,8 @@ def get_main_timings(hsh, location, hdf):
         end_time = start_time + duration
 
 
-    g_start_time = exp_start_time + int(start_time)  *60
-    g_end_time = exp_start_time + int(end_time)  *60
+    g_start_time = exp_start_time + int(start_time)#  *60)
+    g_end_time = exp_start_time + int(end_time)  #*60)
 
     timings = [exp_start_time, start_time, end_time, \
                 g_start_time, g_end_time]
@@ -135,7 +135,7 @@ def get_nanonet_basename_data(args, read_type, hdf):
         read_info_hash = make_hdf5_object_attr_hash( \
                 args, \
                 hdf['/Raw/Reads/' + element], \
-                read_id_fields) 
+                read_id_fields)
 
     configdatastring = ''
 

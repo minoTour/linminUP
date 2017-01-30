@@ -446,7 +446,7 @@ def create_basecalled2d_fastq_table(tablename, args, db, cursor):
     #### Create a tmp table to hold trigger data.
     fields = (
 	'1minwin INT NOT NULL',
-    'exp_start_time INT NOT NULL',
+    #'exp_start_time INT NOT NULL',
 	'bases INT',
 	'maxlen INT',
 	'minlen INT',
@@ -456,7 +456,7 @@ def create_basecalled2d_fastq_table(tablename, args, db, cursor):
     'cumuduration INT default 0 ',
     'cumulength INT default 0',
     'distchan INT  default 0',
-    'PRIMARY KEY (1minwin,exp_start_time)',
+    'PRIMARY KEY (1minwin)', #,exp_start_time)',
         )
     colheaders = ','.join(fields)
     tablename2 = tablename + "_1minwin_sum"
@@ -472,8 +472,8 @@ def create_basecalled2d_fastq_table(tablename, args, db, cursor):
 	    ends current_timestamp + interval 1 week\
             do \
             insert into \
-            %s(1minwin,exp_start_time,readcount,bases,maxlen,minlen,average_length) \
-            select 1minwin,exp_start_time,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length FROM %s group by 2,1 order by 2,1 desc limit 30 \
+            %s(1minwin,readcount,bases,maxlen,minlen,average_length) \
+            select g_1minwin as 1minwin,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length FROM %s group by 1 order by 1 desc limit 30 \
             ON DUPLICATE KEY UPDATE  readcount=VALUES(readcount),bases=VALUES(bases), maxlen=VALUES(maxlen), minlen=VALUES(minlen),average_length=VALUES(average_length)' %(eventname,tablename2,tablename)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
@@ -486,8 +486,8 @@ def create_basecalled2d_fastq_table(tablename, args, db, cursor):
 	    ends current_timestamp + interval 1 week\
             do \
             insert into \
-            %s(1minwin,exp_start_time,passcount) \
-            select 1minwin,exp_start_time,count(*) as passcount FROM %s where pass = 1 group by 2,1 order by 2,1 desc limit 30 \
+            %s(1minwin,passcount) \
+            select g_1minwin as 1minwin,count(*) as passcount FROM %s where pass = 1 group by 1 order by 1 desc limit 30 \
             ON DUPLICATE KEY UPDATE passcount=VALUES(passcount)' %(eventname,tablename2,tablename)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
@@ -495,26 +495,26 @@ def create_basecalled2d_fastq_table(tablename, args, db, cursor):
     ## Create a long running event
     eventname = tablename2 + "_eventL"
     sql = ' create event %s \
-            on schedule every 1 hour \
+            on schedule every 1 minute \
 	    starts current_timestamp \
 	    ends current_timestamp + interval 1 week\
             do \
             insert into \
-            %s(1minwin,exp_start_time,readcount,bases,maxlen,minlen,average_length) \
-            select 1minwin,exp_start_time,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length FROM %s group by 2,1 order by 2,1 desc \
+            %s(1minwin,readcount,bases,maxlen,minlen,average_length) \
+            select g_1minwin as 1minwin,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length FROM %s group by 2,1 order by 2,1 desc \
             ON DUPLICATE KEY UPDATE  readcount=VALUES(readcount),bases=VALUES(bases), maxlen=VALUES(maxlen), minlen=VALUES(minlen),average_length=VALUES(average_length)' %(eventname,tablename2,tablename)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
 
     eventname = tablename2 + "_eventpassL"
     sql = ' create event %s \
-            on schedule every 1 hour \
+            on schedule every 1 minute \
 	    starts current_timestamp \
 	    ends current_timestamp + interval 1 week\
             do \
             insert into \
-            %s(1minwin,exp_start_time,passcount) \
-            select 1minwin,exp_start_time,count(*) as passcount FROM %s where pass = 1 group by 2,1 order by 2,1 desc\
+            %s(1minwin,passcount) \
+            select g_1minwin as 1minwin,count(*) as passcount FROM %s where pass = 1 group by 1 order by 1 desc\
             ON DUPLICATE KEY UPDATE  passcount=VALUES(passcount)' %(eventname,tablename2,tablename)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
@@ -526,8 +526,8 @@ def create_basecalled2d_fastq_table(tablename, args, db, cursor):
             ends current_timestamp + interval 1 week\
                 do \
                 insert into \
-                %s(1minwin,exp_start_time,distchan) \
-                select 1minwin,exp_start_time,count(distinct channel) as distchan from config_general group by 2,1 order by 2,1 desc limit 30\
+                %s(1minwin,distchan) \
+                select g_1minwin as 1minwin,count(distinct channel) as distchan from config_general group by 1 order by 1 desc limit 30\
                 ON DUPLICATE KEY UPDATE distchan=VALUES(distchan)' %(eventname,tablename2)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
@@ -615,7 +615,7 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
     #### Create a tmp table to hold trigger data.
     fields = (
 	'1minwin INT NOT NULL',
-    'exp_start_time INT NOT NULL',
+    #'exp_start_time INT NOT NULL',
 	'bases INT',
 	'maxlen INT',
 	'minlen INT',
@@ -625,7 +625,7 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
     'cumuduration INT default 0 ',
     'cumulength INT default 0',
     'distchan INT  default 0',
-    'PRIMARY KEY (1minwin,exp_start_time)',
+    'PRIMARY KEY (1minwin)', #,exp_start_time)',
         )
     colheaders = ','.join(fields)
     tablename2 = tablename + "_1minwin_sum"
@@ -641,8 +641,8 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
 	    ends current_timestamp + interval 1 week\
             do \
             insert into \
-            %s(1minwin,exp_start_time,readcount,bases,maxlen,minlen,average_length,cumuduration,cumulength) \
-            select 1minwin,exp_start_time,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length, sum(duration) as cumuduration, sum(seqlen) as cumuseqlen FROM %s group by 2,1 order by 2,1 desc limit 30 \
+            %s(1minwin,readcount,bases,maxlen,minlen,average_length,cumuduration,cumulength) \
+            select g_1minwin as 1minwin,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length, sum(duration) as cumuduration, sum(seqlen) as cumuseqlen FROM %s group by 1 order by 1 desc limit 30 \
             ON DUPLICATE KEY UPDATE  readcount=VALUES(readcount),bases=VALUES(bases), maxlen=VALUES(maxlen), minlen=VALUES(minlen),average_length=VALUES(average_length),cumuduration=VALUES(cumuduration),cumulength=VALUES(cumulength)' %(eventname,tablename2,tablename)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
@@ -655,8 +655,8 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
 	    ends current_timestamp + interval 1 week\
             do \
             insert into \
-            %s(1minwin,exp_start_time,passcount) \
-            select 1minwin,exp_start_time,count(*) as passcount FROM %s where pass = 1 group by 2,1 order by 2,1 desc limit 30 \
+            %s(1minwin,passcount) \
+            select g_1minwin as 1minwin,count(*) as passcount FROM %s where pass = 1 group by 1 order by 1 desc limit 30 \
             ON DUPLICATE KEY UPDATE passcount=VALUES(passcount)' %(eventname,tablename2,tablename)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
@@ -664,26 +664,26 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
     ## Create a long running event
     eventname = tablename2 + "_eventL"
     sql = ' create event %s \
-            on schedule every 1 hour \
+            on schedule every 1 minute \
 	    starts current_timestamp \
 	    ends current_timestamp + interval 1 week\
             do \
             insert into \
-            %s(1minwin,exp_start_time,readcount,bases,maxlen,minlen,average_length,cumuduration,cumulength) \
-            select 1minwin,exp_start_time,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length, sum(duration) as cumuduration, sum(seqlen) as cumulength FROM %s group by 2,1 order by 2,1 desc \
+            %s(1minwin,readcount,bases,maxlen,minlen,average_length,cumuduration,cumulength) \
+            select g_1minwin as 1minwin,count(*) as readcount,sum(seqlen) as bases, max(seqlen) as maxlen,min(seqlen) as minlen , ROUND(AVG(seqlen)) as average_length, sum(duration) as cumuduration, sum(seqlen) as cumulength FROM %s group by 1 order by 1 desc \
             ON DUPLICATE KEY UPDATE  readcount=VALUES(readcount),bases=VALUES(bases), maxlen=VALUES(maxlen), minlen=VALUES(minlen),average_length=VALUES(average_length),cumuduration=VALUES(cumuduration),cumulength=VALUES(cumulength)' %(eventname,tablename2,tablename)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
 
     eventname = tablename2 + "_eventpassL"
     sql = ' create event %s \
-            on schedule every 1 hour \
+            on schedule every 1 minute \
 	    starts current_timestamp \
 	    ends current_timestamp + interval 1 week\
             do \
             insert into \
-            %s(1minwin,exp_start_time,passcount) \
-            select 1minwin,exp_start_time,count(*) as passcount FROM %s where pass = 1 group by 2,1 order by 2,1 desc  \
+            %s(1minwin,passcount) \
+            select g_1minwin as 1minwin,count(*) as passcount FROM %s where pass = 1 group by 1 order by 1 desc  \
             ON DUPLICATE KEY UPDATE  passcount=VALUES(passcount)' %(eventname,tablename2,tablename)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
@@ -695,21 +695,21 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
             ends current_timestamp + interval 1 week\
                 do \
                 insert into \
-                %s(1minwin,exp_start_time,distchan) \
-                select 1minwin,exp_start_time,count(distinct channel) as distchan from config_general group by 2,1 order by 2,1 desc limit 30\
+                %s(1minwin,distchan) \
+                select g_1minwin as 1minwin,count(distinct channel) as distchan from config_general group by 1 order by 1 desc limit 30\
                 ON DUPLICATE KEY UPDATE distchan=VALUES(distchan)' %(eventname,tablename2)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
 
     eventname = tablename2 + "_confL"
     sql = ' create event %s \
-            on schedule every 1 hour \
+            on schedule every 1 minute \
             starts current_timestamp \
             ends current_timestamp + interval 1 week\
                 do \
                 insert into \
-                %s(1minwin,exp_start_time,distchan) \
-                select 1minwin,exp_start_time,count(distinct channel) as distchan from config_general group by 2,1 order by 2,1 desc \
+                %s(1minwin,distchan) \
+                select g_1minwin as 1minwin,count(distinct channel) as distchan from config_general group by 1 order by 1 desc \
                 ON DUPLICATE KEY UPDATE distchan=VALUES(distchan)' %(eventname,tablename2)
     #print sql
     args,db,cursor = cursor_execute(args,db,cursor,sql)
