@@ -69,10 +69,10 @@ We note that this is a beta function - it is still in development. It may break 
 To enable real time monitoring of minKNOW you need to add two extra flags to your minUP command.
 These are:
 
-  `-ip
+  -ip
   
-  -pin`
-
+  -pin
+  
 -ip is the IP address of the machine running minKNOW. Typically this is 127.0.0.1. Advanced users may wish to run this software on another machine - but note you need extremely permissive firewall settings to do so.
 -pin is a security pin number. This is required for any user of minoTour to set automated control features.
 
