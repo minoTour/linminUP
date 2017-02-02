@@ -495,7 +495,7 @@ def create_basecalled2d_fastq_table(tablename, args, db, cursor):
     ## Create a long running event
     eventname = tablename2 + "_eventL"
     sql = ' create event %s \
-            on schedule every 1 minute \
+            on schedule every 20 minute \
 	    starts current_timestamp \
 	    ends current_timestamp + interval 1 week\
             do \
@@ -508,7 +508,7 @@ def create_basecalled2d_fastq_table(tablename, args, db, cursor):
 
     eventname = tablename2 + "_eventpassL"
     sql = ' create event %s \
-            on schedule every 1 minute \
+            on schedule every 20 minute \
 	    starts current_timestamp \
 	    ends current_timestamp + interval 1 week\
             do \
@@ -664,7 +664,7 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
     ## Create a long running event
     eventname = tablename2 + "_eventL"
     sql = ' create event %s \
-            on schedule every 1 minute \
+            on schedule every 20 minute \
 	    starts current_timestamp \
 	    ends current_timestamp + interval 1 week\
             do \
@@ -677,7 +677,7 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
 
     eventname = tablename2 + "_eventpassL"
     sql = ' create event %s \
-            on schedule every 1 minute \
+            on schedule every 20 minute \
 	    starts current_timestamp \
 	    ends current_timestamp + interval 1 week\
             do \
@@ -703,7 +703,7 @@ def create_events_model_fastq_table(tablename, args, db, cursor):
 
     eventname = tablename2 + "_confL"
     sql = ' create event %s \
-            on schedule every 1 minute \
+            on schedule every 20 minute \
             starts current_timestamp \
             ends current_timestamp + interval 1 week\
                 do \
