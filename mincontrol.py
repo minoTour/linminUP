@@ -329,14 +329,15 @@ def execute_command_as_string(data, host=None, port=None):
     host_name = host
     port_number = port
     url = 'http://%s:%s%s' % (host_name, port_number, '/jsonrpc')
-    req = urllib2.Request(url, data=data,headers={'Content-Length': str(len(data)),'Content-Type': 'application/json'})
-    ##print req
+    req = urllib2.Request(url, data=data,headers={'Authorization': 'Bearer abc','Content-Length': str(len(data)),'Content-Type': 'application/json'})
+    #print req
     try:
         f = _urlopen(req)
         json_respond = json.loads(f.read())
         f.close()
         return json_respond
     except Exception, err:
+        print err
         err_string = \
             'Fail to initialise mincontrol. Likely reasons include minKNOW not running, the wrong IP address for the minKNOW server or firewall issues.'
 
@@ -431,7 +432,7 @@ class HelpTheMinion(WebSocketClient):
     def received_message(self, m):
         ##print "message received!"
         for thing in ''.join(map(chr,map(ord,str(m)))).split('\n'):
-            if len(thing) > 5 and "2L" not in thing:
+            if len(thing) > 5 and "2L" not in thing and "2n" not in thing:
                 if thing[1:8] not in minIONdict:
                     #print "INITIALISING MINIONDICT"
                     minIONdict[thing[1:8]]=dict()
@@ -548,14 +549,15 @@ def startrun(script,port):
     #print 'Starting the minION device.'
     try:
         startruncustom = \
-            '{"id":"1", "method":"start_script","params":{"name":"' \
-            + script + '.py"}}'
+            '{"id":1, "method":"start_script","params":{"name":"' \
+            + script + '"}}'
+        #print startruncustom,ipadd,port
         startresult = \
             execute_command_as_string(startruncustom,
                 ipadd, port)
         startrunmessage = 'minoTour sent a remote run start command.'
         startresultmessage = send_message_port(startrunmessage,port)
-    except Exception, ett:
+    except Exception, err:
         print >> sys.stderr, err
 
 def stoprun_message(port,message):
@@ -830,12 +832,17 @@ class DummyClient(WebSocketClient):
                     print "Probably already popped"
 
 def get_run_scripts(port):
+    #print "trying to get runscripts on port %s" %(port)
     get_scripts = \
         '{"id":"1", "method":"get_script_info_list","params":{"state_id":"status"}}'
     results = execute_command_as_string(get_scripts, ipadd, port)
-    return results
-    #for key in results.keys():
-    #    print "mincontrol:", key, results[key]
+    #print type(results['result'])
+    #print len(results['result'])
+    #for thing in results['result']:
+    #    print type(thing),thing
+    return results['result']
+    for key in results.keys():
+        print "mincontrol:", key, results[key]
     scriptlist = list()
     for element in results['result']:
         for item in results['result'][element]:
