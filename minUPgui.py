@@ -350,13 +350,14 @@ def main():
         print '------------------'
         ps = []
         for k in vs:
+            print "access vs:", k, type(k), lut[k], toStr(vs[k])
             ps.append(('-' + lut[k], toStr(vs[k])))
 
         ps = map(fixAligner, ps)
         aligner = 'bwa' # vs['Aligner_to_Use']
         ps = map(lambda o: fixAlignerOpts(aligner, o), ps)
         ps = sorted(filter(isActive, ps))
-        ps.append(('-dbu', 'minion'))
+        ps.append(('-dbu', vs['minoTour_Username']))
         print ps
         
         params = ' '.join(map(showParam, ps))
