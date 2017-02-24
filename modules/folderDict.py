@@ -15,6 +15,7 @@ import sys
 import xmltodict
 import h5py
 
+from checkRead import testtime
 from progressbar import *
 from pbar import *
 
@@ -45,28 +46,58 @@ def moveFile(args, fast5file):
 def getHDFtime(args, f):
     try:
         with h5py.File(f) as hdf:
-            
-            expStartTime = hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time']
+
+            expStartTime = testtime(hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time'])
+            #print expStartTime
             sample_rate = hdf['UniqueGlobalKey/channel_id'].attrs['sampling_rate']
+            #print sample_rate
+
+            #Check if events in file:
 
             reads = 'Analyses/EventDetection_000/Reads/'
+            if reads in hdf:
+                for read in hdf[reads]:
+                    #print read
+                    '''
+                    # 0.64a ..
+                    startTime = hdf[ reads + read ].attrs['start_time']
+                    readTime = startTime
+                    '''
+                    # -2.64b ...
+                    # We take "End time" to be Start time of final event  ...
+                    #endTime = hdf[ reads + read + "/Events"][-1][-2]
+                    endTime = hdf[reads + read + "/Events"]['start'][-1]
+                    #start_time = hdf[reads + read].attrs['start_time']
+                    #print endTime
+                    readTime = endTime/sample_rate
+            else:
+                #Switching to work from raw.
 
-            for read in hdf[reads]:
-                '''
-                # 0.64a ..
-                startTime = hdf[ reads + read ].attrs['start_time']
-                readTime = startTime
-                '''
-                # -2.64b ...
-                # We take "End time" to be Start time of final event  ...
-                #endTime = hdf[ reads + read + "/Events"][-1][-2]
-                endTime = hdf[reads + read + "/Events"]['start'][-1]
-                #print endTime
-                readTime = endTime/sample_rate
+                #reads = 'Analyses/EventDetection_000/Reads/'
+                reads = 'Raw/Reads/'
+                for read in hdf[reads]:
+                    #print read
+                    '''
+                    # 0.64a ..
+                    startTime = hdf[ reads + read ].attrs['start_time']
+                    readTime = startTime
+                    '''
+                    # -2.64b ...
+                    # We take "End time" to be Start time of final event  ...
+                    #endTime = hdf[ reads + read + "/Events"][-1][-2]
+                    #endTime = hdf[reads + read + "/Events"]['start'][-1]
+                    start_time = hdf[reads + read].attrs['start_time']
+                    duration = hdf[reads + read].attrs['duration']
+                    endTime = start_time+duration
+                    #print endTime
+                    readTime = endTime/sample_rate
             #print expStartTime
             timestamp = int(expStartTime) + int(readTime)
+            print expStartTime,timestamp
             hdf.close()
-    except:
+    except Exception, err:
+        err_string = 'Error with HDF times in file: %s : %s' % (f, err)
+        print >> sys.stderr, err_string
         timestamp = -1
     return timestamp
 

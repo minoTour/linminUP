@@ -198,7 +198,7 @@ def process_metrichor_readtypes(args, read_type, basename, basenameid, basecalld
                         'pass': passcheck,
                         'sampling_rate': sampling_rate
                         })
-    
+
                 #print "events_hash"
                 events_hash, timings = get_main_timings(events_hash, location, hdf)
 
@@ -531,8 +531,10 @@ def process_metrichor_configGeneral_data(args, configdata, basename, basenameid,
         start_time = float(hdf5object.attrs['start_time']) #/ sampling_rate
         general_hash['start_time'] = start_time
         #print "start_time", general_hash['start_time']
-
-        general_hash, _ = get_main_timings(general_hash, location, hdf)
+        try:
+            general_hash, _ = get_main_timings(general_hash, location, hdf)
+        except:
+            print "Problem Metrichor"
 
     # ## load general_hash into mysql
 

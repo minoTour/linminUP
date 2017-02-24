@@ -328,8 +328,10 @@ def _urlopen(url, *args):
 def execute_command_as_string(data, host=None, port=None):
     host_name = host
     port_number = port
+    #print host,port,data
     url = 'http://%s:%s%s' % (host_name, port_number, '/jsonrpc')
-    req = urllib2.Request(url, data=data,headers={'Authorization': 'Bearer abc','Content-Length': str(len(data)),'Content-Type': 'application/json'})
+    #req = urllib2.Request(url, data=data,headers={'Authorization': 'Bearer abc','Content-Length': str(len(data)),'Content-Type': 'application/json'})
+    req = urllib2.Request(url, data=data,headers={'Content-Length': str(len(data)),'Content-Type': 'application/json'})
     #print req
     try:
         f = _urlopen(req)
@@ -432,7 +434,8 @@ class HelpTheMinion(WebSocketClient):
     def received_message(self, m):
         ##print "message received!"
         for thing in ''.join(map(chr,map(ord,str(m)))).split('\n'):
-            if len(thing) > 5 and "2L" not in thing and "2n" not in thing:
+            #if len(thing) > 5 and "2L" not in thing and "2n" not in thing:
+            if len(thing) > 5 and thing[1] == "M":
                 if thing[1:8] not in minIONdict:
                     #print "INITIALISING MINIONDICT"
                     minIONdict[thing[1:8]]=dict()
@@ -551,7 +554,7 @@ def startrun(script,port):
         startruncustom = \
             '{"id":1, "method":"start_script","params":{"name":"' \
             + script + '"}}'
-        #print startruncustom,ipadd,port
+        print startruncustom,ipadd,port
         startresult = \
             execute_command_as_string(startruncustom,
                 ipadd, port)
@@ -839,7 +842,7 @@ def get_run_scripts(port):
     #print type(results['result'])
     #print len(results['result'])
     #for thing in results['result']:
-    #    print type(thing),thing
+    #    print thing
     return results['result']
     for key in results.keys():
         print "mincontrol:", key, results[key]

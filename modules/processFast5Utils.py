@@ -23,11 +23,13 @@ def get_main_timings(hsh, location, hdf):
 
     sampling_rate = float(hsh['sampling_rate'])
     exp_start_time = float(hsh['exp_start_time'])
+    #print "Here it is as",exp_start_time
 
     try: read_id = hsh['read_id']
     except: read_id = -1
 
     if read_id > -1 and location+"/Events" in hdf:
+
         events_table = hdf[location + "/Events"]
         starts = map(float, events_table['start']) #/ sampling_rate
 
@@ -36,7 +38,17 @@ def get_main_timings(hsh, location, hdf):
 
         #start_time = float(events_table[0][1]) #/  sampling_rate # 60.
         #etnd_time = float(events_table[-1][-2]) #/ sampling_rate # 60.
+    elif read_id > -1 and "Raw/Reads/" in hdf:
+        reads = 'Raw/Reads/'
+        for read in hdf[reads]:
+            #print "OK Lets try this!"
+            start_time = int(hdf[reads + read].attrs['start_time']) / sampling_rate
+            duration = int(hdf[reads + read].attrs['duration']) / sampling_rate
+            end_time = start_time + duration
+            #print endTime
+            #readTime = endTime/sample_rate
     else:
+        #print "are we here instead"
         start_time = float(hsh['start_time']) #* sampling_rate
         duration = float(hsh['duration']) #* sampling_rate
         end_time = start_time + duration

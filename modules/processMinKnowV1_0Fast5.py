@@ -121,7 +121,7 @@ def process_integratedRNN_readtypes(args, read_type, basename, basenameid, basec
 
                 '''
 
-                # DEPRECATING TELEM MS 11.10.16 
+                # DEPRECATING TELEM MS 11.10.16
 
                 if args.telem is True:
                     alignment = hdf[location + 'Alignment'][()]
@@ -187,9 +187,10 @@ def process_integratedRNN_readtypes(args, read_type, basename, basenameid, basec
                     'sampling_rate': sampling_rate,
                     'duration': duration,
                     })
-
-                events_hash, timings = get_main_timings(events_hash, location, hdf)
-
+                try:
+                    events_hash, timings = get_main_timings(events_hash, location, hdf)
+                except:
+                    print "TIMINGS ERROR"
                 if readtype == 'basecalled_template':
                     _, template_start, template_end, g_template_start, \
                                                 g_template_end = timings
@@ -312,5 +313,3 @@ def process_minKnow_basecalledSummary_data(basecalldir, args, read_type, basenam
 
     mysql_load_from_hashes(args, db, cursor, 'basecall_summary',
                            basecall_summary_hash)
-
-

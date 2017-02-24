@@ -14,7 +14,7 @@ import os, sys
 import hashlib
 
 from hdf5_hash_utils import *
-
+from checkRead import testtime
 
 def process_fast5_raw(
     db,
@@ -43,7 +43,7 @@ def process_fast5_raw(
         'device_id',
         'exp_script_purpose',
         'exp_script_name',
-        'exp_start_time',
+        #'exp_start_time',
         'flow_cell_id',
         'heatsink_temp',
         'hostname',
@@ -52,8 +52,10 @@ def process_fast5_raw(
         ]
     tracking_id_hash = make_hdf5_object_attr_hash(args,
             hdf['/UniqueGlobalKey/tracking_id'], tracking_id_fields)
+    expStartTime = testtime(hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time'])
     tracking_id_hash.update({'basename': basename,
-                            'file_path': filepath, 'md5sum': checksum})
+                            'file_path': filepath, 'md5sum': checksum, 'exp_start_time':expStartTime})
+
     hdf5object = hdf['/UniqueGlobalKey/channel_id']
 
         # print "Got event location"

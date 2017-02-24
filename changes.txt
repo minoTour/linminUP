@@ -1,5 +1,14 @@
 --------------------------------------------------------------------------------
 
+0.74_24.02.17
+
+* Bugfix to deal with time stamp changes in minKNOW 1.4.2
+* Fix to handle incorrect reporting of non-existent minIONs.
+* Fix to script launching to deal with changes in minKNOW 1.4.2
+!! To do: minUPgui launching is temperamental on linux
+
+--------------------------------------------------------------------------------
+
 0.73_14.02.17
 
 * Bugfix to minUPgui to prevent hardcoding of username.
@@ -36,7 +45,7 @@
 0.70_24.01.17
 
 * Fixes for get_main_timings() start_time/sampling_rate in config_general
-* 
+*
 
 --------------------------------------------------------------------------------
 
@@ -66,7 +75,7 @@
 
 0.70_21.12.16
 
-* Wholesale re-structuring of mT_align.py 
+* Wholesale re-structuring of mT_align.py
 * Rename mT_align.py to mT_coverage.py
 * Created separate module startMincontrol invoked from checkreads line 778
 * Moved startMNincontrol invokation to MyHandler line 260
@@ -116,7 +125,7 @@
 
 * Fixed minUPgui for nix
 * Fixed munUP ver.txt online checking for offline users
-* Deprecated 
+* Deprecated
     -procs
     -n
     -prealign
@@ -124,7 +133,7 @@
     -qScale
     -standalone
     -largeRef
-    -telem 
+    -telem
 
 
 --------------------------------------------------------------------------------
@@ -154,7 +163,7 @@
 * Fixed prealign for r7 file types
 * Testing on r7 and three types of r9 files.
 * Fixed window size of minUPgui
- 
+
 --------------------------------------------------------------------------------
 0.65_19.09.16
 
@@ -200,8 +209,8 @@
 * Post LC2016
 * r9 fast5 file handling
 * nanonet local basecalling fast5 file handling
-* minotour_barcodes files handling 
-* Lots of other changes 
+* minotour_barcodes files handling
+* Lots of other changes
 
 --------------------------------------------------------------------------------
 0.65_18,05.16
@@ -212,9 +221,9 @@
 --------------------------------------------------------------------------------
 0.64b_13,05.16a
 
-* Uses Matts new bwaClass() (based on blinkstick examples) 
+* Uses Matts new bwaClass() (based on blinkstick examples)
 * to bundle up reads sets for bwa and avoid thread blocking
- 
+
 --------------------------------------------------------------------------------
 0.64b_13,05.16
 
@@ -240,11 +249,11 @@
 * Major cleanup of unecessary syntax in folderDict.py
 
 * Added 1minwin etc timings to fields in sql.py
-* Added 1minwin etc timings fields insert statements enad supporting codes to processFast5Raw.py 
+* Added 1minwin etc timings fields insert statements enad supporting codes to processFast5Raw.py
 
-* Fixed move corrupt fast5 filew to bugged folder so as to continue run 
+* Fixed move corrupt fast5 filew to bugged folder so as to continue run
 * Fixed gui I/O buffering probelms.
-* Added progress bars 
+* Added progress bars
 
 --------------------------------------------------------------------------------
 0.64b_22.03.16b
@@ -291,15 +300,15 @@
 --------------------------------------------------------------------------------
 09.03.16 0.64a
 
-* Build as v0.64 
-* bwa/last index dir chenged to be refdir 
+* Build as v0.64
+* bwa/last index dir chenged to be refdir
 * Added flag indexToRefDir to control above
 * And including sort reads using hdf_timestamps using read START time
 --------------------------------------------------------------------------------
 09.03.16 0.63
 
-* Build as v0.63 including linux kill(pid) 
-* bwa/last index dir chenged to be watchdir 
+* Build as v0.63 including linux kill(pid)
+* bwa/last index dir chenged to be watchdir
 * Not including sort reads using hdf_timestamps
 --------------------------------------------------------------------------------
 08.03.16
@@ -307,7 +316,7 @@
 * Added code to filderDict.py to sort initial reads based on hdfs time stams.
 * Added self.hdf.close() to MyHandler except condition.
 * Improved kill(pid) in exitGracefully.py
- 
+
 --------------------------------------------------------------------------------
 04.03.16
 
@@ -337,18 +346,18 @@ Commented out qScale in align_dtw.py line 51
 * Exit on Ctrl-C
 MyHandler.py
 gui.py
-minup.v0.62a.py 
+minup.v0.62a.py
 Fixes to Keyboardinrterrup handling
 Changes exitGracefully to terminateSubProcesses
 
 * Threads not exiting
-MyHandler.py line 69 Added t.clear 
+MyHandler.py line 69 Added t.clear
 
 * Search using just start end of read
 Renamed squiggle_search2 calls to squiggle_align and added logic to handle squiggle_search3 in align_dtw.py
 Added options and logic for squiggle_search3()
 align_dtw.py
-minup.v0.62a.py 
+minup.v0.62a.py
 
 * Offsets
 Added offset default 50 to align_dtw.py
@@ -379,11 +388,3 @@ Added customup/timeout flag to minup
 Added -per and -prealign flags to minup, MyHandler etc.
 
 --------------------------------------------------------------------------------
-
-
-
-
-
-
-
-

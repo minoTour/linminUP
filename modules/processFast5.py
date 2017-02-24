@@ -24,7 +24,7 @@ from hdf5_hash_utils import *
 
 from sql import upload_model_data
 #from telem import init_tel_threads2
-from checkRead import check_read_type, getBasecalltype
+from checkRead import check_read_type, getBasecalltype,testtime
 
 from debug import debug
 
@@ -238,7 +238,7 @@ def process_tracking_data(args, filepath, basename, checksum, passcheck, hdf, db
         'device_id',
         'exp_script_purpose',
         'exp_script_name',
-        'exp_start_time',
+        #'exp_start_time',
         'flow_cell_id',
         'heatsink_temp',
         'hostname',
@@ -247,8 +247,9 @@ def process_tracking_data(args, filepath, basename, checksum, passcheck, hdf, db
         ]
     tracking_id_hash = make_hdf5_object_attr_hash(args,
             hdf['/UniqueGlobalKey/tracking_id'], tracking_id_fields)
+    expStartTime = testtime(hdf['UniqueGlobalKey/tracking_id'].attrs['exp_start_time'])
     tracking_id_hash.update({'basename': basename,
-                            'file_path': filepath, 'md5sum': checksum})
+                            'file_path': filepath, 'md5sum': checksum, 'exp_start_time':expStartTime})
     hdf5object = hdf['/UniqueGlobalKey/channel_id']
 
     for x in ('channel_number', 'digitisation', 'offset',
@@ -276,6 +277,7 @@ def process_tracking_data(args, filepath, basename, checksum, passcheck, hdf, db
 #-------------------------------------------------------------------------------
 
 def process_configGeneral_data(args, configdata, basename, basenameid, basecalldirs, read_type, passcheck, hdf, tracking_id_hash, db, cursor):
+    #print read_type
     if read_type in [1,2,3]:
          return metrichor.process_metrichor_configGeneral_data(args, configdata, basename, basenameid, basecalldirs, read_type, passcheck, hdf, tracking_id_hash, db, cursor)
     elif read_type in [4,6]:
@@ -328,8 +330,8 @@ def process_fast5(
             print "minKNOW v1.0 File...."
             debug()
 
-        process_minKNOW_v1_0_fast5( 
-                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, 
+        process_minKNOW_v1_0_fast5(
+                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash,
                 dbcheckhash, filepath, hdf, dbname, cursor,bwaclassrunner
                 )
 
@@ -338,7 +340,7 @@ def process_fast5(
             print "Nanonet File...."
 
         process_nanonet_fast5(
-                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, 
+                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash,
                 dbcheckhash, filepath, hdf, dbname, cursor,bwaclassrunner
                 )
 
@@ -347,8 +349,8 @@ def process_fast5(
         if args.verbose == "high":
             print "Metrichor File...."
             debug()
-        process_metrichor_basecalled_fast5( 
-                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, 
+        process_metrichor_basecalled_fast5(
+                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash,
                 dbcheckhash, filepath, hdf, dbname, cursor, bwaclassrunner
                 )
         #processFast5( read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash, dbcheckhash, filepath, hdf, dbname, cursor, bwaclassrunner)
@@ -363,12 +365,12 @@ def process_fast5(
 def process_nanonet_fast5(
         read_type,
         passcheck,
-        oper, 
+        oper,
         db,
         connection_pool,
         args,
         ref_fasta_hash,
-        dbcheckhash, 
+        dbcheckhash,
         filepath,
         hdf,
         dbname,
@@ -555,7 +557,7 @@ def  process_minKNOW_v1_0_fast5( \
     # PROCESS BASECALLED SUMMARY DATA ....
     # # get all the basecall summary split hairpin data
     if basename != '':
-        process_basecalledSummary_data(args, read_type , basename, basenameid , 
+        process_basecalledSummary_data(args, read_type , basename, basenameid ,
                 basecalldirs , basecallindexpos, passcheck, tracking_id_hash, general_hash, hdf, db,cursor)
 
     # PROCESS BARCODE DATA ...
@@ -566,7 +568,7 @@ def  process_minKNOW_v1_0_fast5( \
 
     # PROCESS READ TYPES ....
     #process_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, cursor)
-    process_readtypes(args, read_type, basename, basenameid, basecalldirs, 
+    process_readtypes(args, read_type, basename, basenameid, basecalldirs,
                 tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, cursor,fastqhash, dbname, dbcheckhash)
 
     # DO ALIGNMENTS ....

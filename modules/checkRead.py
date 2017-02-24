@@ -18,6 +18,7 @@ import subprocess
 import re
 import time
 import datetime
+import dateutil.parser
 #import string
 
 from sql import *
@@ -51,7 +52,12 @@ def getBasecalltype(args, filetype):
 
 
 
-
+def testtime(intime):
+    """A function to test a time and return the unix timestampe thereof."""
+    try:
+        return int(intime)
+    except:
+        return int(time.mktime(dateutil.parser.parse(intime).timetuple()))
 
 '''
 
@@ -231,7 +237,7 @@ def check_read(
                         'not in batch mode so exiting ...'
                     sys.stdout.flush()
                     terminate_minup(args, dbcheckhash, oper, minup_version)
-                
+
             #terminate_minup(args, dbcheckhash, oper, minup_version)
             #sys.exit()
 
@@ -601,10 +607,14 @@ def check_read(
         # ....configdata.attrs['workflow_name'] ="preanalysed"
 
         trackingid = hdf['/UniqueGlobalKey/tracking_id']
+        print trackingid.attrs['exp_start_time']
+        print dateutil.parser.parse(trackingid.attrs['exp_start_time'])
+        print int(time.mktime(dateutil.parser.parse(trackingid.attrs['exp_start_time']).timetuple()))
+        print datetime.datetime.fromtimestamp(int(time.mktime(dateutil.parser.parse(trackingid.attrs['exp_start_time']).timetuple()))).strftime('%Y-%m-%d')
 
         expstarttimecode = \
-            datetime.datetime.fromtimestamp(int(trackingid.attrs['exp_start_time'
-                ])).strftime('%Y-%m-%d')
+            datetime.datetime.fromtimestamp(int(testtime(trackingid.attrs['exp_start_time'
+                ]))).strftime('%Y-%m-%d')
         flowcellid = trackingid.attrs['device_id']
 
         if len(basecalldirconfig) > 0:
@@ -762,7 +772,7 @@ def check_read(
                                 os.linesep))
             logfilehandle.write('watch directory:\t%s%s'
                                 % (args.watchdir, os.linesep))
-            
+
             '''
             # DEPRECATIN TELEM MS 11.10.16
             logfilehandle.write('upload telemetry:\t%s%s'
@@ -908,7 +918,7 @@ def contains_hdf_group(hdf, group):
     try:
         hdf5object = hdf[group]
         return True
-    except: 
+    except:
         return False
 
 
@@ -940,12 +950,12 @@ def is_nanonet_basecalled_file(args, hdf):
 
 
 def check_read_type(args, filepath, hdf):
-    try: 
+    try:
         hdf5object = hdf["/"]
         value = hdf5object.attrs["file_version"]
     except:
         return -1 # Invalid hdf
-    
+
     if is_minKNOW_v1_0_file(args, hdf):                            filetype = 6 # mKnow w RNN
     elif is_nanonet_basecalled_file(args, hdf):                    filetype = 4 # mKnow + RNN
     elif is_metricore_basecalled_file(args, hdf):                  filetype = 3 # mKnow + MC

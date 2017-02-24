@@ -22,6 +22,7 @@ import MySQLdb
 import configargparse
 import multiprocessing
 import platform  # MS
+import signal
 
 # Unbuffered IO
 # NB 1 is essential to catch ctrl-c ...
@@ -45,6 +46,16 @@ def toFloat(s):
     a,v,d,m,y = s_.split('.')
     s__ = ''.join([a,v,'.',y,m,d])
     return float(s__)
+    
+def emergencyexit():
+    print 'stopping monitor....'
+    observer.stop()
+    terminate_minup(args, dbcheckhash, OPER, MINUP_VERSION)
+    
+def emergencyexit2(signum,frame):
+    print 'stopping monitor....'
+    observer.stop()
+    terminate_minup(args, dbcheckhash, OPER, MINUP_VERSION)
 
 # main
 if __name__ == '__main__':
@@ -615,6 +626,7 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
 
     print 'monitor started.'
     try:
+        signal.signal(signal.SIGINT, emergencyexit2)
         check_read_args = connection_pool, MINUP_VERSION, \
         comments, ref_fasta_hash, dbcheckhash, \
         logfolder, cursor
@@ -626,9 +638,10 @@ configargparse.ArgParser(description='minup: A program to analyse minION fast5 f
             time.sleep(1)
 
     except (KeyboardInterrupt, SystemExit):
-        print 'stopping monitor....'
-        observer.stop()
-        terminate_minup(args, dbcheckhash, OPER, MINUP_VERSION)
+        emergencyexit()
+        #print 'stopping monitor....'
+        #observer.stop()
+        #terminate_minup(args, dbcheckhash, OPER, MINUP_VERSION)
 
     print "finished."
     observer.join()

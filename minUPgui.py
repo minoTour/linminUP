@@ -43,7 +43,9 @@ def terminate_minup(oper):
         # -- sending minup pid a Ctrl-C signal
         # -- this also cleanly closes subprocesses and threads ....
         # 0 means  Ctrl-C 
+        print "terminating downstream processes"
         ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid) 
+        
     else:
         import psutil
 
@@ -54,7 +56,7 @@ def terminate_minup(oper):
 
     print 'finished.'
     sys.stdout.flush()
-    sys.exit(1)
+    sys.exit()
 
 
 # ------------------------------------------------------------------------------
