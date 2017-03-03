@@ -387,7 +387,7 @@ python-wxgtk3.0
 
 Python Modules required are:
 
-pip install watchdog MySQL-Python configargparse psutil BioPython numpy progressbar ws4py thrift dictdiffer twisted autobahn gooey h5py xmltodict
+pip install watchdog MySQL-Python configargparse psutil BioPython numpy progressbar ws4py thrift dictdiffer twisted autobahn gooey h5py xmltodict dateutil
 
 
 
