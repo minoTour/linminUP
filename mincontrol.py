@@ -1284,6 +1284,7 @@ class MyClientProtocol(WebSocketClientProtocol):
             #print "check my bad self"
 
         def process_shizzle():
+            print "sending data to ws"
             if minIONdict == minIONdict_test: ## The dictionary is unchanged since the last cycle
                 active = 0
                 inactive = 0
@@ -1453,7 +1454,7 @@ class MyClientProtocol(WebSocketClientProtocol):
             #else:
             #    print "not connected"
             #    et.messagesent=False
-            self.factory.reactor.callLater(5, process_shizzle)
+            self.factory.reactor.callLater(15, process_shizzle)
 
         # start sending messages every 5 seconds..
         process_shizzle()
