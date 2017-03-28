@@ -199,7 +199,7 @@ def process_metrichor_readtypes(args, read_type, basename, basenameid, basecalld
                         'sampling_rate': sampling_rate
                         })
 
-                #print "events_hash"
+                #print "events_hash", location,readtype
                 events_hash, timings = get_main_timings(events_hash, location, hdf)
 
                 if readtype == 'basecalled_template':
@@ -447,6 +447,7 @@ def process_metrichor_configGeneral_data(args, configdata, basename, basenameid,
         'workflow_script',
         'workflow_name',
         'read_id',
+        'read_number',
         'use_local',
         'tag',
         'model_path',
@@ -477,6 +478,12 @@ def process_metrichor_configGeneral_data(args, configdata, basename, basenameid,
     location = \
         '/Analyses/EventDetection_000/Reads/Read_%s' \
         % general_hash['read_id']
+    if location not in hdf:
+        location = \
+            '/Analyses/EventDetection_000/Reads/Read_%s' \
+            % general_hash['read_number']
+
+    #print "YA MAMMA", location
     if location in hdf:
         hdf5object = hdf[location]
 

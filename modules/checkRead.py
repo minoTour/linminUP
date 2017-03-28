@@ -283,6 +283,7 @@ def check_read(
 
 
         sql = 'CREATE DATABASE %s' % dbname
+        #print sql
         args,db,cursor = cursor_execute(args,db,cursor,sql)
         sql = 'USE %s' % dbname
         args,db,cursor = cursor_execute(args,db,cursor,sql)
@@ -608,9 +609,9 @@ def check_read(
 
         trackingid = hdf['/UniqueGlobalKey/tracking_id']
         print trackingid.attrs['exp_start_time']
-        print dateutil.parser.parse(trackingid.attrs['exp_start_time'])
-        print int(time.mktime(dateutil.parser.parse(trackingid.attrs['exp_start_time']).timetuple()))
-        print datetime.datetime.fromtimestamp(int(time.mktime(dateutil.parser.parse(trackingid.attrs['exp_start_time']).timetuple()))).strftime('%Y-%m-%d')
+        #print dateutil.parser.parse(trackingid.attrs['exp_start_time'])
+        #print int(time.mktime(dateutil.parser.parse(trackingid.attrs['exp_start_time']).timetuple()))
+        #print datetime.datetime.fromtimestamp(int(time.mktime(dateutil.parser.parse(trackingid.attrs['exp_start_time']).timetuple()))).strftime('%Y-%m-%d')
 
         expstarttimecode = \
             datetime.datetime.fromtimestamp(int(testtime(trackingid.attrs['exp_start_time'

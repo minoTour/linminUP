@@ -1,3 +1,9 @@
+0.75_28.3.17
+
+* Fix to handle metrichor file type changes.
+
+--------------------------------------------------------------------------------
+
 0.74_7.3.17
 
 * Tuning minControl to send less frequent data updates.

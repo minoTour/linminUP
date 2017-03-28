@@ -268,6 +268,7 @@ def process_tracking_data(args, filepath, basename, checksum, passcheck, hdf, db
 
 
     tracking_id_hash.update({'pass': passcheck})
+    #print "db is:",db
     if args.verbose == "high": debug()
     basenameid = mysql_load_from_hashes(args, db, cursor, 'tracking_id',
             tracking_id_hash)
