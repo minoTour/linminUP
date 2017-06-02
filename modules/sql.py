@@ -1142,7 +1142,7 @@ def create_mincontrol_interaction_table(tablename, args, db, cursor):
     colheaders = ','.join(fields)
     sql = 'CREATE TABLE %s (%s) ENGINE=InnoDB' % (tablename, colheaders)
 
-    # print sql
+    print sql
 
     args,db,cursor = cursor_execute(args,db,cursor,sql)
 

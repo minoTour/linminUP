@@ -45,6 +45,7 @@ def getBasecalltype(args, filetype):
     if filetype == 4: basecalltype = 'Basecall_RNN_1D'
     if filetype == 5: basecalltype = 'OnlineBasecall'
     if filetype == 6: basecalltype = 'minKNOW_v1_0_1D'
+    if filetype == 7: basecalltype = 'minKNOW_v1_0_1D^2'
     return basecalltype
 
 # Unbuffered IO
@@ -301,6 +302,7 @@ def check_read(
             create_mincontrol_messages_table('messages', args, db, cursor)
             create_mincontrol_barcode_control_table('barcode_control',
                     args,db,cursor)
+            #print "DONE"
 
         # ---------------------------------------------------------------------------
 
@@ -934,12 +936,33 @@ def is_minKNOW_v1_0_file(args, hdf):
     return_status = get_hdf_attribute(args, hdf,
                        '/Analyses/Basecall_1D_000/Summary', 'return_status')
 
-    # HEALTH WARNING....
+    test_stats = get_hdf_attribute(args,hdf,'/Analyses/Basecall_2D_000/Summary', 'return_status')
+    #print "Test 2D", test_stats
+
+
+    return_val = 0
+
+    if file_version == 0.6 and return_status in [ 'Workflow successful'
+                             , 'FailedBasecall'
+                             , 'FailedNoOutput'
+                             ]:
+        if test_stats in [ 'Workflow successful'
+                                 , 'FailedBasecall'
+                                 , 'FailedNoOutput'
+                                 ]:
+            return 2
+        else:
+            return 1
+    else:
+        return 0
+
+    """# HEALTH WARNING....
     return file_version == 0.6 \
         and return_status in [ 'Workflow successful'
                              , 'FailedBasecall'
                              , 'FailedNoOutput'
                              ]
+    """
 
 def is_nanonet_basecalled_file(args, hdf):
     # minKNOW w external nanonet rnn basecalling
@@ -957,14 +980,25 @@ def check_read_type(args, filepath, hdf):
     except:
         return -1 # Invalid hdf
 
-    if is_minKNOW_v1_0_file(args, hdf):                            filetype = 6 # mKnow w RNN
-    elif is_nanonet_basecalled_file(args, hdf):                    filetype = 4 # mKnow + RNN
-    elif is_metricore_basecalled_file(args, hdf):                  filetype = 3 # mKnow + MC
-    elif contains_hdf_group(hdf, 'Analyses/OnlineBasecall_000/'):  filetype = 5 # zibra r9
-    elif contains_hdf_group(hdf, 'Analyses/Basecall_1D_000/'):     filetype = 3 # r7
-    elif contains_hdf_group(hdf, 'Analyses/Hairpin_Split_000/'):   filetype = 2 # r7
-    elif contains_hdf_group(hdf, 'Analyses/Basecall_2D_000/'):     filetype = 1 # r7
-    else:                                                          filetype = 0 # raw file
+    if is_minKNOW_v1_0_file(args, hdf) > 0:
+        if is_minKNOW_v1_0_file(args, hdf) == 1:
+            filetype = 6 # mKnow w RNN
+        else:
+            filetype = 7 # mKNOW 2D
+    elif is_nanonet_basecalled_file(args, hdf):
+        filetype = 4 # mKnow + RNN
+    elif is_metricore_basecalled_file(args, hdf):
+        filetype = 3 # mKnow + MC
+    elif contains_hdf_group(hdf, 'Analyses/OnlineBasecall_000/'):
+        filetype = 5 # zibra r9
+    elif contains_hdf_group(hdf, 'Analyses/Basecall_1D_000/'):
+        filetype = 3 # r7
+    elif contains_hdf_group(hdf, 'Analyses/Hairpin_Split_000/'):
+        filetype = 2 # r7
+    elif contains_hdf_group(hdf, 'Analyses/Basecall_2D_000/'):
+        filetype = 1 # r7
+    else:
+        filetype = 0 # raw file
 
     if args.verbose == "high":
             print "filetype: ", filetype, getBasecalltype(args, filetype)

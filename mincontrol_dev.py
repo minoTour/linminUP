@@ -21,6 +21,7 @@ from thrift import Thrift
 from thrift.transport import TTransport
 from thrift.protocol import TCompactProtocol
 from dictdiffer import diff, patch, swap, revert
+import numpy as np
 
 from twisted.internet.protocol import ReconnectingClientFactory
 
@@ -421,6 +422,9 @@ def commands(command):
         'get_scripts' : '{"id":"1", "method":"get_script_info_list","params":{"state_id":"status"}}',
         'disk_space' : '{"id":1,"method":"get_disk_space_info","params":null}',
         'sinc_delay' : '{"id":1,"method":"sinc_delay","params":null}',
+        'get_seq_metrics' : '{"id":1,"method": "get_seq_metrics","params":null}',
+        'get_tracking_id': '{"id":1,"method": "get_tracking_id","params":null}',
+        'get_statistics': '{"id":1,"method": "get_statistics","params":null}',
 
     }[command]
 
@@ -717,7 +721,7 @@ class MessagesClient(WebSocketClient):
             print m
             try:
                 if self.minion not in minIONdict.keys():
-                    minIONdic[self.minion]=dict()
+                    minIONdict[self.minion]=dict()
                 if "messages" not in minIONdict[self.minion].keys():
                     minIONdict[self.minion]["messages"]=[]
                 minIONdict[self.minion]["messages"].append(json.loads(str(m)))
@@ -760,8 +764,9 @@ class DummyClient(WebSocketClient):
             for element in json_object:
                 if element == "statistics" and json_object[element] != "null":
                     for element2 in json_object[element]:
-                        #if element2 == "read_statistics" or element2 == "channel_info":
-                        #    print "found ",element2
+                        if  element2 == "channel_info": #element2 == "read_statistics" or
+                            print "found ",element2
+                            print json_object[element][element2]
                         if element2 != "read_statistics" and element2 != "channel_info" and json_object[element][element2] != "null":# and element2 != "read_statistics" and element2 != "completed_samples":
                             if element not in self.detailsdict:
                                 self.detailsdict[element]=dict()
@@ -895,6 +900,7 @@ def process_tracked_yield():
     at given intervals. It is used by the main web page to provide a history of cumulative yield.
     """
     #print "Process_tracked_yield Running"
+    #print minIONdict
     for minion in minIONdict:
         if "detailsdata" in minIONdict[minion]:
             if "livedata" in minIONdict[minion]:
@@ -926,14 +932,25 @@ def process_tracked_yield():
                                 yieldval =  minIONdict[minion]["detailsdata"]["statistics"]["read_event_count"]
                         except:
                             yieldval=0
-                        #else:
-                        #    yieldval = 0
+                        try:
+                            meanratio = minIONdict[minion]["detailsdata"]["meanratio"]
+                            openpore = minIONdict[minion]["detailsdata"]["openpore"]
+                            instrand = minIONdict[minion]["detailsdata"]["instrand"]
+                        except:
+                            meanratio = 0
+                            openpore = 0
+                            instrand = 0
+
                         if "yield_history" not in minIONdict[minion]:
                             minIONdict[minion]["yield_history"]=[]
                         if "temp_history" not in minIONdict[minion]:
                             minIONdict[minion]["temp_history"]=dict()
                         if "pore_history" not in minIONdict[minion]:
                             minIONdict[minion]["pore_history"]=dict()
+                        if "meanratio_history" not in minIONdict[minion]["pore_history"]:
+                            minIONdict[minion]["pore_history"]["meanratio_history"]=[]
+                            minIONdict[minion]["pore_history"]["openpore_history"] = []
+                            minIONdict[minion]["pore_history"]["instrand_history"] = []
                         if "strand" not in minIONdict[minion]["pore_history"]:
                             minIONdict[minion]["pore_history"]["strand"]=[]
                             minIONdict[minion]["pore_history"]["percent"]=[]
@@ -967,6 +984,13 @@ def process_tracked_yield():
                             minIONdict[minion]["pore_history"]["strand"].append((minIONdict[minion]["detailsdata"]["timestamp"]*1000,strand))
                             minIONdict[minion]["pore_history"]["percent"].append((minIONdict[minion]["detailsdata"]["timestamp"]*1000,percent))
                             minIONdict[minion]["pore_history"]["single"].append((minIONdict[minion]["detailsdata"]["timestamp"]*1000,single_pore))
+                            minIONdict[minion]["pore_history"]["meanratio_history"].append(
+                                (minIONdict[minion]["detailsdata"]["timestamp"] * 1000, meanratio))
+                            minIONdict[minion]["pore_history"]["openpore_history"].append(
+                                (minIONdict[minion]["detailsdata"]["timestamp"] * 1000, openpore))
+                            minIONdict[minion]["pore_history"]["instrand_history"].append(
+                                (minIONdict[minion]["detailsdata"]["timestamp"] * 1000, instrand))
+
                             if "simplesummary" in minIONdict[minion]:
                                 if "details" not in minIONdict[minion]["pore_history"].keys():
                                     minIONdict[minion]["pore_history"]["details"]=dict()
@@ -983,6 +1007,12 @@ def process_tracked_yield():
                             minIONdict[minion]["pore_history"]["strand"].append((minIONdict[minion]["detailsdata"]["timestamp"]*1000,strand))
                             minIONdict[minion]["pore_history"]["percent"].append((minIONdict[minion]["detailsdata"]["timestamp"]*1000,percent))
                             minIONdict[minion]["pore_history"]["single"].append((minIONdict[minion]["detailsdata"]["timestamp"]*1000,single_pore))
+                            minIONdict[minion]["pore_history"]["meanratio_history"].append(
+                                (minIONdict[minion]["detailsdata"]["timestamp"] * 1000, meanratio))
+                            minIONdict[minion]["pore_history"]["openpore_history"].append(
+                                (minIONdict[minion]["detailsdata"]["timestamp"] * 1000, openpore))
+                            minIONdict[minion]["pore_history"]["instrand_history"].append(
+                                (minIONdict[minion]["detailsdata"]["timestamp"] * 1000, instrand))
                             if "simplesummary" in minIONdict[minion]:
                                 if "details" not in minIONdict[minion]["pore_history"].keys():
                                     minIONdict[minion]["pore_history"]["details"]=dict()
@@ -1002,6 +1032,9 @@ def process_tracked_yield():
                     minIONdict[minion]["pore_history"]["strand"]=[]
                     minIONdict[minion]["pore_history"]["percent"]=[]
                     minIONdict[minion]["pore_history"]["single"]=[]
+                    minIONdict[minion]["pore_history"]["openpore_history"] = []
+                    minIONdict[minion]["pore_history"]["instrand_history"] = []
+                    minIONdict[minion]["pore_history"]["meanratio_history"] = []
                     #minIONdict[minion]["pore_history"]["details"]=dict()
                     if "details" in minIONdict[minion]["pore_history"]:
                         minIONdict[minion]["pore_history"].pop("details")
@@ -1326,7 +1359,7 @@ class MyClientProtocol(WebSocketClientProtocol):
                                 if minIONdict[minION]["state"]==minIONdict_test[minION]["state"]:
                                     try: #To catch mysterious bugs
                                         livedata=dict() # collect a dictionary of useful data - might change this
-                                        for query in ('status','dataset','biasvoltageget','bias_voltage_gain','machine_id','machine_name','sample_id','user_error','sequenced_res','yield_res','current_script','disk_space','flow_cell_id'):#,'getstaticdata','get_analysis_configuration'):
+                                        for query in ('status','dataset','biasvoltageget','bias_voltage_gain','machine_id','machine_name','sample_id','user_error','sequenced_res','yield_res','current_script','disk_space','flow_cell_id','get_seq_metrics'):#,'getstaticdata','get_analysis_configuration'):
                                             results = execute_command_as_string(commands(query), ipadd,minIONdict[minION]["port"])
                                             livedata[query]=results
                                             if query == "disk_space":
@@ -1336,6 +1369,9 @@ class MyClientProtocol(WebSocketClientProtocol):
                                                 check_email_twitter()
                                             #if query == "biasvoltageget":
                                             #    print results
+                                            #if query == "get_seq_metrics":
+                                            #    print query
+                                            print results
                                         minIONdict[minION]["livedata"]=livedata #append results to data stream
                                     except Exception, err:
                                         print "line 1407",err
@@ -1349,7 +1385,8 @@ class MyClientProtocol(WebSocketClientProtocol):
                                         results = execute_command_as_string(commands('startmessagenew'), ipadd,minIONdict[minION]["port"])
                                         try: #To catch mysterious bugs
                                             livedata=dict() # collect a dictionary of useful data - might change this
-                                            for query in ('status','dataset','biasvoltageget','bias_voltage_gain','machine_id','machine_name','sample_id','user_error','sequenced_res','sequenced_res','yield_res','current_script','disk_space','flow_cell_id'):#,'getstaticdata','get_analysis_configuration'):
+                                            for query in ('status','dataset','biasvoltageget','bias_voltage_gain','machine_id','machine_name','sample_id','user_error','sequenced_res','sequenced_res','yield_res','current_script','disk_space','flow_cell_id', 'get_seq_metrics'):#,'getstaticdata','get_analysis_configuration'):
+                                                #print query
                                                 results = execute_command_as_string(commands(query), ipadd,minIONdict[minION]["port"])
                                                 livedata[query]=results
                                                 if query == "disk_space":
@@ -1357,6 +1394,9 @@ class MyClientProtocol(WebSocketClientProtocol):
                                                     #print results["result"][0]["recommend_stop"]
                                                     #print results["result"][0]["recommend_alert"]
                                                     check_email_twitter()
+                                                #if query == "get_seq_metrics":
+                                                print query
+                                                print results
                                                 #if query == "biasvoltageget":
                                                 #    print results
                                             minIONdict[minION]["livedata"]=livedata #append results to data stream
@@ -1402,20 +1442,37 @@ class MyClientProtocol(WebSocketClientProtocol):
                                 minIONclassdict[minION]["connected"]="True"
                             livedata=dict() # collect a dictionary of useful data - might change this
                             minIONdict[minION]["scripts"]=get_run_scripts(minIONdict[minION]["port"])
-                            for query in ('status','dataset','biasvoltageget','bias_voltage_gain','machine_id','machine_name','sample_id','user_error','sequenced_res','yield_res','current_script','disk_space','flow_cell_id'):#,'getstaticdata','get_analysis_configuration'):
-                                results = execute_command_as_string(commands(query), ipadd,minIONdict[minION]["port"])
-                                livedata[query]=results
-                                if query == "current_script":
-                                    #print minION,"current_script"
-                                    #print results
-                                    minIONclassdict[minION]["class"].runname=results["result"]
+                            for query in (
+                            'status', 'dataset', 'biasvoltageget', 'bias_voltage_gain', 'machine_id', 'machine_name',
+                            'sample_id', 'user_error', 'sequenced_res', 'sequenced_res', 'yield_res', 'current_script',
+                            'disk_space', 'flow_cell_id','get_tracking_id',
+                            'get_seq_metrics'):  # ,'getstaticdata','get_analysis_configuration'):
+                                #print query
+                                results = execute_command_as_string(commands(query), ipadd, minIONdict[minION]["port"])
+                                livedata[query] = results
                                 if query == "disk_space":
-                                    #print results
-                                    #print results["result"][0]["recommend_stop"]
-                                    #print results["result"][0]["recommend_alert"]
+                                    # print results
+                                    # print results["result"][0]["recommend_stop"]
+                                    # print results["result"][0]["recommend_alert"]
                                     check_email_twitter()
-                                #if query == "biasvoltageget":
-                                #    print results
+                                if query == "get_seq_metrics":
+                                    print query
+                                    print results
+                            results=execute_command_as_string(commands('get_statistics'), ipadd, minIONdict[minION]["port"])
+                            print "Got Stats"
+                            meanratio = list()
+                            openpore = list()
+                            instrand = list()
+                            datatofetch = ('seq_pore_level', 'seq_strand_delta','tba_pore_level','tba_event_delta')
+                            for item in results['result']['stats_for_channel_name']:
+                                #for value in datatofetch:
+                                #    print item, value, results['result']['stats_for_channel_name'][item][value]
+                                if float(results['result']['stats_for_channel_name'][item]['seq_strand_delta']) != 0:
+                                    meanratio.append((float(results['result']['stats_for_channel_name'][item]['seq_pore_level'])/float(results['result']['stats_for_channel_name'][item]['seq_strand_delta'])))
+                                    openpore.append(float(results['result']['stats_for_channel_name'][item]['seq_pore_level']))
+                                    instrand.append(float(results['result']['stats_for_channel_name'][item]['seq_strand_delta']))
+                                    #print item, (float(results['result']['stats_for_channel_name'][item]['seq_pore_level'])/float(results['result']['stats_for_channel_name'][item]['seq_strand_delta']))
+
                             results2 = execute_command_as_string(commands('get_analysis_configuration'), ipadd,minIONdict[minION]["port"])
                             minIONdict[minION]["channelstuff"]=results2["result"]["channel_states"]
                             minIONdict[minION]["livedata"]=livedata #append results to data stream
@@ -1423,6 +1480,13 @@ class MyClientProtocol(WebSocketClientProtocol):
                                 for element in minIONclassdict[minION]["class"].detailsdict:
                                     if "detailsdata" not in minIONdict[minION]:
                                         minIONdict[minION]["detailsdata"]=dict()
+                                    if np.mean > 0:
+                                        print np.mean(meanratio)
+                                        print np.mean(openpore)
+                                        print np.mean(instrand)
+                                        minIONdict[minION]["detailsdata"]["meanratio"]= np.mean(meanratio)
+                                        minIONdict[minION]["detailsdata"]["openpore"] = np.mean(openpore)
+                                        minIONdict[minION]["detailsdata"]["instrand"] = np.mean(instrand)
                                     if element == "statistics" and minIONclassdict[minION]["class"].detailsdict[element] != "null":
                                         if element not in minIONdict[minION]["detailsdata"]:
                                             minIONdict[minION]["detailsdata"][element]=dict()
@@ -1464,7 +1528,7 @@ class MyClientProtocol(WebSocketClientProtocol):
             #else:
             #    print "not connected"
             #    et.messagesent=False
-            self.factory.reactor.callLater(15, process_shizzle)
+            self.factory.reactor.callLater(5, process_shizzle)
 
         # start sending messages every 5 seconds..
         process_shizzle()

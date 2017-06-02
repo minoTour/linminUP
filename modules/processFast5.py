@@ -33,6 +33,7 @@ from hdf2SQL import explore
 import processNanonetFast5 as nanonet
 import processMetrichorFast5 as metrichor
 import processMinKnowV1_0Fast5 as minknow
+import processMinKnowV1_0_1d2_Fast5 as oned2
 
 from processFast5Utils import *
 
@@ -85,6 +86,8 @@ def process_readtypes(args, read_type, basename, basenameid, basecalldirs, track
         return metrichor.process_metrichor_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, dbname, cursor,fastqhash, dbcheckhash)
     if read_type == 6:
         return minknow.process_integratedRNN_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, dbname, cursor, fastqhash, dbcheckhash)
+    if read_type == 7:
+        return oned2.process_integratedRNN_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, dbname, cursor, fastqhash, dbcheckhash)
 
 
 
@@ -98,64 +101,62 @@ def process_model_data(args, basecalldirs, basenameid, hdf, db, cursor, dbname, 
 
     # ------------ Do model details -------------------
 
-    '''
 
-    # DEPRECATING TELEM MS 11.10.16
 
-    if args.telem is True:
-        if dbname not in dbcheckhash['modelcheck']:
-            dbcheckhash['modelcheck'][dbname] = dict()
+    # # DEPRECATING TELEM MS 11.10.16
+    #
+    # if args.telem is True:
+    #     if dbname not in dbcheckhash['modelcheck']:
+    #         dbcheckhash['modelcheck'][dbname] = dict()
+    #
+    #     log_string = basecalldir + 'Log'
+    #     if log_string in hdf:
+    #         log_data = str(hdf[log_string][()])
+    #
+    #         # print type(log), log
+    #
+    #         lines = log_data.split('\n')
+    #         template_model = None
+    #         complement_model = None
+    #         for l in lines:
+    #             t = re.match('.*Selected model: "(.*template.*)".', l)
+    #             if t:
+    #                 template_model = t.group(1)
+    #             c = re.match('.*Selected model: "(.*complement.*)".', l)
+    #             if c:
+    #                 complement_model = c.group(1)
+    #
+    #         if template_model is not None:
+    #             sql = "INSERT INTO %s (basename_id,template_model,complement_model) VALUES ('%s','%s',NULL)" \
+    #                 % ('model_list', basenameid, template_model)
+    #             if template_model not in dbcheckhash['modelcheck'
+    #                     ][dbname]:
+    #                 location = basecalldir + 'BaseCalled_template/Model'
+    #                 if location in hdf:
+    #                     upload_model_data('model_data', template_model,
+    #                             location, hdf, cursor, db)
+    #                     dbcheckhash['modelcheck'
+    #                                 ][dbname][template_model] = 1
+    #
+    #             if complement_model is not None:
+    #                 sql = "INSERT INTO %s (basename_id,template_model,complement_model) VALUES ('%s','%s','%s')" \
+    #                     % ('model_list', basenameid, template_model,
+    #                        complement_model)
+    #                 if complement_model not in dbcheckhash['modelcheck'
+    #                         ][dbname]:
+    #                     location = basecalldir \
+    #                         + 'BaseCalled_complement/Model'
+    #                     if location in hdf:
+    #                         upload_model_data('model_data',
+    #                                 complement_model, location, hdf,
+    #                                 cursor, db)
+    #                         dbcheckhash['modelcheck'
+    #                                 ][dbname][complement_model] = 1
+    #             if args.verbose == "high": print sql; debug()
+    #
+    #             cursor.execute(sql)
+    #             db.commit()
 
-        log_string = basecalldir + 'Log'
-        if log_string in hdf:
-            log_data = str(hdf[log_string][()])
-
-            # print type(log), log
-
-            lines = log_data.split('\n')
-            template_model = None
-            complement_model = None
-            for l in lines:
-                t = re.match('.*Selected model: "(.*template.*)".', l)
-                if t:
-                    template_model = t.group(1)
-                c = re.match('.*Selected model: "(.*complement.*)".', l)
-                if c:
-                    complement_model = c.group(1)
-
-            if template_model is not None:
-                sql = \
-                    "INSERT INTO %s (basename_id,template_model,complement_model) VALUES ('%s','%s',NULL)" \
-                    % ('model_list', basenameid, template_model)
-                if template_model not in dbcheckhash['modelcheck'
-                        ][dbname]:
-                    location = basecalldir + 'BaseCalled_template/Model'
-                    if location in hdf:
-                        upload_model_data('model_data', template_model,
-                                location, hdf, cursor, db)
-                        dbcheckhash['modelcheck'
-                                    ][dbname][template_model] = 1
-
-                if complement_model is not None:
-                    sql = \
-                        "INSERT INTO %s (basename_id,template_model,complement_model) VALUES ('%s','%s','%s')" \
-                        % ('model_list', basenameid, template_model,
-                           complement_model)
-                    if complement_model not in dbcheckhash['modelcheck'
-                            ][dbname]:
-                        location = basecalldir \
-                            + 'BaseCalled_complement/Model'
-                        if location in hdf:
-                            upload_model_data('model_data',
-                                    complement_model, location, hdf,
-                                    cursor, db)
-                            dbcheckhash['modelcheck'
-                                    ][dbname][complement_model] = 1
-                if args.verbose == "high": print sql; debug()
-
-                cursor.execute(sql)
-                db.commit()
-    '''
 
 #-------------------------------------------------------------------------------
 def process_barcode_data(args, hdf, db, cursor,basenameid):
@@ -201,6 +202,8 @@ def getBasenameData(args, read_type, hdf):
         return metrichor.getMetrichorBasenameData(args, read_type, hdf)
     elif read_type == 6:
         return minknow.getIntegratedRNNBasenameData(args, read_type, hdf)
+    elif read_type == 7:
+        return oned2.getIntegratedRNNBasenameData(args, read_type, hdf)
     elif read_type == 4:
         return nanonet.get_nanonet_basename_data(args, read_type, hdf)
     else:
@@ -221,6 +224,10 @@ def process_basecalledSummary_data(args, read_type, basename, basenameid, baseca
     elif read_type in [6]:
        basecalldir = "/Analyses/Basecall_1D_000/"
        return minknow.process_minKnow_basecalledSummary_data(basecalldir, args, read_type, basename, basenameid, basecalldirs, passcheck, tracking_id_hash, general_hash, hdf, db,cursor)
+    elif read_type in [7]:
+        basecalldir = "/Analyses/Basecall_1D_000/"
+        return oned2.process_minKnow_basecalledSummary_data(basecalldir, args, read_type, basename, basenameid, basecalldirs, passcheck, tracking_id_hash, general_hash, hdf, db,cursor)
+
     else:
         print "process_basecalledSummary_data(): ERROR readtype not setup yet..." , read_type
         debug()
@@ -283,6 +290,8 @@ def process_configGeneral_data(args, configdata, basename, basenameid, basecalld
          return metrichor.process_metrichor_configGeneral_data(args, configdata, basename, basenameid, basecalldirs, read_type, passcheck, hdf, tracking_id_hash, db, cursor)
     elif read_type in [4,6]:
          return nanonet.process_nanonet_configGeneral_data(args, configdata, basename, basenameid, basecalldirs, read_type, passcheck, hdf, tracking_id_hash, db, cursor)
+    elif read_type in [7]:
+         return nanonet.process_nanonet_configGeneral_data(args, configdata, basename, basenameid, basecalldirs, read_type, passcheck, hdf, tracking_id_hash, db, cursor)
     else:
         print "process_configGeneral_data(): ERROR readtype not setup yet..." , read_type
         debug()
@@ -324,6 +333,16 @@ def process_fast5(
         print "... done."
     except:
         pass
+
+    if read_type == 7:
+        if args.verbose == "high":
+            print "minKNOW v1.0 1d2File...."
+            debug()
+
+        process_minKNOW_v1_0_1d2_fast5(
+                read_type, passcheck, oper, db, connection_pool, args, ref_fasta_hash,
+                dbcheckhash, filepath, hdf, dbname, cursor,bwaclassrunner
+                )
 
 
     if read_type == 6:
@@ -515,6 +534,81 @@ def process_metrichor_basecalled_fast5(
 
 
 def  process_minKNOW_v1_0_fast5( \
+        read_type,
+        passcheck,
+        oper,
+        db,
+        connection_pool,
+        args,
+        ref_fasta_hash,
+        dbcheckhash,
+        filepath,
+        hdf,
+        dbname,
+        cursor,
+        bwaclassrunner
+    ):
+
+    fastqhash = dict()
+    basename = '.'.join(os.path.split(filepath)[-1].split('.')[:-1]) # MS
+    if args.verbose == "high":
+        print "basename", basename
+        debug()
+
+    # GET BASENAME AND CONFIGDATA ...
+    basecallindexpos, basecalldirs, configdata, read_info_hash = \
+                getBasenameData(args, read_type, hdf)
+
+    # PROCESS TRACKING ID DATA ...
+    # # get all the tracking_id data, make primary entry for basename, and get basenameid
+    checksum = hashlib.md5(open(filepath, 'rb').read()).hexdigest()
+    basenameid, tracking_id_hash = \
+        process_tracking_data(args, filepath, basename, \
+        checksum,  passcheck, hdf, db, cursor)
+
+
+    # PROCESS CONFIG GENERAL DATA ....
+    # # get all the data from Configuration/general, then add Event Detection mux pore number
+    general_hash = \
+        process_configGeneral_data(args, configdata, basename, \
+            basenameid, basecalldirs, read_type,  passcheck, \
+            hdf, tracking_id_hash, db, cursor)
+
+    # PROCESS BASECALLED SUMMARY DATA ....
+    # # get all the basecall summary split hairpin data
+    if basename != '':
+        process_basecalledSummary_data(args, read_type , basename, basenameid ,
+                basecalldirs , basecallindexpos, passcheck, tracking_id_hash, general_hash, hdf, db,cursor)
+
+    # PROCESS BARCODE DATA ...
+    process_barcode_data(args, hdf, db, cursor,basenameid)
+
+    # PROCESS MODEL DATA  ...
+    process_model_data(args, basecalldirs, basenameid, hdf, db, cursor, dbname, dbcheckhash)
+
+    # PROCESS READ TYPES ....
+    #process_readtypes(args, read_type, basename, basenameid, basecalldirs, tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, cursor)
+    process_readtypes(args, read_type, basename, basenameid, basecalldirs,
+                tracking_id_hash, general_hash, read_info_hash, passcheck, hdf, db, cursor,fastqhash, dbname, dbcheckhash)
+
+    # DO ALIGNMENTS ....
+    #do_alignments(read_type, args, dbname, ref_fasta_hash)
+    do_alignments(read_type, args, oper, dbname, dbcheckhash, ref_fasta_hash,fastqhash,bwaclassrunner,connection_pool,basename,basenameid)
+
+    '''
+
+    # DEPRECATING TELEM MS 11.10.16
+
+    # PROCESS TELEM DATA ....
+    tel_data_hash = {}
+    if args.telem is True:
+        init_tel_threads2(connection_pool[dbname], tel_data_hash)
+    '''
+
+#-------------------------------------------------------------------------------
+
+
+def  process_minKNOW_v1_0_1d2_fast5( \
         read_type,
         passcheck,
         oper,

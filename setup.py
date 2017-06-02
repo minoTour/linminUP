@@ -21,6 +21,7 @@ sys.path.append('modules')
 setup(console=['getmodels.py'
         , 'minUPgui.py'
         , 'mincontrol.py'
+        , 'mincontrol_dev.py'
         , 'minUP.py'
         ],
     options = {'py2exe': 

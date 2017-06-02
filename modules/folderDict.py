@@ -93,7 +93,7 @@ def getHDFtime(args, f):
                     readTime = endTime/sample_rate
             #print expStartTime
             timestamp = int(expStartTime) + int(readTime)
-            print expStartTime,timestamp
+            ##print expStartTime,timestamp
             hdf.close()
     except Exception, err:
         err_string = 'Error with HDF times in file: %s : %s' % (f, err)
