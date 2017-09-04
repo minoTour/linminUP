@@ -449,7 +449,7 @@ class HelpTheMinion(WebSocketClient):
         ##print "message received!"
         for thing in ''.join(map(chr,map(ord,str(m)))).split('\n'):
             #if len(thing) > 5 and "2L" not in thing and "2n" not in thing:
-            if len(thing) > 5 and thing[1] == "M":
+            if len(thing) > 5 and (thing[1] == "M" or thing[1] == "G"):
                 if thing[1:8] not in minIONdict:
                     #print "INITIALISING MINIONDICT"
                     minIONdict[thing[1:8]]=dict()
